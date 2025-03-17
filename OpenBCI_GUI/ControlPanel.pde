@@ -307,7 +307,7 @@ class ControlPanel {
 
 class DataSourceBox {
     public int x, y, w, h, padding; //size and position
-    private int numItems;
+    private final int NUM_ITEMS = 5;
     private int boxHeight = 24;
     private int spacing = 43;
     private ControlP5 datasource_cp5;
@@ -315,18 +315,17 @@ class DataSourceBox {
     private boolean initialUpdate = false;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
-        numItems = 6;
         x = _x;
         y = _y;
         w = _w;
-        h = spacing + (numItems * boxHeight);
+        h = spacing + (NUM_ITEMS * boxHeight);
         padding = _padding;
 
         //Instantiate local cp5 for this box
         datasource_cp5 = new ControlP5(ourApplet);
         datasource_cp5.setGraphics(ourApplet, 0,0);
         datasource_cp5.setAutoDraw(false);
-        createDatasourceList(datasource_cp5, "DataSourceList", x + padding, y + padding*2 + 13, w - padding*2, numItems * boxHeight, p3);
+        createDatasourceList(datasource_cp5, "DataSourceList", x + padding, y + padding*2 + 13, w - padding*2, NUM_ITEMS * boxHeight, p3);
     }
 
     public void update() {
@@ -356,8 +355,6 @@ class DataSourceBox {
     private void createDatasourceList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
         sourceList = new MenuList(_cp5, name, _w, _h, font);
         sourceList.setPosition(_x, _y);
-        // sourceList.itemHeight = 28;
-        // sourceList.padding = 9;
         sourceList.addItem("CYTON (live)", DATASOURCE_CYTON);
         sourceList.addItem("GANGLION (live)", DATASOURCE_GANGLION);
         sourceList.addItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE);
