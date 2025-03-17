@@ -13,30 +13,11 @@
 
 class W_fft extends Widget {
 
-    public ChannelSelect fftChanSelect;
+    public ExGChannelSelect fftChanSelect;
     boolean prevChanSelectIsVisible = false;
 
     GPlot fft_plot; //create an fft plot for each active channel
-    GPointsArray[] fft_points;  //create an array of points for each channel of data (4, 8, or 16)
-    
-    int[] lineColor = {
-        (int)color(129, 129, 129),
-        (int)color(124, 75, 141),
-        (int)color(54, 87, 158),
-        (int)color(49, 113, 89),
-        (int)SIGNAL_CHECK_YELLOW,
-        (int)color(253, 94, 52),
-        (int)BOLD_RED,
-        (int)color(162, 82, 49),
-        (int)color(129, 129, 129),
-        (int)color(124, 75, 141),
-        (int)color(54, 87, 158),
-        (int)color(49, 113, 89),
-        (int)SIGNAL_CHECK_YELLOW,
-        (int)color(253, 94, 52),
-        (int)BOLD_RED,
-        (int)color(162, 82, 49)
-    };
+    GPointsArray[] fft_points;
 
     int[] xLimOptions = {20, 40, 60, 100, 120, 250, 500, 800};
     int[] yLimOptions = {10, 50, 100, 1000};
@@ -51,17 +32,18 @@ class W_fft extends Widget {
     W_fft(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        //Add channel select dropdown to this widget
-        fftChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "BP_Channels");
-        fftChanSelect.activateAllButtons();
-        cp5ElementsToCheck.addAll(fftChanSelect.getCp5ElementsForOverlapCheck());
-
         //Default FFT plot settings
         settings.fftMaxFrqSave = 2;
         settings.fftMaxuVSave = 2;
         settings.fftLogLinSave = 0;
         settings.fftSmoothingSave = 3;
         settings.fftFilterSave = 0;
+
+        //Instantiate Channel Select Class
+        fftChanSelect = new ExGChannelSelect(pApplet, x, y, w, navH);
+        fftChanSelect.activateAllButtons();
+        
+        cp5ElementsToCheck.addAll(fftChanSelect.getCp5ElementsForOverlapCheck());
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -72,10 +54,9 @@ class W_fft extends Widget {
         addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
         addDropdown("UnfiltFilt", "Filters?", Arrays.asList(settings.fftFilterArray), settings.fftFilterSave);
 
-        fft_points = new GPointsArray[nchan];
+        fft_points = new GPointsArray[globalChannelCount];
         // println("fft_points.length: " + fft_points.length);
         initializeFFTPlot(_parent);
-
     }
 
     void initializeFFTPlot(PApplet _parent) {
@@ -85,10 +66,12 @@ class W_fft extends Widget {
         fft_plot.getXAxis().setAxisLabelText("Frequency (Hz)");
         fft_plot.getYAxis().setAxisLabelText("Amplitude (uV)");
         fft_plot.setMar(60, 70, 40, 30); //{ bot=60, left=70, top=40, right=30 } by default
-        fft_plot.setLogScale("y");
+        String logScale = settings.fftLogLinSave == 0 ? "y" : "";
+        fft_plot.setLogScale(logScale);
 
         fft_plot.setYLim(0.1, yLim);
-        int _nTicks = int(yLim/10 - 1); //number of axis subdivisions
+        //int _nTicks = int(yLim/10 - 1); //number of axis subdivisions
+        int _nTicks = 10;
         fft_plot.getYAxis().setNTicks(_nTicks);  //sets the number of axis divisions...
         fft_plot.setXLim(0.1, xLim);
         fft_plot.getYAxis().setDrawTickLabels(true);
@@ -161,9 +144,9 @@ class W_fft extends Widget {
         fft_plot.drawYAxis();
         fft_plot.drawGridLines(GPlot.BOTH);
         //Update and draw active channels that have been selected via channel select for this widget
-        for (int j = 0; j < fftChanSelect.activeChan.size(); j++) {
-            int chan = fftChanSelect.activeChan.get(j);
-            fft_plot.setLineColor(lineColor[chan]);
+        for (int j = 0; j < fftChanSelect.getActiveChannels().size(); j++) {
+            int chan = fftChanSelect.getActiveChannels().get(j);
+            fft_plot.setLineColor((int)channelColors[chan % 8]);
             //remap fft point arrays to fft plots
             fft_plot.setPoints(fft_points[chan]);
             fft_plot.drawLines();
@@ -182,9 +165,7 @@ class W_fft extends Widget {
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //update position/size of FFT plot
-        fft_plot.setPos(x, y-navHeight);//update position
-        fft_plot.setOuterDim(w, h+navHeight);//update dimensions
+        flexGPlotSizeAndPosition();
 
         fftChanSelect.screenResized(pApplet);
     }
@@ -200,11 +181,11 @@ class W_fft extends Widget {
 
     void flexGPlotSizeAndPosition() {
         if (fftChanSelect.isVisible()) {
-                fft_plot.setPos(x, y);
-                fft_plot.setOuterDim(w, h);
+                fft_plot.setPos(x, y + fftChanSelect.getHeight() - navH);
+                fft_plot.setOuterDim(w, h - fftChanSelect.getHeight() + navH);
         } else {
-            fft_plot.setPos(x, y - navHeight);
-            fft_plot.setOuterDim(w, h + navHeight);
+            fft_plot.setPos(x, y - navH);
+            fft_plot.setOuterDim(w, h + navH);
         }
     }
 };

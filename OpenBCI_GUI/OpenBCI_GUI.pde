@@ -43,9 +43,11 @@ import java.time.LocalDateTime;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-// import java.net.InetAddress; // Used for ping, however not working right now.
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.net.URL;
+import java.net.HttpURLConnection;
 import java.util.Random;
-import java.awt.Robot; //used for simulating mouse clicks
 import java.awt.AWTException;
 import netP5.*; // for OSC
 import oscP5.*; // for OSC
@@ -62,8 +64,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v6.0.0-beta.1";
-String localGUIVersionDate = "September 2023";
+String localGUIVersionString = "7.0.0";
+String localGUIVersionDisplayString = "v7.0.0";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiIsUpToDate;
@@ -88,9 +90,9 @@ boolean abandonInit = false;
 boolean systemHasHalted = true;
 boolean reinitRequested = false;
 
-final int NCHAN_CYTON = 8;
+final int CYTON_CHANNEL_COUNT = 8;
 final int NCHAN_CYTON_DAISY = 16;
-final int NCHAN_GANGLION = 4;
+final int GANGLION_CHANNEL_COUNT = 4;
 
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
@@ -98,14 +100,13 @@ final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via 
 final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 final int DATASOURCE_STREAMING = 5;
-public int eegDataSource = -1; //default to none of the options
+public int eegDataSource = DATASOURCE_CYTON;
 final static int NUM_ACCEL_DIMS = 3;
 
 enum BoardProtocol {
     NONE,
     SERIAL,
     NATIVE_BLE,
-    WIFI,
     BLED112
 }
 public BoardProtocol selectedProtocol = BoardProtocol.NONE;
@@ -115,7 +116,6 @@ String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
 String sdData_fname = "N/A"; //only used if loading input data from a sd file
-int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
 DataSource currentBoard = new BoardNull();
@@ -124,36 +124,34 @@ DataLogger dataLogger = new DataLogger();
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial(); //This is messy, half-deprecated code. See comments in InterfaceSerial.pde - Nov. 2020
-String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
-int openBCI_baud = 115200; //baud rate from the Arduino
+String cytonDonglePortName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
+int cytonDongleBaudRate = 115200; //baud rate from the Arduino
 
 String ganglion_portName = "N/A";
-
-String wifi_portName = "N/A";
-String wifi_ipAddress = "192.168.4.1";
 
 String brainflowStreamer = "";
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
-int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
+int globalChannelCount = CYTON_CHANNEL_COUNT; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
 
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
-DataStatus is_railed[];
+DataStatus[] is_railed;
 
 //Cyton SD Card setting
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
-// @UPDATE_MILLIS: update the buffer every 40 milliseconds
+// @UPDATE_MILLIS: update the buffer every 80 milliseconds
 // @nPointsPerUpdate: update the GUI after this many data points have been received.
 // The sampling rate should be ideally a multiple of 25, so as to make actual buffer update rate exactly 40ms
-final int UPDATE_MILLIS = 40;
+final int UPDATE_MILLIS = 80;
 int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
 
 //define some data fields for handling data here in processing
 float dataProcessingRawBuffer[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
 float dataProcessingFilteredBuffer[][];
+CircularFIFODataBuffer downsampledFilteredBuffer;
 float data_elec_imp_ohm[];
 
 //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
@@ -161,8 +159,6 @@ int dataBuff_len_sec = 20 + 2; //Add two seconds to max buffer to account for fi
 
 StopWatch sessionTimeElapsed;
 StopWatch streamTimeElapsed;
-
-String output_fname;
 
 //Used mostly in W_playback.pde
 JSONObject savePlaybackHistoryJSON;
@@ -180,21 +176,23 @@ PlotFontInfo fontInfo;
 
 //program variables
 StringBuilder board_message;
-boolean textFieldIsActive = false;
 
 //set window size
 int win_w;  //window width
 int win_h; //window height
-
-PImage cog;
+ 
+PImage openbciLogoCog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
+public Gif checkingImpedanceStatusGif;
 
 PImage logo_black;
 PImage logo_blue;
 PImage logo_white;
 PImage consoleImgBlue;
 PImage consoleImgWhite;
+PImage screenshotImgWhite;
+PImage checkMark_20x20;
 
 PFont f1;
 PFont f2;
@@ -217,6 +215,9 @@ static PFont p4; //medium/small Open Sans
 PFont p13;
 static PFont p5; //small Open Sans
 PFont p6; //small Open Sans
+PFont p_8;
+PFont p_6;
+PFont p_5;
 
 boolean setupComplete = false;
 
@@ -262,16 +263,7 @@ final color SIGNAL_CHECK_YELLOW_LOWALPHA = color(221, 178, 13, 150);
 final color SIGNAL_CHECK_RED = BOLD_RED;
 final color SIGNAL_CHECK_RED_LOWALPHA = color(224, 56, 45, 150);
 
-
-final int COLOR_SCHEME_DEFAULT = 1;
-final int COLOR_SCHEME_ALTERNATIVE_A = 2;
-// int COLOR_SCHEME_ALTERNATIVE_B = 3;
-int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
-
-WidgetManager wm;
-boolean wmVisible = true;
-CColor cp5_colors;
-
+//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
 //Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
 final color[] channelColors = {
     color(129, 129, 129),
@@ -283,6 +275,15 @@ final color[] channelColors = {
     BOLD_RED,
     color(162, 82, 49)
 };
+
+final int COLOR_SCHEME_DEFAULT = 1;
+final int COLOR_SCHEME_ALTERNATIVE_A = 2;
+// int COLOR_SCHEME_ALTERNATIVE_B = 3;
+int colorScheme = COLOR_SCHEME_DEFAULT;
+
+WidgetManager wm;
+boolean wmVisible = true;
+CColor cp5_colors;
 
 //Global variable for general navigation bar height
 final int navHeight = 22;
@@ -302,11 +303,14 @@ SessionSettings settings;
 GuiSettings guiSettings;
 DataProcessing dataProcessing;
 FilterSettings filterSettings;
+NetworkingUI networkUI;
+FilterUIPopup filterUI;
+DeveloperCommandPopup developerCommandPopup;
 
 final int navBarHeight = 32;
 TopNav topNav;
 
-ddf.minim.analysis.FFT[] fftBuff = new ddf.minim.analysis.FFT[nchan];    //from the minim library
+ddf.minim.analysis.FFT[] fftBuff = new ddf.minim.analysis.FFT[globalChannelCount];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
 StringBuilder globalScreenResolution;
@@ -374,8 +378,11 @@ void setup() {
     p13 = createFont("fonts/OpenSans-Regular.ttf", 13);
     p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
     p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
+    p_8 = createFont("fonts/OpenSans-Regular.ttf", 8);
+    p_6 = createFont("fonts/OpenSans-Regular.ttf", 6);
+    p_5 = createFont("fonts/OpenSans-Regular.ttf", 5);
 
-    cog = loadImage("obci-logo-blu-cog.png");
+    openbciLogoCog = loadImage("obci-logo-blu-cog.png");
 
     // check if the current directory is writable
     File dummy = new File(sketchPath());
@@ -421,6 +428,7 @@ void setup() {
         checkIsMacFullDetail();
     }
     println("JVM Version: " + System.getProperty("java.version"));
+    println("GUI Version: OpenBCI GUI - " + localGUIVersionDisplayString);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/");
     
@@ -454,8 +462,7 @@ void delayedSetup() {
     buttonHelpText = new ButtonHelpText();
     textfieldUpdateHelper = new TextFieldUpdateHelper();
 
-    //setup topNav
-    topNav = new TopNav();
+    
     
     //Print BrainFlow version
     StringBuilder brainflowVersion = new StringBuilder("BrainFlow Version: ");
@@ -472,10 +479,14 @@ void delayedSetup() {
     logo_white = loadImage("obci-logo-wht.png");
     consoleImgBlue = loadImage("console-45x45-dots_blue.png");
     consoleImgWhite = loadImage("console-45x45-dots_white.png");
+    screenshotImgWhite = loadImage("camera-50x50-white.png");
+    checkMark_20x20 = loadImage("Checkmark_20x20.png");
     loadingGIF = new Gif(this, "ajax_loader_gray_512.gif");
     loadingGIF.loop();
     loadingGIF_blue = new Gif(this, "obci_cog_anim-normalblue.gif");
     loadingGIF_blue.loop();
+    checkingImpedanceStatusGif = new Gif(ourApplet, "Rolling-1s-200px.gif");
+    checkingImpedanceStatusGif.loop();
 
     prepareExitHandler();
 
@@ -485,6 +496,9 @@ void delayedSetup() {
     asyncLoadAudioFiles();
 
     synchronized(this) {
+        //setup topNav
+        topNav = new TopNav();
+        
         // Instantiate ControlPanel in the synchronized block.
         // It's important to avoid instantiating a ControlP5 during a draw() call
         // Otherwise we get a crash on launch 10% of the time
@@ -523,7 +537,7 @@ synchronized void draw() {
             reinitRequested = false;
         }
         if (systemMode == SYSTEMMODE_POSTINIT) {
-            w_networking.compareAndSetNetworkingFrameLocks();
+            dataProcessing.networkingDataAccumulator.compareAndSetNetworkingFrameLocks();
         }
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
         if (settings.introAnimationInit == 0) {
@@ -548,6 +562,35 @@ private void prepareExitHandler () {
     ));
 }
 
+
+@Override
+public void exit() {
+    //Only show the confirm exit popup if a session has been started
+    if (systemMode == SYSTEMMODE_POSTINIT) {
+
+        if (guiSettings.getShowConfirmExitAppPopup() && !confirmCloseAppPopupIsVisible) {
+            PopupMessageConfirmCloseApp confirmCloseApp = new PopupMessageConfirmCloseApp();
+        } else {
+            println("OpenBCI_GUI: exit() called");
+            super.exit();
+        }
+
+        if (!allowGuiToClose) {
+            println("OpenBCI_GUI: exit() called, but GUI is not allowed to close.");
+            return;
+        }
+    }
+
+    println("OpenBCI_GUI: exit() called");
+    super.exit();
+}
+
+public void confirmExit() {
+    allowGuiToClose = true;
+    exit();
+}
+
+
 //Init system based on default settings. Called from the "START SESSION" button in the GUI's ControlPanel.
 void initSystem() {
     println("");
@@ -570,25 +613,15 @@ void initSystem() {
     //prepare the source of the input data
     switch (eegDataSource) {
         case DATASOURCE_CYTON:
-            if (selectedProtocol == BoardProtocol.SERIAL) {
-                if(nchan == 16) {
-                    currentBoard = new BoardCytonSerialDaisy(openBCI_portName);
-                }
-                else {
-                    currentBoard = new BoardCytonSerial(openBCI_portName);
-                }
+            if(globalChannelCount == 16) {
+                currentBoard = new BoardCytonSerialDaisy(cytonDonglePortName);
             }
-            else if (selectedProtocol == BoardProtocol.WIFI) {
-                if(nchan == 16) {
-                    currentBoard = new BoardCytonWifiDaisy(wifi_ipAddress, selectedSamplingRate);
-                }
-                else {
-                    currentBoard = new BoardCytonWifi(wifi_ipAddress, selectedSamplingRate);
-                }
+            else {
+                currentBoard = new BoardCytonSerial(cytonDonglePortName);
             }
             break;
         case DATASOURCE_SYNTHETIC:
-            currentBoard = new BoardBrainFlowSynthetic(nchan);
+            currentBoard = new BoardBrainFlowSynthetic(globalChannelCount);
             println("OpenBCI_GUI: Init session using Synthetic data source");
             break;
         case DATASOURCE_PLAYBACKFILE:
@@ -614,9 +647,7 @@ void initSystem() {
                 guiSettings.setShowGanglionUpgradePopup(false);
             }
 
-            if (selectedProtocol == BoardProtocol.WIFI) {
-                currentBoard = new BoardGanglionWifi(wifi_ipAddress, selectedSamplingRate);
-            } else if (selectedProtocol == BoardProtocol.BLED112) {
+            if (selectedProtocol == BoardProtocol.BLED112) {
                 String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
                 String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
                 String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
@@ -632,10 +663,11 @@ void initSystem() {
         case DATASOURCE_STREAMING:
             currentBoard = new BoardBrainFlowStreaming(
                     controlPanel.streamingBoardBox.getBoard().getBoardId(), 
-                    controlPanel.streamingBoardBox.getIP(),
+                    getIpAddrFromStr(controlPanel.streamingBoardBox.getIP()),
                     controlPanel.streamingBoardBox.getPort()
                     );
             println("OpenBCI_GUI: Init session using Streaming data source");
+            break;
         default:
             break;
     }
@@ -683,60 +715,95 @@ void initSystem() {
         }
     }
 
-    updateToNChan(currentBoard.getNumEXGChannels());
-
-    dataLogger.initialize();
-
-    verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
-    initCoreDataObjects();
-
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
-    verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
-    initFFTObjectsAndBuffer();
-
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
-    verbosePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
-
-    controlPanel.close();
-    topNav.controlPanelCollapser.setOff();
-
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
-
     if (abandonInit) {
         haltSystem();
         outputError("Failed to initialize board. Please check that the board is on and has power. See Console Log for more details.");
         controlPanel.open();
         return;
-    } else {
-        //initilize the secondary topnav and all applicable widgets
-        topNav.initSecondaryNav();
-        wm = new WidgetManager(this);
-        nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-        systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
     }
 
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-
-     //don't save default session settings StreamingBoard
-    if (eegDataSource != DATASOURCE_STREAMING) {
-        //Init software settings: create default settings file that is datasource unique
-        settings.init();
-        settings.initCheckPointFive();
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
+    verbosePrint("OpenBCI_GUI: initSystem: Initializing data logger and setting number of channels");
+    if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
+        dataLogger.initialize();
+        updateGlobalChannelCount(currentBoard.getNumEXGChannels());
     }
+
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
+    verbosePrint("OpenBCI_GUI: initSystem: Initializing core data and FFT objects");
+    initCoreDataObjects();
+    initFFTObjectsAndBuffer();
+
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
+    verbosePrint("OpenBCI_GUI: initSystem: Initializing TopNav, GUI settings, and Filter settings");
+    systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
+    topNav.initSecondaryNav();
     
-    //Make sure topNav buttons draw in the correct spot
-    topNav.screenHasBeenResized(width, height);
-
     //Instantiate Global Filter Settings Class
     filterSettings = new FilterSettings(((DataSource)currentBoard));
 
+    //Make sure topNav buttons draw in the correct spot
+    topNav.screenHasBeenResized(width, height);
+
+    //Close control panel
+    controlPanel.close();
+    topNav.controlPanelCollapser.setOff();
+
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
+    wm = new WidgetManager(this);
+    
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + millis());
+
+    //don't save default session settings for StreamingBoard
+    if (eegDataSource != DATASOURCE_STREAMING) {
+        //Init software settings: create default settings file that is datasource unique
+        settings.init();
+        verbosePrint("OpenBCI_GUI: initSystem: Session settings initialized");
+    }
+
+    if (guiSettings.getAutoLoadSessionSettings()) {
+        settings.autoLoadSessionSettings();
+        verbosePrint("OpenBCI_GUI: initSystem: User default session settings automatically loaded");
+    }
+
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 6 -- " + millis());
+    verbosePrint("OpenBCI_GUI: initSystem: Starting data stream and network if applicable");
+    if (guiSettings.getAutoStartDataStream()) {
+        topNav.dataStreamTogglePressed();
+        output("OpenBCI_GUI: initSystem: Data Stream Started Automatically");
+    }
+
+    if (guiSettings.getAutoStartNetworkStream()) {
+        NetworkingSettings nwSettings = dataProcessing.networkingSettings;
+        nwSettings.initializeStreams();
+        nwSettings.startNetwork();           
+        output("OpenBCI_GUI: initSystem: Network Stream Started Automatically");
+    }
 
     midInit = false;
 } //end initSystem
 
 public int getCurrentBoardBufferSize() {
     return dataBuff_len_sec * currentBoard.getSampleRate();
+}
+
+public int getDownsamplingFactor() {
+    switch(currentBoard.getSampleRate()) {
+        case 200:
+            return DownsamplingRateEnum.NONE.value;
+        case 250:
+            return DownsamplingRateEnum.TWO.value;
+        case 500:
+            return DownsamplingRateEnum.FOUR.value;
+        case 1000:
+            return DownsamplingRateEnum.EIGHT.value;
+        default:
+            return DownsamplingRateEnum.NONE.value;
+    }
+}
+
+public int getDownsampledBufferSize() {
+    return getCurrentBoardBufferSize() / getDownsamplingFactor();
 }
 
 /**
@@ -762,21 +829,22 @@ int getNfftSafe() {
 
 void initCoreDataObjects() {
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * currentBoard.getSampleRate()/ 1000.f));
-    dataProcessingRawBuffer = new float[nchan][getCurrentBoardBufferSize()];
-    dataProcessingFilteredBuffer = new float[nchan][getCurrentBoardBufferSize()];
+    dataProcessingRawBuffer = new float[globalChannelCount][getCurrentBoardBufferSize()];
+    dataProcessingFilteredBuffer = new float[globalChannelCount][getCurrentBoardBufferSize()];
+    downsampledFilteredBuffer = new CircularFIFODataBuffer(globalChannelCount, getDownsampledBufferSize());
 
-    data_elec_imp_ohm = new float[nchan];
-    is_railed = new DataStatus[nchan];
-    for (int i=0; i<nchan; i++) {
+    data_elec_imp_ohm = new float[globalChannelCount];
+    is_railed = new DataStatus[globalChannelCount];
+    for (int i=0; i<globalChannelCount; i++) {
         is_railed[i] = new DataStatus();
     }
 
-    dataProcessing = new DataProcessing(nchan, currentBoard.getSampleRate());
+    dataProcessing = new DataProcessing(currentBoard.getSampleRate());
 }
 
 void initFFTObjectsAndBuffer() {
     //initialize the FFT objects
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
+    for (int Ichan=0; Ichan < globalChannelCount; Ichan++) {
         // verbosePrint("Init FFT Buff – " + Ichan);
         fftBuff[Ichan] = new ddf.minim.analysis.FFT(getNfftSafe(), currentBoard.getSampleRate());
     }  //make the FFT objects
@@ -786,7 +854,7 @@ void initFFTObjectsAndBuffer() {
     try {
         initializeFFTObjects(fftBuff, dataProcessingRawBuffer, getNfftSafe(), currentBoard.getSampleRate());
     } catch (ArrayIndexOutOfBoundsException e) {
-        //e.printStackTrace();
+        e.printStackTrace();
         outputError("Playback file load error. Try using a more recent recording.");
         return;
     }
@@ -800,7 +868,9 @@ void startRunning() {
         output("Data stream started.");
         // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
         // close hardware settings if user starts streaming
-        w_timeSeries.closeADSSettings();
+        if (w_timeSeries.getAdsSettingsVisible()) {
+            w_timeSeries.closeADSSettings();
+        }
         try {
             streamTimeElapsed.reset();
             streamTimeElapsed.start();
@@ -835,51 +905,57 @@ void stopRunning() {
 
 //halt the data collection
 void haltSystem() {
-    if (!systemHasHalted) { //prevents system from halting more than once
-        println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
-        
-        //Reset the text for the Start Session buttonscreen. Skip when reiniting board while already in playback mode session.
-        if (!reinitRequested) {
-            controlPanel.initBox.setInitSessionButtonText("START SESSION");
-        }
-
-        if (w_networking != null && w_networking.getNetworkActive()) {
-            w_networking.stopNetwork();
-            println("openBCI_GUI: haltSystem: Network streams stopped");
-        }
-
-        if (w_focus != null) {
-            w_focus.endSession();
-        }
-        
-        stopRunning();  //stop data transfer
-
-        topNav.resetStartStopButton();
-        topNav.destroySmoothingButton(); //Destroy this button if exists and make null, will be re-init if needed next time session starts
-
-        //reset connect loadStrings
-        openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
-        ganglion_portName = "";
-        wifi_portName = "";
-
-        controlPanel.resetListItems();
-
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
-        }
-        systemMode = SYSTEMMODE_PREINIT;
-
-        recentPlaybackFilesHaveUpdated = false;
-
-        dataLogger.uninitialize();
-
-        currentBoard.uninitialize();
-        currentBoard = new BoardNull(); // back to null
-
-        sessionTimeElapsed.stop();
-
-        systemHasHalted = true;
+    if (systemHasHalted) { //prevents system from halting more than once
+        return;
     }
+
+    println("OpenBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
+    
+    //Reset the text for the Start Session buttonscreen. Skip when reiniting board while already in playback mode session.
+    if (!reinitRequested) {
+        controlPanel.initBox.setInitSessionButtonText("START SESSION");
+    }
+
+    if (dataProcessing != null) {
+        if (dataProcessing.networkingSettings != null) {
+            if (dataProcessing.networkingSettings.getNetworkingIsStreaming()) {
+                dataProcessing.networkingSettings.stopNetwork();
+                println("OpenBCI_GUI: haltSystem: Network streams stopped");
+            }
+        }
+    }
+
+    if (w_focus != null) {
+        w_focus.endSession();
+    }
+
+    stopRunning();
+
+    topNav.resetStartStopButton();
+    topNav.destroySmoothingButton(); //Destroy this button if exists and make null, will be re-init if needed next time session starts
+
+    //reset connect loadStrings
+    cytonDonglePortName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
+    ganglion_portName = "";
+
+    controlPanel.resetListItems();
+
+    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+        controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
+    }
+    systemMode = SYSTEMMODE_PREINIT;
+
+    recentPlaybackFilesHaveUpdated = false;
+
+    dataLogger.uninitialize();
+
+    currentBoard.uninitialize();
+    currentBoard = new BoardNull();
+    println("OpenBCI_GUI: haltSystem: Board has been uninitialized and set to BoardNull.");
+
+    sessionTimeElapsed.stop();
+
+    systemHasHalted = true;
 } //end of halt system
 
 void systemUpdate() { // for updating data values and variables
@@ -966,7 +1042,7 @@ void systemDraw() { //for drawing to the screen
     }
 
     //Display GUI version and FPS in the title bar of the app
-    surface.setTitle("OpenBCI GUI " + localGUIVersionString + " - " + localGUIVersionDate + " - " + int(frameRate) + " fps");
+    surface.setTitle("OpenBCI GUI - " + localGUIVersionDisplayString + " - " + int(frameRate) + " fps");
 }
 
 void requestReinit() {
@@ -991,11 +1067,11 @@ void systemInitSession() {
 }
 
 //Global function to update the number of channels
-void updateToNChan(int _nchan) {
-    nchan = _nchan;
-    settings.slnchan = _nchan; //used in SoftwareSettings.pde only
-    fftBuff = new ddf.minim.analysis.FFT[nchan];  //reinitialize the FFT buffer
-    println("OpenBCI_GUI: Channel count set to " + str(nchan));
+void updateGlobalChannelCount(int _channelCount) {
+    globalChannelCount = _channelCount;
+    settings.sessionSettingsChannelCount = _channelCount; //used in SoftwareSettings.pde only
+    fftBuff = new ddf.minim.analysis.FFT[globalChannelCount];  //reinitialize the FFT buffer
+    println("OpenBCI_GUI: Channel count set to " + str(globalChannelCount));
 }
 
 void introAnimation() {
@@ -1010,14 +1086,13 @@ void introAnimation() {
         verbosePrint(String.valueOf(transparency));
         tint(255, transparency);
         //draw OpenBCI Logo Front & Center
-        image(cog, width/2, height/2, width/6, width/6);
+        image(openbciLogoCog, width/2, height/2, width/6, width/6);
         textFont(p3, 16);
         textLeading(24);
         fill(31, 69, 110, transparency);
         textAlign(CENTER, CENTER);
-        String displayVersion = "OpenBCI GUI " + localGUIVersionString;
+        String displayVersion = "OpenBCI GUI " + localGUIVersionDisplayString;
         text(displayVersion, width/2, height/2 + width/9);
-        text(localGUIVersionDate, width/2, height/2 + ((width/8) * 1.125));
     }
 
     //Exit intro animation when the duration has expired AND the Control Panel is ready

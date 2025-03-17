@@ -75,13 +75,6 @@ class SessionSettings {
     int hpPolaritySave;
     int hpContoursSave;
     int hpSmoothingSave;
-    //default data types for streams 1-4 in Networking widget
-    int nwDataType1;
-    int nwDataType2;
-    int nwDataType3;
-    int nwDataType4;
-    String nwSerialPort;
-    int nwProtocolSave;
     //Used to check if a playback file has data
     int minNumRowsPlaybackFile = int(currentBoard.getSampleRate());
     //Spectrogram Widget settings
@@ -110,14 +103,6 @@ class SessionSettings {
         "SynthSixteenDefaultSettings.json"
         };
 
-    //Used to print the status of each channel in the console when loading settings
-    String[] channelsActiveArray = {"Active", "Not Active"};
-    String[] gainSettingsArray = { "x1", "x2", "x4", "x6", "x8", "x12", "x24"};
-    String[] inputTypeArray = { "Normal", "Shorted", "BIAS_MEAS", "MVDD", "Temp.", "Test", "BIAS_DRP", "BIAS_DRN"};
-    String[] biasIncludeArray = {"Don't Include", "Include"};
-    String[] srb2SettingArray = {"Off", "On"};
-    String[] srb1SettingArray = {"Off", "On"};
-
     //Used to set text in dropdown menus when loading FFT settings
     String[] fftMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"};
     String[] fftVertScaleArray = {"10 uV", "50 uV", "100 uV", "1000 uV"};
@@ -126,7 +111,7 @@ class SessionSettings {
     String[] fftFilterArray = {"Filtered", "Unfilt."};
 
     //Used to set text in dropdown menus when loading Accelerometer settings
-    String[] accVertScaleArray = {"Auto","1 g", "2 g", "4 g"};
+    String[] accVertScaleArray = {"Auto","1 g", "2 g"};
     String[] accHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
     //Used to set text in dropdown menus when loading Analog Read settings
@@ -167,6 +152,9 @@ class SessionSettings {
     //Band Power widget settings
     //smoothing and filter dropdowns are linked to FFT, so no need to save again
     List<Integer> loadBPActiveChans = new ArrayList<Integer>();
+    int loadBPAutoClean;
+    int loadBPAutoCleanThreshold;
+    int loadBPAutoCleanTimer;
 
     //Spectrogram widget settings
     List<Integer> loadSpectActiveChanTop = new ArrayList<Integer>();
@@ -176,18 +164,7 @@ class SessionSettings {
     int spectLogLinLoad;
 
     //Networking Settings save/load variables
-    int nwProtocolLoad;
-    //OSC load variables
-    String nwOscIp1Load;  String nwOscIp2Load;  String nwOscIp3Load;  String nwOscIp4Load;
-    String nwOscPort1Load;  String nwOscPort2Load;  String nwOscPort3Load;  String nwOscPort4Load;
-    //UDP load variables
-    String nwUdpIp1Load;  String nwUdpIp2Load;  String nwUdpIp3Load;
-    String nwUdpPort1Load;  String nwUdpPort2Load;  String nwUdpPort3Load;
-    //LSL load variables
-    String nwLSLName1Load;  String nwLSLName2Load;  String nwLSLName3Load;
-    String nwLSLType1Load;  String nwLSLType2Load;  String nwLSLType3Load;
-    //Serial load variables
-    int nwSerialBaudRateLoad;
+    JSONObject loadNetworkingSettings;
 
     //EMG Widget
     List<Integer> loadEmgActiveChannels = new ArrayList<Integer>();
@@ -219,8 +196,8 @@ class SessionSettings {
     private final String kJSONKeyEmgJoystick = "emgJoystick";
     private final String kJSONKeyMarker = "marker";
 
-    //used only in this class to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
-    int slnchan;
+    //used only in this class to count the number of channels being used while saving/loading, this gets updated in updateGlobalChannelCount whenever the number of channels being used changes
+    int sessionSettingsChannelCount;
     int numChanloaded;
     boolean chanNumError = false;
     int numLoadedWidgets;
@@ -296,7 +273,7 @@ class SessionSettings {
     //  - Called during system initialization in OpenBCI_GUI.pde  //
     ////////////////////////////////////////////////////////////////
     void init() {
-        String defaultSettingsFileToSave = getPath("Default", eegDataSource, nchan);
+        String defaultSettingsFileToSave = getPath("Default", eegDataSource, globalChannelCount);
         int defaultNumChanLoaded = 0;
         int defaultLoadedDataSource = 0;
         String defaultSettingsVersion = "";
@@ -322,21 +299,22 @@ class SessionSettings {
 
         //Save the number of channels being used and eegDataSource in the first object
         JSONObject saveNumChannelsData = new JSONObject();
-        saveNumChannelsData.setInt("Channels", slnchan);
+        saveNumChannelsData.setInt("Channels", sessionSettingsChannelCount);
         saveNumChannelsData.setInt("Data Source", eegDataSource);
-        //println("Settings: NumChan: " + slnchan);
+        //println("Settings: NumChan: " + sessionSettingsChannelCount);
         saveSettingsJSONData.setJSONObject(kJSONKeyDataInfo, saveNumChannelsData);
 
         //Make a new JSON Object for Time Series Settings
         JSONObject saveTSSettings = new JSONObject();
         saveTSSettings.setInt("Time Series Vert Scale", w_timeSeries.getTSVertScale().getIndex());
         saveTSSettings.setInt("Time Series Horiz Scale", w_timeSeries.getTSHorizScale().getIndex());
+        saveTSSettings.setInt("Time Series Label Mode", w_timeSeries.getTSLabelMode().getIndex());
         //Save data from the Active channel checkBoxes
         JSONArray saveActiveChanTS = new JSONArray();
-        int numActiveTSChan = w_timeSeries.tsChanSelect.activeChan.size();
+        int numActiveTSChan = w_timeSeries.tsChanSelect.getActiveChannels().size();
         for (int i = 0; i < numActiveTSChan; i++) {
-            int activeChan = w_timeSeries.tsChanSelect.activeChan.get(i);
-            saveActiveChanTS.setInt(i, activeChan);
+            int activeChannel = w_timeSeries.tsChanSelect.getActiveChannels().get(i);
+            saveActiveChanTS.setInt(i, activeChannel);
         }
         saveTSSettings.setJSONArray("activeChannels", saveActiveChanTS);
         saveSettingsJSONData.setJSONObject(kJSONKeyTimeSeries, saveTSSettings);
@@ -373,92 +351,69 @@ class SessionSettings {
         if (isFFTFiltered == false)  fftFilterSave = 1;
         saveFFTSettings.setInt("FFT_Filter",  fftFilterSave);
         //Set the FFT JSON Object
-        saveSettingsJSONData.setJSONObject(kJSONKeyFFT, saveFFTSettings); //next object will be set to slnchan+3, etc.
+        saveSettingsJSONData.setJSONObject(kJSONKeyFFT, saveFFTSettings); //next object will be set to sessionSettingsChannelCount+3, etc.
 
         ///////////////////////////////////////////////Setup new JSON object to save Accelerometer settings
-        JSONObject saveAccSettings = new JSONObject();
-        saveAccSettings.setInt("Accelerometer Vert Scale", accVertScaleSave);
-        saveAccSettings.setInt("Accelerometer Horiz Scale", accHorizScaleSave);
-        saveSettingsJSONData.setJSONObject(kJSONKeyAccel, saveAccSettings);
+        if (w_accelerometer != null) {
+            JSONObject saveAccSettings = new JSONObject();
+            saveAccSettings.setInt("Accelerometer Vert Scale", accVertScaleSave);
+            saveAccSettings.setInt("Accelerometer Horiz Scale", accHorizScaleSave);
+            saveSettingsJSONData.setJSONObject(kJSONKeyAccel, saveAccSettings);
+        }
 
-        ///////////////////////////////////////////////Setup new JSON object to save Networking settings
-        JSONObject saveNetworkingSettings = new JSONObject();
-        //Save Protocol
-        saveNetworkingSettings.setInt("Protocol", nwProtocolSave);//***Save User networking protocol mode
-        switch(nwProtocolSave) {
-            case 3:
-                for (int i = 1; i <= 4; i++) {
-                    saveNetworkingSettings.setInt("OSC_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.dataTypeNames.get(i-1)));
-                    saveNetworkingSettings.setString("OSC_ip"+i, (String) w_networking.getCP5Map().get("OSC_ip"+i));
-                    saveNetworkingSettings.setString("OSC_port"+i, (String) w_networking.getCP5Map().get("OSC_port"+i));
-                }
-                break;
-            case 2:
-                for (int i = 1; i <= 3; i++) {
-                    saveNetworkingSettings.setInt("UDP_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.dataTypeNames.get(i-1)));
-                    saveNetworkingSettings.setString("UDP_ip"+i, (String) w_networking.getCP5Map().get("UDP_ip"+i));
-                    saveNetworkingSettings.setString("UDP_port"+i, (String) w_networking.getCP5Map().get("UDP_port"+i));
-                }
-                break;
-            case 1:
-                for (int i = 1; i <= 3; i++) {
-                    saveNetworkingSettings.setInt("LSL_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.dataTypeNames.get(i-1)));
-                    saveNetworkingSettings.setString("LSL_name"+i, (String) w_networking.getCP5Map().get("LSL_name"+i));
-                    saveNetworkingSettings.setString("LSL_type"+i, (String) w_networking.getCP5Map().get("LSL_type"+i));
-                }
-                break;
-            case 0:
-                saveNetworkingSettings.setInt("Serial_DataType1", (Integer) w_networking.getCP5Map().get("dataType1"));
-                saveNetworkingSettings.setInt("Serial_baudrate", (Integer) w_networking.getCP5Map().get("baud_rate"));
-                saveNetworkingSettings.setString("Serial_portName", (String) w_networking.getCP5Map().get("port_name"));
-                break;
-        }//end of networking proctocol switch
-        //Set Networking Settings JSON Object
+        ///////////////////////////////////////////////Save Networking settings
+        String nwSettingsValues = dataProcessing.networkingSettings.getJson();
+        JSONObject saveNetworkingSettings = parseJSONObject(nwSettingsValues);
         saveSettingsJSONData.setJSONObject(kJSONKeyNetworking, saveNetworkingSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Headplot settings
-        JSONObject saveHeadplotSettings = new JSONObject();
+        if (w_headPlot != null) {
+            JSONObject saveHeadplotSettings = new JSONObject();
 
-        //Save Headplot Intesity
-        saveHeadplotSettings.setInt("HP_intensity", hpIntensitySave);
-        //Save Headplot Polarity
-        saveHeadplotSettings.setInt("HP_polarity", hpPolaritySave);
-        //Save Headplot contours
-        saveHeadplotSettings.setInt("HP_contours", hpContoursSave);
-        //Save Headplot Smoothing Setting
-        saveHeadplotSettings.setInt("HP_smoothing", hpSmoothingSave);
-        //Set the Headplot JSON Object
-        saveSettingsJSONData.setJSONObject(kJSONKeyHeadplot, saveHeadplotSettings);
+            //Save Headplot Intesity
+            saveHeadplotSettings.setInt("HP_intensity", hpIntensitySave);
+            //Save Headplot Polarity
+            saveHeadplotSettings.setInt("HP_polarity", hpPolaritySave);
+            //Save Headplot contours
+            saveHeadplotSettings.setInt("HP_contours", hpContoursSave);
+            //Save Headplot Smoothing Setting
+            saveHeadplotSettings.setInt("HP_smoothing", hpSmoothingSave);
+            //Set the Headplot JSON Object
+            saveSettingsJSONData.setJSONObject(kJSONKeyHeadplot, saveHeadplotSettings);
+        }
 
         ///////////////////////////////////////////////Setup new JSON object to save Band Power settings
         JSONObject saveBPSettings = new JSONObject();
 
         //Save data from the Active channel checkBoxes
         JSONArray saveActiveChanBP = new JSONArray();
-        int numActiveBPChan = w_bandPower.bpChanSelect.activeChan.size();
+        int numActiveBPChan = w_bandPower.bpChanSelect.getActiveChannels().size();
         for (int i = 0; i < numActiveBPChan; i++) {
-            int activeChan = w_bandPower.bpChanSelect.activeChan.get(i);
-            saveActiveChanBP.setInt(i, activeChan);
+            int activeChannel = w_bandPower.bpChanSelect.getActiveChannels().get(i);
+            saveActiveChanBP.setInt(i, activeChannel);
         }
         saveBPSettings.setJSONArray("activeChannels", saveActiveChanBP);
+        saveBPSettings.setInt("bpAutoClean", w_bandPower.getAutoClean().getIndex());
+        saveBPSettings.setInt("bpAutoCleanThreshold", w_bandPower.getAutoCleanThreshold().getIndex());
+        saveBPSettings.setInt("bpAutoCleanTimer", w_bandPower.getAutoCleanTimer().getIndex());
         saveSettingsJSONData.setJSONObject(kJSONKeyBandPower, saveBPSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Spectrogram settings
         JSONObject saveSpectrogramSettings = new JSONObject();
         //Save data from the Active channel checkBoxes - Top
         JSONArray saveActiveChanSpectTop = new JSONArray();
-        int numActiveSpectChanTop = w_spectrogram.spectChanSelectTop.activeChan.size();
+        int numActiveSpectChanTop = w_spectrogram.spectChanSelectTop.getActiveChannels().size();
         for (int i = 0; i < numActiveSpectChanTop; i++) {
-            int activeChan = w_spectrogram.spectChanSelectTop.activeChan.get(i);
-            saveActiveChanSpectTop.setInt(i, activeChan);
+            int activeChannel = w_spectrogram.spectChanSelectTop.getActiveChannels().get(i);
+            saveActiveChanSpectTop.setInt(i, activeChannel);
         }
         saveSpectrogramSettings.setJSONArray("activeChannelsTop", saveActiveChanSpectTop);
         //Save data from the Active channel checkBoxes - Bottom
         JSONArray saveActiveChanSpectBot = new JSONArray();
-        int numActiveSpectChanBot = w_spectrogram.spectChanSelectBot.activeChan.size();
+        int numActiveSpectChanBot = w_spectrogram.spectChanSelectBot.getActiveChannels().size();
         for (int i = 0; i < numActiveSpectChanBot; i++) {
-            int activeChan = w_spectrogram.spectChanSelectBot.activeChan.get(i);
-            saveActiveChanSpectBot.setInt(i, activeChan);
+            int activeChannel = w_spectrogram.spectChanSelectBot.getActiveChannels().get(i);
+            saveActiveChanSpectBot.setInt(i, activeChannel);
         }
         saveSpectrogramSettings.setJSONArray("activeChannelsBot", saveActiveChanSpectBot);
         //Save Spectrogram_Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the spectrogram widget
@@ -472,10 +427,10 @@ class SessionSettings {
 
         //Save data from the Active channel checkBoxes
         JSONArray saveActiveChanEMG = new JSONArray();
-        int numActiveEMGChan = w_emg.emgChannelSelect.activeChan.size();
+        int numActiveEMGChan = w_emg.emgChannelSelect.getActiveChannels().size();
         for (int i = 0; i < numActiveEMGChan; i++) {
-            int activeChan = w_emg.emgChannelSelect.activeChan.get(i);
-            saveActiveChanEMG.setInt(i, activeChan);
+            int activeChannel = w_emg.emgChannelSelect.getActiveChannels().get(i);
+            saveActiveChanEMG.setInt(i, activeChannel);
         }
         saveEMGSettings.setJSONArray("activeChannels", saveActiveChanEMG);
         saveSettingsJSONData.setJSONObject(kJSONKeyEmg, saveEMGSettings);
@@ -484,9 +439,8 @@ class SessionSettings {
         JSONObject saveEmgJoystickSettings = new JSONObject();
         saveEmgJoystickSettings.setInt("smoothing", w_emgJoystick.joystickSmoothing.getIndex());
         JSONArray saveEmgJoystickInputs = new JSONArray();
-        int numEmgJoystickInputs = w_emgJoystick.emgJoystickInputs.length;
-        for (int i = 0; i < numEmgJoystickInputs; i++) {
-            saveEmgJoystickInputs.setInt(i, w_emgJoystick.emgJoystickInputs[i].getIndex());
+        for (int i = 0; i < w_emgJoystick.getNumEMGInputs(); i++) {
+            saveEmgJoystickInputs.setInt(i, w_emgJoystick.emgJoystickInputs.getInput(i).getIndex());
         }
         saveEmgJoystickSettings.setJSONArray("joystickInputs", saveEmgJoystickInputs);
         saveSettingsJSONData.setJSONObject(kJSONKeyEmgJoystick, saveEmgJoystickSettings);
@@ -544,7 +498,7 @@ class SessionSettings {
         JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject(kJSONKeyDataInfo);
         numChanloaded = loadDataSettings.getInt("Channels");
         //Print error if trying to load a different number of channels
-        if (numChanloaded != slnchan) {
+        if (numChanloaded != sessionSettingsChannelCount) {
             println("Channels being loaded from " + loadGUISettingsFileLocation + " don't match channels being used!");
             chanNumError = true;
             throw new Exception();
@@ -581,63 +535,23 @@ class SessionSettings {
         fftFilterLoad = loadFFTSettings.getInt("FFT_Filter");
 
         //get the Accelerometer settings
-        JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject(kJSONKeyAccel);
-        loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
-        loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
+        if (w_accelerometer != null) {
+            JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject(kJSONKeyAccel);
+            loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
+            loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
+        }
 
         //get the Networking Settings
-        JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
-        nwProtocolLoad = loadNetworkingSettings.getInt("Protocol");
-        switch (nwProtocolLoad)  {
-            case 3:
-                nwDataType1 = loadNetworkingSettings.getInt("OSC_DataType1");
-                nwDataType2 = loadNetworkingSettings.getInt("OSC_DataType2");
-                nwDataType3 = loadNetworkingSettings.getInt("OSC_DataType3");
-                nwDataType4 = loadNetworkingSettings.getInt("OSC_DataType4");
-                nwOscIp1Load = loadNetworkingSettings.getString("OSC_ip1");
-                nwOscIp2Load = loadNetworkingSettings.getString("OSC_ip2");
-                nwOscIp3Load = loadNetworkingSettings.getString("OSC_ip3");
-                nwOscIp4Load = loadNetworkingSettings.getString("OSC_ip4");
-                nwOscPort1Load = loadNetworkingSettings.getString("OSC_port1");
-                nwOscPort2Load = loadNetworkingSettings.getString("OSC_port2");
-                nwOscPort3Load = loadNetworkingSettings.getString("OSC_port3");
-                nwOscPort4Load = loadNetworkingSettings.getString("OSC_port4");
-                break;
-            case 2:
-                nwDataType1 = loadNetworkingSettings.getInt("UDP_DataType1");
-                nwDataType2 = loadNetworkingSettings.getInt("UDP_DataType2");
-                nwDataType3 = loadNetworkingSettings.getInt("UDP_DataType3");
-                nwUdpIp1Load = loadNetworkingSettings.getString("UDP_ip1");
-                nwUdpIp2Load = loadNetworkingSettings.getString("UDP_ip2");
-                nwUdpIp3Load = loadNetworkingSettings.getString("UDP_ip3");
-                nwUdpPort1Load = loadNetworkingSettings.getString("UDP_port1");
-                nwUdpPort2Load = loadNetworkingSettings.getString("UDP_port2");
-                nwUdpPort3Load = loadNetworkingSettings.getString("UDP_port3");
-                break;
-            case 1:
-                nwDataType1 = loadNetworkingSettings.getInt("LSL_DataType1");
-                nwDataType2 = loadNetworkingSettings.getInt("LSL_DataType2");
-                nwDataType3 = loadNetworkingSettings.getInt("LSL_DataType3");
-                nwLSLName1Load = loadNetworkingSettings.getString("LSL_name1");
-                nwLSLName2Load = loadNetworkingSettings.getString("LSL_name2");
-                nwLSLName3Load = loadNetworkingSettings.getString("LSL_name3");
-                nwLSLType1Load = loadNetworkingSettings.getString("LSL_type1");
-                nwLSLType2Load = loadNetworkingSettings.getString("LSL_type2");
-                nwLSLType3Load = loadNetworkingSettings.getString("LSL_type3");
-                break;
-            case 0:
-                nwDataType1 = loadNetworkingSettings.getInt("Serial_DataType1");
-                nwSerialBaudRateLoad = loadNetworkingSettings.getInt("Serial_baudrate");
-                nwSerialPort = loadNetworkingSettings.getString("Serial_portName");
-                break;
-        } //end switch case for all networking types
+        loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
 
         //get the  Headplot settings
-        JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject(kJSONKeyHeadplot);
-        hpIntensityLoad = loadHeadplotSettings.getInt("HP_intensity");
-        hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
-        hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
-        hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
+        if (w_headPlot != null) {
+            JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject(kJSONKeyHeadplot);
+            hpIntensityLoad = loadHeadplotSettings.getInt("HP_intensity");
+            hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
+            hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
+            hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
+        }
 
         //Get Band Power widget settings
         loadBPActiveChans.clear();
@@ -646,6 +560,9 @@ class SessionSettings {
         for (int i = 0; i < loadBPChan.size(); i++) {
             loadBPActiveChans.add(loadBPChan.getInt(i));
         }
+        loadBPAutoClean = loadBPSettings.getInt("bpAutoClean");
+        loadBPAutoCleanThreshold = loadBPSettings.getInt("bpAutoCleanThreshold");
+        loadBPAutoCleanTimer = loadBPSettings.getInt("bpAutoCleanTimer");
         //println("Settings: band power active chans loaded = " + loadBPActiveChans );
 
         try {
@@ -744,16 +661,18 @@ class SessionSettings {
         //Apply Time Series Settings Last!!!
         loadApplyTimeSeriesSettings();
 
-        //Force headplot to redraw if it is active
-        int hpWidgetNumber;
-        if (eegDataSource == DATASOURCE_GANGLION) {
-            hpWidgetNumber = 6;
-        } else {
-            hpWidgetNumber = 5;
-        }
-        if (wm.widgets.get(hpWidgetNumber).getIsActive()) {
-            w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
-            println("Headplot is active: Redrawing");
+        if (w_headPlot != null) {
+            //Force headplot to redraw if it is active
+            int hpWidgetNumber;
+            if (eegDataSource == DATASOURCE_GANGLION) {
+                hpWidgetNumber = 6;
+            } else {
+                hpWidgetNumber = 5;
+            }
+            if (wm.widgets.get(hpWidgetNumber).getIsActive()) {
+                w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
+                println("Headplot is active: Redrawing");
+            }
         }
     } //end of loadGUISettings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -780,11 +699,13 @@ class SessionSettings {
             w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(fftFilterArray[fftFilterLoad]);
 
         ////////Apply Accelerometer settings;
-        accelVertScale(loadAccelVertScale);
-            w_accelerometer.cp5_widget.getController("accelVertScale").getCaptionLabel().setText(accVertScaleArray[loadAccelVertScale]);
+        if (w_accelerometer != null) {
+            accelVertScale(loadAccelVertScale);
+                w_accelerometer.cp5_widget.getController("accelVertScale").getCaptionLabel().setText(accVertScaleArray[loadAccelVertScale]);
 
-        accelDuration(loadAccelHorizScale);
-            w_accelerometer.cp5_widget.getController("accelDuration").getCaptionLabel().setText(accHorizScaleArray[loadAccelHorizScale]);
+            accelDuration(loadAccelHorizScale);
+                w_accelerometer.cp5_widget.getController("accelDuration").getCaptionLabel().setText(accHorizScaleArray[loadAccelHorizScale]);
+        }
 
         ////////Apply Anolog Read dropdowns to Live Cyton Only
         if (eegDataSource == DATASOURCE_CYTON) {
@@ -797,20 +718,22 @@ class SessionSettings {
         }
 
         ////////////////////////////Apply Headplot settings
-        Intensity(hpIntensityLoad);
-            w_headPlot.cp5_widget.getController("Intensity").getCaptionLabel().setText(hpIntensityArray[hpIntensityLoad]);
+        if (w_headPlot != null) {
+            Intensity(hpIntensityLoad);
+                w_headPlot.cp5_widget.getController("Intensity").getCaptionLabel().setText(hpIntensityArray[hpIntensityLoad]);
 
-        Polarity(hpPolarityLoad);
-            w_headPlot.cp5_widget.getController("Polarity").getCaptionLabel().setText(hpPolarityArray[hpPolarityLoad]);
+            Polarity(hpPolarityLoad);
+                w_headPlot.cp5_widget.getController("Polarity").getCaptionLabel().setText(hpPolarityArray[hpPolarityLoad]);
 
-        ShowContours(hpContoursLoad);
-            w_headPlot.cp5_widget.getController("ShowContours").getCaptionLabel().setText(hpContoursArray[hpContoursLoad]);
+            ShowContours(hpContoursLoad);
+                w_headPlot.cp5_widget.getController("ShowContours").getCaptionLabel().setText(hpContoursArray[hpContoursLoad]);
 
-        SmoothingHeadPlot(hpSmoothingLoad);
-            w_headPlot.cp5_widget.getController("SmoothingHeadPlot").getCaptionLabel().setText(hpSmoothingArray[hpSmoothingLoad]);
+            SmoothingHeadPlot(hpSmoothingLoad);
+                w_headPlot.cp5_widget.getController("SmoothingHeadPlot").getCaptionLabel().setText(hpSmoothingArray[hpSmoothingLoad]);
 
-        //Force redraw headplot on load. Fixes issue where heaplot draws outside of the widget.
-        w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
+            //Force redraw headplot on load. Fixes issue where heaplot draws outside of the widget.
+            w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
+        }
 
         ////////////////////////////Apply Band Power settings
         try {
@@ -823,6 +746,12 @@ class SessionSettings {
             println("Settings: Exception caught applying band power settings " + e);
         }
         verbosePrint("Settings: Band Power Active Channels: " + loadBPActiveChans);
+        w_bandPower.setAutoClean(loadBPAutoClean);
+        w_bandPower.cp5_widget.getController("bpAutoCleanDropdown").getCaptionLabel().setText(w_bandPower.getAutoClean().getString());
+        w_bandPower.setAutoCleanThreshold(loadBPAutoCleanThreshold);
+        w_bandPower.cp5_widget.getController("bpAutoCleanThresholdDropdown").getCaptionLabel().setText(w_bandPower.getAutoCleanThreshold().getString());
+        w_bandPower.setAutoCleanTimer(loadBPAutoCleanTimer);
+        w_bandPower.cp5_widget.getController("bpAutoCleanTimerDropdown").getCaptionLabel().setText(w_bandPower.getAutoCleanTimer().getString());
 
         ////////////////////////////Apply Spectrogram settings
         //Apply Max Freq dropdown
@@ -836,95 +765,25 @@ class SessionSettings {
             //apply channel checkbox settings
             w_spectrogram.spectChanSelectTop.deactivateAllButtons();
             w_spectrogram.spectChanSelectBot.deactivateAllButtons();
+            //close channel select when loading to prevent UI issues
+            w_spectrogram.spectChanSelectTop.setIsVisible(false);
+            w_spectrogram.spectChanSelectBot.setIsVisible(false);
             for (int i = 0; i < loadSpectActiveChanTop.size(); i++) {
                 w_spectrogram.spectChanSelectTop.setToggleState(loadSpectActiveChanTop.get(i), true);
             }
             for (int i = 0; i < loadSpectActiveChanBot.size(); i++) {
                 w_spectrogram.spectChanSelectBot.setToggleState(loadSpectActiveChanBot.get(i), true);
             }
+            w_spectrogram.screenResized();
         } catch (Exception e) {
             println("Settings: Exception caught applying spectrogram settings channel bar " + e);
         }
         println("Settings: Spectrogram Active Channels: TOP - " + loadSpectActiveChanTop + " || BOT - " + loadSpectActiveChanBot);
 
         ///////////Apply Networking Settings
-        //Update protocol with loaded value
-        Protocol(nwProtocolLoad);
-        //Update dropdowns and textfields in the Networking widget with loaded values
-        w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(w_networking.protocols.get(nwProtocolLoad)); //Reference the dropdown from the appropriate widget
-        switch (nwProtocolLoad) {
-            case 3:  //Apply OSC if loaded
-                println("Apply OSC Networking Mode");
-                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType1)); //Set text on frontend
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
-                w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType2)); //etc...
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
-                w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType3));
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
-                w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType4));
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setValue(nwDataType4);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_ip1").setText(nwOscIp1Load); //Simply set the text for text boxes
-                w_networking.cp5_networking.get(Textfield.class, "OSC_ip2").setText(nwOscIp2Load); //The strings are referenced on command
-                w_networking.cp5_networking.get(Textfield.class, "OSC_ip3").setText(nwOscIp3Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_ip4").setText(nwOscIp4Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_port1").setText(nwOscPort1Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_port2").setText(nwOscPort2Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_port3").setText(nwOscPort3Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_port4").setText(nwOscPort4Load);
-                break;
-            case 2:  //Apply UDP if loaded
-                println("Apply UDP Networking Mode");
-                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType1)); //Set text on frontend
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
-                w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType2)); //etc...
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
-                w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType3));
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
-                w_networking.cp5_networking.get(Textfield.class, "UDP_ip1").setText(nwUdpIp1Load);
-                w_networking.cp5_networking.get(Textfield.class, "UDP_ip2").setText(nwUdpIp2Load);
-                w_networking.cp5_networking.get(Textfield.class, "UDP_ip3").setText(nwUdpIp3Load);
-                w_networking.cp5_networking.get(Textfield.class, "UDP_port1").setText(nwUdpPort1Load);
-                w_networking.cp5_networking.get(Textfield.class, "UDP_port2").setText(nwUdpPort2Load);
-                w_networking.cp5_networking.get(Textfield.class, "UDP_port3").setText(nwUdpPort3Load);
-                break;
-            case 1:  //Apply LSL if loaded
-                println("Apply LSL Networking Mode");
-                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType1)); //Set text on frontend
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
-                w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType2)); //etc...
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
-                w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType3));
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
-                w_networking.cp5_networking.get(Textfield.class, "LSL_name1").setText(nwLSLName1Load);
-                w_networking.cp5_networking.get(Textfield.class, "LSL_name2").setText(nwLSLName2Load);
-                w_networking.cp5_networking.get(Textfield.class, "LSL_name3").setText(nwLSLName3Load);
-                w_networking.cp5_networking.get(Textfield.class, "LSL_type1").setText(nwLSLType1Load);
-                w_networking.cp5_networking.get(Textfield.class, "LSL_type2").setText(nwLSLType2Load);
-                w_networking.cp5_networking.get(Textfield.class, "LSL_type3").setText(nwLSLType3Load);
-                break;
-            case 0:  //Apply Serial if loaded
-                println("Apply Serial Networking Mode");
-                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType1)); //Set text on frontend
-                w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
-                w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(w_networking.baudRates.get(nwSerialBaudRateLoad)); //Set text
-                w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setValue(nwSerialBaudRateLoad); //Set value in backend
-
-                //Look for the portName in the dropdown list
-                int listSize = w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getItems().size();
-                for (int i = 0; i < listSize; i++) {
-                    String s = w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getItem(i).get("name").toString();
-                    if (s.equals(nwSerialPort)) {
-                        verbosePrint("Settings: NWSerial: Found com port " + s + " !");
-                        w_networking.cp5_networking_portName.getController("port_name").getCaptionLabel().setText(s);
-                        w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").setValue(i);
-                        break;
-                    } else {
-                        if (i == listSize - 1) verbosePrint("Settings: NWSerial: Port not found...");
-                    }
-                }
-                break;
-        }//end switch-case for networking settings for all networking protocols
-
+        String nwSettingsString = loadNetworkingSettings.toString();
+        dataProcessing.networkingSettings.loadJson(nwSettingsString);
+        
         ////////////////////////////Apply EMG widget settings
         try {
             //apply channel checkbox settings
@@ -970,6 +829,9 @@ class SessionSettings {
         w_timeSeries.setTSHorizScale(loadTimeSeriesSettings.getInt("Time Series Horiz Scale"));
         w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(w_timeSeries.getTSHorizScale().getString());
 
+        w_timeSeries.setTSLabelMode(loadTimeSeriesSettings.getInt("Time Series Label Mode"));
+        w_timeSeries.cp5_widget.getController("LabelMode_TS").getCaptionLabel().setText(w_timeSeries.getTSLabelMode().getString());
+
         JSONArray loadTSChan = loadTimeSeriesSettings.getJSONArray("activeChannels");
         w_timeSeries.tsChanSelect.deactivateAllButtons();
         try {
@@ -1003,7 +865,7 @@ class SessionSettings {
       * @params mode="User"or"Default", dataSource, and number of channels
       * @returns {String} - filePath or Error if mode not specified correctly
       */
-    String getPath(String _mode, int dataSource, int _nchan) {
+    String getPath(String _mode, int dataSource, int _channelCount) {
         String filePath = directoryManager.getSettingsPath();
         String[] fileNames = new String[7];
         if (_mode.equals("Default")) {
@@ -1015,7 +877,7 @@ class SessionSettings {
         }
         if (!filePath.equals("Error")) {
             if (dataSource == DATASOURCE_CYTON) {
-                filePath += (_nchan == NCHAN_CYTON) ?
+                filePath += (_channelCount == CYTON_CHANNEL_COUNT) ?
                     fileNames[0] :
                     fileNames[1];
             } else if (dataSource == DATASOURCE_GANGLION) {
@@ -1023,9 +885,9 @@ class SessionSettings {
             } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
                 filePath += fileNames[3];
             } else if (dataSource == DATASOURCE_SYNTHETIC) {
-                if (_nchan == NCHAN_GANGLION) {
+                if (_channelCount == GANGLION_CHANNEL_COUNT) {
                     filePath += fileNames[4];
-                } else if (_nchan == NCHAN_CYTON) {
+                } else if (_channelCount == CYTON_CHANNEL_COUNT) {
                     filePath += fileNames[5];
                 } else {
                     filePath += fileNames[6];
@@ -1035,13 +897,9 @@ class SessionSettings {
         return filePath;
     }
 
-    void initCheckPointFive() {
-        outputSuccess("Session started!");
-    }
-
     void loadKeyPressed() {
         loadErrorTimerStart = millis();
-        String settingsFileToLoad = getPath("User", eegDataSource, nchan);
+        String settingsFileToLoad = getPath("User", eegDataSource, globalChannelCount);
         try {
             load(settingsFileToLoad);
             errorUserSettingsNotFound = false;
@@ -1079,9 +937,12 @@ class SessionSettings {
 
     void saveButtonPressed() {
         if (saveDialogName == null) {
-            selectOutput("Save a custom settings file as JSON:",
-                        "saveConfigFile",
-                        dataFile(settings.getPath("User", eegDataSource, nchan)));
+            File fileToSave = dataFile(settings.getPath("User", eegDataSource, globalChannelCount));
+            FileChooser chooser = new FileChooser(
+                    FileChooserMode.SAVE,
+                    "saveConfigFile",
+                    fileToSave,
+                    "Save settings to file");
         } else {
             println("saveSettingsFileName = " + saveDialogName);
             saveDialogName = null;
@@ -1091,7 +952,11 @@ class SessionSettings {
     void loadButtonPressed() {
         //Select file to load from dialog box
         if (loadDialogName == null) {
-            selectInput("Load a custom settings file from JSON:", "loadConfigFile");
+            FileChooser chooser = new FileChooser(
+                FileChooserMode.LOAD,
+                "loadConfigFile",
+                new File(directoryManager.getGuiDataPath() + "Settings"),
+                "Select a settings file to load");
             saveDialogName = null;
         } else {
             println("loadSettingsFileName = " + loadDialogName);
@@ -1101,7 +966,7 @@ class SessionSettings {
 
     void defaultButtonPressed() {
         //Revert GUI to default settings that were flashed on system start!
-        String defaultSettingsFileToLoad = getPath("Default", eegDataSource, nchan);
+        String defaultSettingsFileToLoad = getPath("Default", eegDataSource, globalChannelCount);
         try {
             //Load all saved User Settings from a JSON file to see if it exists
             JSONObject loadDefaultSettingsJSONData = loadJSONObject(defaultSettingsFileToLoad);
@@ -1118,6 +983,10 @@ class SessionSettings {
                 }
             }
         }
+    }
+
+    public void autoLoadSessionSettings() {
+        loadKeyPressed();
     }
 
 } //end of Software Settings class

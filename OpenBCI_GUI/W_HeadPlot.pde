@@ -34,12 +34,12 @@ class W_HeadPlot extends Widget {
         addDropdown("Intensity", "Intensity", Arrays.asList("4x", "2x", "1x", "0.5x", "0.2x", "0.02x"), vertScaleFactor_ind);
         addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), settings.hpPolaritySave);
         addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), settings.hpContoursSave);
-        addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind);
+        addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind);
         //Initialize the headplot
-        updateHeadPlot(nchan);
+        updateHeadPlot();
     }
 
-    void updateHeadPlot(int _nchan) {
+    void updateHeadPlot() {
         headPlot = new HeadPlot(x, y, w, h, win_w, win_h);
         //FROM old Gui_Manager
         headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
@@ -205,7 +205,7 @@ class HeadPlot {
     public boolean threadLock = false;
 
     HeadPlot(int _x, int _y, int _w, int _h, int _win_x, int _win_y) {
-        final int n_elec = nchan;  //set number of electrodes using the global nchan variable
+        final int n_elec = globalChannelCount;  //set number of electrodes using the global globalChannelCount variable
         nose_x = new int[3];
         nose_y = new int[3];
         electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?)

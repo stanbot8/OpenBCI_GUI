@@ -11,6 +11,12 @@ import static java.util.prefs.Preferences.systemRoot;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+public void takeGUIScreenshot() {
+    String pictureFilename = "OpenBCI-" + directoryManager.getFileNameDateTime() + ".jpg";
+    saveFrame(directoryManager.getGuiDataPath() + "Screenshots" + System.getProperty("file.separator") + pictureFilename);
+    output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + pictureFilename);
+}
+
 /**
   * @description Helper function to determine if the system is linux or not.
   * @return {boolean} true if os is linux, false otherwise.

@@ -53,11 +53,7 @@ class W_AnalogRead extends Widget {
         // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //set number of analog reads
-        if (selectedProtocol == BoardProtocol.WIFI) {
-            numAnalogReadBars = 2;
-        } else {
-            numAnalogReadBars = 3;
-        }
+        numAnalogReadBars = 3;
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -167,12 +163,8 @@ class W_AnalogRead extends Widget {
                 if (!analogBoard.isAnalogActive()) {
                     analogBoard.setAnalogActive(true);  
                     analogModeButton.getCaptionLabel().setText("Turn Analog Read Off");	
-                    if (selectedProtocol == BoardProtocol.WIFI) {
-                        output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
-                    } else {
-                        output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
-                    }
-                    w_pulsesensor.toggleAnalogReadButton(true);
+                    output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
+                    w_pulseSensor.toggleAnalogReadButton(true);
                     w_accelerometer.accelBoardSetActive(false);
                     w_digitalRead.toggleDigitalReadButton(false);
                 } else {
@@ -181,14 +173,11 @@ class W_AnalogRead extends Widget {
                     output("Starting to read accelerometer");
                     w_accelerometer.accelBoardSetActive(true);
                     w_digitalRead.toggleDigitalReadButton(false);
-                    w_pulsesensor.toggleAnalogReadButton(false);
+                    w_pulseSensor.toggleAnalogReadButton(false);
                 }
             }
         });
-        String _helpText = (selectedProtocol == BoardProtocol.WIFI) ? 
-            "Click this button to activate/deactivate analog read on Cyton pins A5(D11) and A6(D12)." :
-            "Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13)."
-            ;
+        String _helpText = "Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13).";
         analogModeButton.setDescription(_helpText);
     }
 
@@ -244,11 +233,10 @@ class AnalogReadBar{
     private int nPoints;
     private int numSeconds;
     private float timeBetweenPoints;
+    private final float GPLOT_SPACING = 10f;
+    private GPlotAutoscaler gplotAutoscaler;
 
     private color channelColor; //color of plot trace
-
-    private boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
-    private int autoScaleYLim = 0;
     
     private TextBox analogValue;
     private TextBox analogPin;
@@ -296,15 +284,11 @@ class AnalogReadBar{
         plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
         plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
         plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
-        if (selectedProtocol == BoardProtocol.WIFI) {
-            if(auxValuesPosition == 1) {
-                plot.getXAxis().setAxisLabelText("Time (s)");
-            }
-        } else {
-            if(auxValuesPosition == 2) {
-                plot.getXAxis().setAxisLabelText("Time (s)");
-            }
+        if(auxValuesPosition == 2) {
+            plot.getXAxis().setAxisLabelText("Time (s)");
         }
+        
+        gplotAutoscaler = new GPlotAutoscaler(GPLOT_SPACING);
 
         initArrays();
         
@@ -350,9 +334,6 @@ class AnalogReadBar{
 
         // update data in plot
         updatePlotPoints();
-        if(isAutoscale) {
-            autoScale();
-        }
 
         //Fetch the last value in the buffer to display on screen
         float val = analogReadPoints.getLastPoint().getY();
@@ -382,14 +363,15 @@ class AnalogReadBar{
         if (channels.length == 0) {
             return;
         }
-        
-        for (int i=0; i < nPoints; i++) {
+
+        for (int i = 0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
             float value = (float)allData.get(i)[channels[auxValuesPosition]];
             analogReadPoints.set(i, timey, value, "");
         }
 
         plot.setPoints(analogReadPoints);
+        gplotAutoscaler.update(plot, analogReadPoints);
     }
 
     void draw() {
@@ -405,17 +387,9 @@ class AnalogReadBar{
         plot.drawBox(); // we won't draw this eventually ...
         plot.drawGridLines(GPlot.VERTICAL);
         plot.drawLines();
-        if (selectedProtocol == BoardProtocol.WIFI) {
-            if(auxValuesPosition == 1) { //only draw the x axis label on the bottom channel bar
-                plot.drawXAxis();
-                plot.getXAxis().draw();
-            }
-        }
-        else {
-            if(auxValuesPosition == 2) { //only draw the x axis label on the bottom channel bar
-                plot.drawXAxis();
-                plot.getXAxis().draw();
-            }
+        if(auxValuesPosition == 2) { //only draw the x axis label on the bottom channel bar
+            plot.drawXAxis();
+            plot.getXAxis().draw();
         }
 
         plot.endDraw();
@@ -451,22 +425,13 @@ class AnalogReadBar{
     }
 
     void adjustVertScale(int _vertScaleValue) {
-        if(_vertScaleValue == 0) {
-            isAutoscale = true;
-        } else {
-            isAutoscale = false;
-            plot.setYLim(-_vertScaleValue, _vertScaleValue);
+        boolean enableAutoscale = _vertScaleValue == 0;
+        gplotAutoscaler.setEnabled(enableAutoscale);
+        if (enableAutoscale) {
+            return;
         }
-    }
-
-    void autoScale() {
-        autoScaleYLim = 0;
-        for(int i = 0; i < nPoints; i++) {
-            if(int(abs(analogReadPoints.getY(i))) > autoScaleYLim) {
-                autoScaleYLim = int(abs(analogReadPoints.getY(i)));
-            }
-        }
-        plot.setYLim(-autoScaleYLim, autoScaleYLim);
+        
+        plot.setYLim(-_vertScaleValue, _vertScaleValue);
     }
 
     void screenResized(int _x, int _y, int _w, int _h) {

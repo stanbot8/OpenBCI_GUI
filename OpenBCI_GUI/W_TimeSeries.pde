@@ -56,12 +56,14 @@ public enum TimeSeriesXLim implements IndexingInterface
 public enum TimeSeriesYLim implements IndexingInterface
 {
     AUTO (0, 0, "Auto"),
-    UV_50 (1, 50, "50 uV"),
-    UV_100 (2, 100, "100 uV"),
-    UV_200 (3, 200, "200 uV"),
-    UV_400 (4, 400, "400 uV"),
-    UV_1000 (5, 1000, "1000 uV"),
-    UV_10000 (6, 10000, "10000 uV");
+    UV_10(1, 10, "10 uV"),
+    UV_25(2, 25, "25 uV"),
+    UV_50 (3, 50, "50 uV"),
+    UV_100 (4, 100, "100 uV"),
+    UV_200 (5, 200, "200 uV"),
+    UV_400 (6, 400, "400 uV"),
+    UV_1000 (7, 1000, "1000 uV"),
+    UV_10000 (8, 10000, "10000 uV");
 
     private int index;
     private int value;
@@ -69,6 +71,46 @@ public enum TimeSeriesYLim implements IndexingInterface
     private static TimeSeriesYLim[] vals = values();
 
     TimeSeriesYLim(int _index, int _value, String _label) {
+        this.index = _index;
+        this.value = _value;
+        this.label = _label;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    @Override
+    public String getString() {
+        return label;
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
+    }
+
+    public static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (IndexingInterface val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
+    }
+}
+
+public enum TimeSeriesLabelMode implements IndexingInterface
+{
+    OFF (0, 0, "Off"),
+    MINIMAL (1, 1, "Minimal"),
+    ON (2, 2, "On");
+
+    private int index;
+    private int value;
+    private String label;
+    private static TimeSeriesLabelMode[] vals = values();
+
+    TimeSeriesLabelMode(int _index, int _value, String _label) {
         this.index = _index;
         this.value = _value;
         this.label = _label;
@@ -108,18 +150,20 @@ class W_timeSeries extends Widget {
     private float plotBottomWell;
     private float playbackWidgetHeight;
     private int channelBarHeight;
-    public final int interChannelBarSpace = 2;
+    public final int INTER_CHANNEL_BAR_SPACE = 2;
+    private final int PADDING_5 = 5;
 
     private ControlP5 tscp5;
     private Button hwSettingsButton;
 
-    private ChannelSelect tsChanSelect;
+    private ExGChannelSelect tsChanSelect;
     private ChannelBar[] channelBars;
     private PlaybackScrollbar scrollbar;
     private TimeDisplay timeDisplay;
 
     TimeSeriesXLim xLimit = TimeSeriesXLim.FIVE;
-    TimeSeriesYLim yLimit = TimeSeriesYLim.UV_200;
+    TimeSeriesYLim yLimit = TimeSeriesYLim.AUTO;
+    TimeSeriesLabelMode labelMode = TimeSeriesLabelMode.MINIMAL;
 
     private PImage expand_default;
     private PImage expand_hover;
@@ -139,12 +183,13 @@ class W_timeSeries extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         tscp5 = new ControlP5(_parent);
-        tscp5.setGraphics(_parent, 0,0);
+        tscp5.setGraphics(_parent, 0, 0);
         tscp5.setAutoDraw(false);
-
-        tsChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "TS_Channels");
-        //activate all channels in channelSelect by default for this widget
+        
+        tsChanSelect = new ExGChannelSelect(pApplet, x, y, w, navH);
+        //Activate all channels in channelSelect by default for this widget
         tsChanSelect.activateAllButtons();
+
         cp5ElementsToCheck.addAll(tsChanSelect.getCp5ElementsForOverlapCheck());
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
@@ -152,29 +197,30 @@ class W_timeSeries extends Widget {
         wF = float(w);
         hF = float(h);
 
-        plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
+        plotBottomWell = 35.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
         ts_padding = 10.0;
         ts_x = xF + ts_padding;
         ts_y = yF + ts_padding;
         ts_w = wF - ts_padding*2;
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-        numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
+        numChannelBars = globalChannelCount; //set number of channel bars = to current globalChannelCount of system (4, 8, or 16)
 
         //This is a newer protocol for setting up dropdowns.
         addDropdown("VertScale_TS", "Vert Scale", yLimit.getEnumStringsAsList(), yLimit.getIndex());
         addDropdown("Duration", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
+        addDropdown("LabelMode_TS", "Labels", labelMode.getEnumStringsAsList(), labelMode.getIndex());
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
-            playbackWidgetHeight = 50.0;
-            pb_x = ts_x - ts_padding/2;
-            pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
-            pb_w = ts_w - ts_padding*4;
-            pb_h = playbackWidgetHeight/2;
+            playbackWidgetHeight = 30.0;
             int _x = floor(xF) - 1;
             int _y = int(ts_y + ts_h + playbackWidgetHeight + 5);
             int _w = int(wF) + 1;
             int _h = int(playbackWidgetHeight);
+            pb_x = ts_x - ts_padding/2;
+            pb_y = _y + playbackWidgetHeight/2;
+            pb_w = ts_w - ts_padding*4;
+            pb_h = playbackWidgetHeight/2;
             //Make a new scrollbar
             scrollbar = new PlaybackScrollbar(_x, _y, _w, _h, int(pb_x), int(pb_y), int(pb_w), int(pb_h));
         } else {
@@ -207,39 +253,43 @@ class W_timeSeries extends Widget {
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hwSettingsButton = createHSCButton("HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y0 + navHeight + 1), 120, navHeight - 3);
             cp5ElementsToCheck.add((controlP5.Controller)hwSettingsButton);
-            adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.activeChan, x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
+            adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.getActiveChannels(), x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
+
+        setTSVertScale(yLimit.getIndex());
     }
 
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
         // offset based on whether channel select or hardware settings are open or not
-        int chanSelectOffset = tsChanSelect.isVisible() ? navHeight : 0;
+        int chanSelectOffset = tsChanSelect.isVisible() ? tsChanSelect.getHeight() : 0;
+        int developerCommandsUIHeight = 0;
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            chanSelectOffset += adsSettingsController.getIsVisible() ? navHeight : 0;
+            chanSelectOffset += adsSettingsController.getIsVisible() ? adsSettingsController.getHeaderHeight() : 0;
+            developerCommandsUIHeight = adsSettingsController.getIsVisible() ? adsSettingsController.getCommandBarHeight() - (PADDING_5 * 2) : 0;
         }
 
         //Responsively size the channelBarHeight
-        channelBarHeight = int((ts_h - chanSelectOffset) / tsChanSelect.activeChan.size());
+        channelBarHeight = int((ts_h - chanSelectOffset - developerCommandsUIHeight) / tsChanSelect.getActiveChannels().size());
 
         //Update channel checkboxes
         tsChanSelect.update(x, y, w);
 
         //Update and resize all active channels
-        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-            int activeChan = tsChanSelect.activeChan.get(i);
+        for(int i = 0; i < tsChanSelect.getActiveChannels().size(); i++) {
+            int activeChannel = tsChanSelect.getActiveChannels().get(i);
             int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
             //To make room for channel bar separator, subtract space between channel bars from height
-            int cb_h = channelBarHeight - interChannelBarSpace;
-            channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), cb_h);
-            channelBars[activeChan].update();
+            int cb_h = channelBarHeight - INTER_CHANNEL_BAR_SPACE;
+            channelBars[activeChannel].resize(int(ts_x), channelBarY, int(ts_w), cb_h);
+            channelBars[activeChannel].update(getAdsSettingsVisible(), labelMode);
         }
         
         //Responsively size and update the HardwareSettingsController
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            int cb_h = channelBarHeight + interChannelBarSpace - 2;
-            int h_hsc = channelBarHeight * tsChanSelect.activeChan.size();        
+            int cb_h = channelBarHeight + INTER_CHANNEL_BAR_SPACE - 2;
+            int h_hsc = channelBarHeight * tsChanSelect.getActiveChannels().size();        
             adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
             adsSettingsController.update(); //update channel controller
         }
@@ -260,9 +310,9 @@ class W_timeSeries extends Widget {
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         //draw channel bars
-        for (int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-            int activeChan = tsChanSelect.activeChan.get(i);
-            channelBars[activeChan].draw(getAdsSettingsVisible());
+        for (int i = 0; i < tsChanSelect.getActiveChannels().size(); i++) {
+            int activeChannel = tsChanSelect.getActiveChannels().get(i);
+            channelBars[activeChannel].draw(getAdsSettingsVisible(), labelMode);
         }
 
         //Display playback scrollbar, timeDisplay, or ADSSettingsController depending on data source
@@ -304,11 +354,11 @@ class W_timeSeries extends Widget {
         ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
             int _x = floor(xF) - 1;
-            int _y = int(ts_y + ts_h + playbackWidgetHeight + 5);
+            int _y = y + h - int(playbackWidgetHeight);
             int _w = int(wF) + 1;
             int _h = int(playbackWidgetHeight);
             pb_x = ts_x - ts_padding/2;
-            pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
+            pb_y = _y + playbackWidgetHeight/2;
             pb_w = ts_w - ts_padding*4;
             pb_h = playbackWidgetHeight/2;
             scrollbar.screenResized(_x, _y, _w, _h, pb_x, pb_y, pb_w, pb_h);
@@ -320,17 +370,17 @@ class W_timeSeries extends Widget {
         // offset based on whether channel select is open or not.
         int chanSelectOffset = 0;
         if (tsChanSelect.isVisible()) {
-            chanSelectOffset = navHeight;
+            chanSelectOffset = tsChanSelect.getHeight();
         }
         
         for (ChannelBar cb : channelBars) {
             cb.updateCP5(ourApplet);
         }
         
-        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-            int activeChan = tsChanSelect.activeChan.get(i);
+        for(int i = 0; i < tsChanSelect.getActiveChannels().size(); i++) {
+            int activeChannel = tsChanSelect.getActiveChannels().get(i);
             int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
-            channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+            channelBars[activeChannel].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
         }
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
@@ -343,31 +393,38 @@ class W_timeSeries extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
 
-        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-            int activeChan = tsChanSelect.activeChan.get(i);
-            channelBars[activeChan].mousePressed();
+        for(int i = 0; i < tsChanSelect.getActiveChannels().size(); i++) {
+            int activeChannel = tsChanSelect.getActiveChannels().get(i);
+            channelBars[activeChannel].mousePressed();
         }
     }
     
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-            int activeChan = tsChanSelect.activeChan.get(i);
-            channelBars[activeChan].mouseReleased();
+        for(int i = 0; i < tsChanSelect.getActiveChannels().size(); i++) {
+            int activeChannel = tsChanSelect.getActiveChannels().get(i);
+            channelBars[activeChannel].mouseReleased();
         }
     }
 
-    private void setAdsSettingsVisible(boolean visible) {
+    public void setAdsSettingsVisible(boolean visible) {
         if(!(currentBoard instanceof ADS1299SettingsBoard)) {
             return;
         }
 
         String buttonText = "Time Series";
-
-        if (visible && currentBoard.isStreaming()) {
-            PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing Hardware Settings");
-            return;
+        
+        if (visible && currentBoard.isStreaming()) { 
+            if (guiSettings.getShowStopStreamHardwareSettingsPopup()) {
+                if (!stopStreamHardwareSettingsPopupIsVisible) {
+                    println("HardwareSettings: Opened popup to stop streaming and show hardware settings");
+                    PopupMessage msg = new PopupMessageHardwareSettings();
+                }
+                return;
+            } else {
+                topNav.dataStreamTogglePressed();
+            }
         }
 
         boolean inSync = adsSettingsController.setIsVisible(visible);
@@ -376,6 +433,8 @@ class W_timeSeries extends Widget {
             buttonText = "Hardware Settings";         
         }
         hwSettingsButton.setCaptionLabel(buttonText);
+
+        println("HardwareSettings Toggle: " + adsSettingsController.getIsVisible());
     }
 
     private boolean getAdsSettingsVisible() {
@@ -391,7 +450,6 @@ class W_timeSeries extends Widget {
         myButton.setBorderColor(OBJECT_BORDER_GREY);
         myButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {    
-                println("HardwareSettings Toggle: " + !adsSettingsController.getIsVisible());
                 setAdsSettingsVisible(!adsSettingsController.getIsVisible());
             }
         });
@@ -406,6 +464,10 @@ class W_timeSeries extends Widget {
         return xLimit;
     }
 
+    public TimeSeriesLabelMode getTSLabelMode() {
+        return labelMode;
+    }
+
     public void setTSVertScale(int n) {
         yLimit = yLimit.values()[n];
         for (int i = 0; i < numChannelBars; i++) {
@@ -418,6 +480,10 @@ class W_timeSeries extends Widget {
         for (int i = 0; i < numChannelBars; i++) {
             channelBars[i].adjustTimeAxis(xLimit.getValue());
         }
+    }
+
+    public void setTSLabelMode(int n) {
+        labelMode = labelMode.values()[n];
     }
 };
 
@@ -448,6 +514,10 @@ void Duration(int n) {
     }
 }
 
+void LabelMode_TS(int n) {
+    w_timeSeries.setTSLabelMode(n);
+}
+
 //========================================================================================================================
 //                      CHANNEL BAR CLASS -- Implemented by Time Series Widget Class
 //========================================================================================================================
@@ -475,20 +545,16 @@ class ChannelBar {
     int uiSpaceWidth;
     int padding_4 = 4;
     int minimumChannelHeight;
-    int plotBottomWellH = 45;
+    int plotBottomWellH = 35;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Se ries trace
     GPointsArray channelPoints;
     int nPoints;
     int numSeconds;
     float timeBetweenPoints;
+    private GPlotAutoscaler gplotAutoscaler;
 
     color channelColor; //color of plot trace
-
-    boolean isAutoscale = false; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
-    float autoscaleMin;
-    float autoscaleMax;
-    int previousMillis = 0;
     
     TextBox voltageValue;
     TextBox impValue;
@@ -531,11 +597,11 @@ class ChannelBar {
         plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
         plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
         plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
-        if(channelIndex == nchan-1) {
+        if(channelIndex == globalChannelCount-1) {
             plot.getXAxis().setAxisLabelText("Time (s)");
             plot.getXAxis().getAxisLabel().setOffset(plotBottomWellH/2 + 5f);
         }
-        // plot.setBgColor(OPENBCI_BLUE);
+        gplotAutoscaler = new GPlotAutoscaler();
 
         //Fill the GPlot with initial data
         nPoints = nPointsBasedOnDataSource();
@@ -570,16 +636,24 @@ class ChannelBar {
         minimumChannelHeight = padding_4 + yAxisLabel_h*2;
     }
 
-    void update() {
+    void update(boolean hardwareSettingsAreOpen, TimeSeriesLabelMode _labelMode) {
+
         //Reusable variables
         String fmt; float val;
 
-        //update the voltage values
+        //Update the voltage value TextBox
         val = dataProcessing.data_std_uV[channelIndex];
         voltageValue.string = String.format(getFmt(val),val) + " uVrms";
         if (is_railed != null) {
             voltageValue.setText(is_railed[channelIndex].notificationString + voltageValue.string);
-            voltageValue.setTextColor(is_railed[channelIndex].getColor());
+            voltageValue.setTextColor(OPENBCI_DARKBLUE);
+            color bgColor = color(255,255,255,175); // Default white background for voltage TextBox
+            if (is_railed[channelIndex].is_railed) {
+                bgColor = SIGNAL_CHECK_RED_LOWALPHA;
+            } else if (is_railed[channelIndex].is_railed_warn) {
+                bgColor =  SIGNAL_CHECK_YELLOW_LOWALPHA;
+            }
+            voltageValue.setBackgroundColor(bgColor);
         }
 
         //update the impedance values
@@ -599,6 +673,22 @@ class ChannelBar {
         else {
             onOffButton.setColorBackground(50); // power down == true, set to grey
         }
+        
+        //Hide yAxisButtons when hardware settings are open, using autoscale, and labels are turn on
+        boolean b = !hardwareSettingsAreOpen 
+            && h > minimumChannelHeight
+            && !gplotAutoscaler.getEnabled()
+            && _labelMode == TimeSeriesLabelMode.ON;
+        yScaleButton_pos.setVisible(b);
+        yScaleButton_neg.setVisible(b);
+        yScaleButton_pos.setUpdate(b);
+        yScaleButton_neg.setUpdate(b);
+        b = !hardwareSettingsAreOpen
+            && h > minimumChannelHeight
+            && _labelMode == TimeSeriesLabelMode.ON;
+        yAxisMin.setVisible(b);
+        yAxisMax.setVisible(b);
+        voltageValue.setVisible(_labelMode != TimeSeriesLabelMode.OFF);
     }
 
     private String getFmt(float val) {
@@ -614,25 +704,27 @@ class ChannelBar {
     }
 
     private void updatePlotPoints() {
-        autoscaleMax = -Float.MAX_VALUE;
-        autoscaleMin = Float.MAX_VALUE;
-        // update data in plot
-        if (dataProcessingFilteredBuffer[channelIndex].length >= nPoints) {
-            for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {
-                float time = -(float)numSeconds + (float)(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints))*timeBetweenPoints;
-                float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
+        float[][] buffer = downsampledFilteredBuffer.getBuffer();
+        final int bufferSize = buffer[channelIndex].length;
+        final int startIndex = bufferSize - nPoints;
+        for (int i = startIndex; i < bufferSize; i++) {
+            int adjustedIndex = i - startIndex;
+            float time = -(float)numSeconds + (float)(adjustedIndex)*timeBetweenPoints;
+            float filt_uV_value = buffer[channelIndex][i];
+            channelPoints.set(adjustedIndex, time, filt_uV_value, "");
+        }
+        plot.setPoints(channelPoints);
 
-                // update channel point in place
-                channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
-                autoscaleMax = Math.max(filt_uV_value, autoscaleMax);
-                autoscaleMin = Math.min(filt_uV_value, autoscaleMin);
-            }
-            applyAutoscale();
-            plot.setPoints(channelPoints); //reset the plot with updated channelPoints
+        gplotAutoscaler.update(plot, channelPoints);
+
+        if (gplotAutoscaler.getEnabled()) {
+            float[] minMax = gplotAutoscaler.getMinMax();
+            customYLim(yAxisMin, (int)minMax[0]);
+            customYLim(yAxisMax, (int)minMax[1]);
         }
     }
 
-    public void draw(boolean hardwareSettingsAreOpen) {        
+    public void draw(boolean hardwareSettingsAreOpen, TimeSeriesLabelMode _labelMode) {        
 
         plot.beginDraw();
         plot.drawBox();
@@ -658,12 +750,12 @@ class ChannelBar {
         rect(x,y,w,h);
         popStyle();
 
-        //draw channelBar separator line in the middle of interChannelBarSpace
+        //draw channelBar separator line in the middle of INTER_CHANNEL_BAR_SPACE
         if (!isBottomChannel()) {
             pushStyle();
             stroke(OPENBCI_DARKBLUE);
             strokeWeight(1);
-            int separator_y = y + h + int(w_timeSeries.interChannelBarSpace/2);
+            int separator_y = y + h + int(w_timeSeries.INTER_CHANNEL_BAR_SPACE/2);
             line(x, separator_y, x + w, separator_y);
             popStyle();
         }
@@ -680,16 +772,6 @@ class ChannelBar {
         if (drawVoltageValue) {
             voltageValue.draw();
         }
-        
-        //Hide yAxisButtons when hardware settings are open, labels would start to overlap, or using autoscale
-        boolean b = !hardwareSettingsAreOpen && (h > yScaleButton_h + yAxisLabel_h*2 + 2) && !isAutoscale;
-        yScaleButton_pos.setVisible(b);
-        yScaleButton_neg.setVisible(b);
-        b = !hardwareSettingsAreOpen && h > minimumChannelHeight;
-        yAxisMin.setVisible(b);
-        yAxisMax.setVisible(b);
-        yAxisMin.draw();
-        yAxisMax.draw();
 
         try {
             cbCp5.draw();
@@ -697,10 +779,13 @@ class ChannelBar {
             e.printStackTrace();
             println("CP5 ERROR ON CHANNEL " + channelIndex);
         }
+
+        yAxisMin.draw();
+        yAxisMax.draw();
     }
 
     private int nPointsBasedOnDataSource() {
-        return numSeconds * currentBoard.getSampleRate();
+        return (numSeconds * currentBoard.getSampleRate()) / getDownsamplingFactor();
     }
 
     public void adjustTimeAxis(int _newTimeSize) {
@@ -709,6 +794,7 @@ class ChannelBar {
 
         nPoints = nPointsBasedOnDataSource();
         channelPoints = new GPointsArray(nPoints);
+        timeBetweenPoints = (float)numSeconds / (float)nPoints;
         if(_newTimeSize > 1) {
             plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
         }else{
@@ -718,34 +804,18 @@ class ChannelBar {
         updatePlotPoints();
     }
 
-    //Happens when user selects vert scale dropdown
     public void adjustVertScale(int _vertScaleValue) {
-        //Early out if autoscale
-        if (_vertScaleValue == 0) {
-            isAutoscale = true;
+        boolean enableAutoscale = _vertScaleValue == 0;
+        gplotAutoscaler.setEnabled(enableAutoscale);
+        if (enableAutoscale) {
             return;
         }
-        isAutoscale = false;
         yAxisLowerLim = -_vertScaleValue;
         yAxisUpperLim = _vertScaleValue;
         plot.setYLim(yAxisLowerLim, yAxisUpperLim);
         //Update button text
         customYLim(yAxisMin, yAxisLowerLim);
         customYLim(yAxisMax, yAxisUpperLim);
-    }
-
-    public void applyAutoscale() {
-        //Do this once a second for all TimeSeries ChannelBars to save on resources
-        int newMillis = millis();
-        boolean doAutoscale = newMillis > previousMillis + 1000;
-        if (isAutoscale && currentBoard.isStreaming() && doAutoscale) {
-            autoscaleMin = (int) Math.floor(autoscaleMin);
-            autoscaleMax = (int) Math.ceil(autoscaleMax);
-            previousMillis = newMillis;
-            plot.setYLim(autoscaleMin, autoscaleMax); //<---- This is a very expensive method. Here is the bottleneck.
-            customYLim(yAxisMin, (int)autoscaleMin);
-            customYLim(yAxisMax, (int)autoscaleMax);
-        }
     }
 
     //Update yAxis text and responsively size Textfield
@@ -771,11 +841,17 @@ class ChannelBar {
         voltageValue.setPosition(x + uiSpaceWidth + (w - uiSpaceWidth) - padding, y + h);
         impValue.setPosition(x + uiSpaceWidth + (int)plot.getDim()[0], y + padding);
 
-        yScaleButton_neg.setPosition(x + uiSpaceWidth + padding, y + h/2 - yScaleButton_h/2);
-        yScaleButton_pos.setPosition(x + uiSpaceWidth + padding*2 + yScaleButton_w, y + h/2 - yScaleButton_h/2);
-
         yAxisMax.setPosition(x + uiSpaceWidth + padding, y + int(padding*1.5) - 2);
         yAxisMin.setPosition(x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding - 1);
+        
+        final int yAxisLabelWidth = yAxisMax.getWidth();
+        int yScaleButtonX = x + uiSpaceWidth + padding_4;
+        int yScaleButtonY = y + h/2 - yScaleButton_h/2;
+        boolean enoughSpaceBetweenAxisLabels = h > yScaleButton_h + yAxisLabel_h*2 + 2;
+        yScaleButtonX += enoughSpaceBetweenAxisLabels ? 0 : yAxisLabelWidth;
+        yScaleButton_neg.setPosition(yScaleButtonX, yScaleButtonY);
+        yScaleButtonX += yScaleButton_w + padding;
+        yScaleButton_pos.setPosition(yScaleButtonX, yScaleButtonY);
 
         onOff_diameter = h > 26 ? 26 : h - 2;
         onOffButton.setSize(onOff_diameter, onOff_diameter);
@@ -787,8 +863,8 @@ class ChannelBar {
     }
 
     private boolean isBottomChannel() {
-        int numActiveChannels = w_timeSeries.tsChanSelect.activeChan.size();
-        boolean isLastChannel = channelIndex ==  w_timeSeries.tsChanSelect.activeChan.get(numActiveChannels - 1);
+        int numActiveChannels = w_timeSeries.tsChanSelect.getActiveChannels().size();
+        boolean isLastChannel = channelIndex ==  w_timeSeries.tsChanSelect.getActiveChannels().get(numActiveChannels - 1);
         return isLastChannel;
     }
 
@@ -835,7 +911,7 @@ class ChannelBar {
     private class yScaleButtonCallbackListener implements CallbackListener {
         private int channel;
         private boolean increase;
-        private final int hardLimit = 25;
+        private final int hardLimit = 10;
         private int yLimOption = TimeSeriesYLim.UV_200.getValue();
         //private int delta = 0; //value to change limits by
 
@@ -847,9 +923,10 @@ class ChannelBar {
             verbosePrint("A button was pressed for channel " + (channel+1) + ". Should we increase (or decrease?): " + increase);
 
             int inc = increase ? 1 : -1;
-            int n = (int)(log10(abs(yAxisLowerLim))) * 25 * inc;
+            int factor = yAxisUpperLim > 25 || (yAxisUpperLim == 25 && increase) ? 25 : 5;
+            int n = (int)(log10(abs(yAxisLowerLim))) * factor * inc;
             yAxisLowerLim -= n;
-            n = (int)(log10(yAxisUpperLim)) * 25 * inc;
+            n = (int)(log10(yAxisUpperLim)) * factor * inc;
             yAxisUpperLim += n;
             
             yAxisLowerLim = yAxisLowerLim <= -hardLimit ? yAxisLowerLim : -hardLimit;
@@ -869,7 +946,7 @@ class ChannelBar {
 
 //========================== PLAYBACKSLIDER ==========================
 class PlaybackScrollbar {
-    private final float ps_Padding = 50.0; //used to make room for skip to start button
+    private final float ps_Padding = 40.0; //used to make room for skip to start button
     private int x, y, w, h;
     private int swidth, sheight;    // width and height of bar
     private float xpos, ypos;       // x and y position of bar
@@ -895,8 +972,6 @@ class PlaybackScrollbar {
         h = _h;
         swidth = sw;
         sheight = sh;
-        //float widthtoheight = sw - sh;
-        //ratio = (float)sw / widthtoheight;
         xpos = xp + ps_Padding; //lots of padding to make room for button
         ypos = yp-sheight/2;
         spos = xpos;
@@ -908,7 +983,7 @@ class PlaybackScrollbar {
         pbsb_cp5.setAutoDraw(false);
 
         //Let's make a button to return to the start of playback!!
-        skipToStart_diameter = 30;
+        skipToStart_diameter = 25;
         createSkipToStartButton("skipToStartButton", "", int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter);
 
         fileBoard = (FileBoard)currentBoard;
@@ -967,6 +1042,8 @@ class PlaybackScrollbar {
         int newSamplePos = floor(totalSamples * getCursorPercentage());
 
         fileBoard.goToIndex(newSamplePos);
+        dataProcessing.updateEntireDownsampledBuffer();
+        dataProcessing.clearCalculatedMetricWidgets();
     }
 
     float getCursorPercentage() {
@@ -975,6 +1052,9 @@ class PlaybackScrollbar {
 
     String getAbsoluteTimeToDisplay() {
         List<double[]> currentData = currentBoard.getData(1);
+        if (currentData.get(0).length == 0) {
+            return "";
+        }
         int timeStampChan = currentBoard.getTimestampChannel();
         long timestampMS = (long)(currentData.get(0)[timeStampChan] * 1000.0);
         if(timestampMS == 0) {
@@ -1051,12 +1131,14 @@ class PlaybackScrollbar {
         rect(spos, ypos, sheight/2, sheight);
 
         //draw current timestamp and X of Y Seconds above scrollbar
-        int fontSize = 17;
-        textFont(p2, fontSize);
+        textFont(p2, 18);
         fill(OPENBCI_DARKBLUE);
+        textAlign(LEFT, TOP);
+        float textHeight = textAscent() - textDescent();
+        float textY = y - textHeight - 10;
         float tw = textWidth(currentAbsoluteTimeToDisplay);
-        text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos - fontSize - 4);
-        text(currentTimeInSecondsToDisplay, xpos, ypos - fontSize - 4);
+        text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, textY);
+        text(currentTimeInSecondsToDisplay, xpos, textY);
 
         popStyle();
 
@@ -1089,6 +1171,8 @@ class PlaybackScrollbar {
     //Useful to 'reset' the scrollbar before loading a new playback file
     void skipToStartButtonAction() {       
         fileBoard.goToIndex(0);
+        dataProcessing.updateEntireDownsampledBuffer();
+        dataProcessing.clearCalculatedMetricWidgets();
     }
     
 };//end PlaybackScrollbar class

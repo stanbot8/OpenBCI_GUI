@@ -103,7 +103,14 @@ class W_template extends Widget {
 
 };
 
-//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
+/**
+These functions (e.g. Dropdown1()) are global! They are activated when an item from the 
+corresponding dropdown is selected. While it's true they could be defined in the class above 
+with a CallbackListener, it's not worth the trouble (and the sheer amount of duplicated code)
+for this specific kind of dropdown in each widget. In some widgets, you will see that we simply
+use these global methods to call a method in the widget class. This is the best pattern to follow
+due to the limitations of the ControlP5 library.
+**/
 void Dropdown1(int n){
     println("Item " + (n+1) + " selected from Dropdown 1");
     if(n==0){

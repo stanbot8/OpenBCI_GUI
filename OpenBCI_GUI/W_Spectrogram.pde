@@ -1,4 +1,3 @@
-
 //////////////////////////////////////////////////////
 //                                                  //
 //                  W_Spectrogram.pde               //
@@ -11,8 +10,8 @@
 class W_Spectrogram extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
-    public ChannelSelect spectChanSelectTop;
-    public ChannelSelect spectChanSelectBot;
+    public ExGChannelSelect spectChanSelectTop;
+    public ExGChannelSelect spectChanSelectBot;
     private boolean chanSelectWasOpen = false;
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
@@ -33,14 +32,14 @@ class W_Spectrogram extends Widget {
     int midLineY = 0;
 
     private int lastShift = 0;
-    private int scrollSpeed = 100; // == 10Hz
+    private int scrollSpeed = 25; // == 40Hz
     private boolean wasRunning = false;
 
     int paddingLeft = 54;
     int paddingRight = 26;   
     int paddingTop = 8;
     int paddingBottom = 50;
-    int numHorizAxisDivs = 3;
+    int numHorizAxisDivs = 2; // == 40Hz
     int numVertAxisDivs = 8;
     final int[][] vertAxisLabels = {
         {20, 15, 10, 5, 0, 5, 10, 15, 20},
@@ -64,16 +63,14 @@ class W_Spectrogram extends Widget {
     float[] topFFTAvg;
     float[] botFFTAvg;
 
-    W_Spectrogram(PApplet _parent){
+    W_Spectrogram(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Add channel select dropdown to this widget
-        spectChanSelectTop = new ChannelSelect(pApplet, this, x, y, w, navH, "Spectrogram_Channels_Top");
-        spectChanSelectBot = new ChannelSelect(pApplet, this, x, y + navH, w, navH, "Spectrogram_Channels_Bot");
+        spectChanSelectTop = new DualExGChannelSelect(pApplet, x, y, w, navH, true);
+        spectChanSelectBot = new DualExGChannelSelect(pApplet, x, y + navH, w, navH, false);
         activateDefaultChannels();
-        spectChanSelectTop.setIsDualChannelSelect(true);
-        spectChanSelectBot.setIsDualChannelSelect(true);
-        spectChanSelectBot.setIsFirstRowChannelSelect(false);
+
         cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
         cp5ElementsToCheck.addAll(spectChanSelectBot.getCp5ElementsForOverlapCheck());
 
@@ -85,9 +82,9 @@ class W_Spectrogram extends Widget {
         graphW = w - paddingRight - paddingLeft;
         graphH = h - paddingBottom - paddingTop;
 
-        settings.spectMaxFrqSave = 1;
-        settings.spectSampleRateSave = 2;
-        settings.spectLogLinSave = 0;
+        settings.spectMaxFrqSave = 2;
+        settings.spectSampleRateSave = 4;
+        settings.spectLogLinSave = 1;
         vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
         horizAxisLabel = horizAxisLabels[settings.spectSampleRateSave];
         horizAxisLabelStrings = new StringList();
@@ -110,16 +107,20 @@ class W_Spectrogram extends Widget {
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        //Update channel checkboxes and active channels
+        //Update channel checkboxes, active channels, and position
         spectChanSelectTop.update(x, y, w);
-        spectChanSelectBot.update(x, y + navH, w);
+        int chanSelectBotYOffset;
+        chanSelectBotYOffset = navH;
+        spectChanSelectBot.update(x, y + chanSelectBotYOffset, w);
+        
         //Let the top channel select open the bottom one also so we can open both with 1 button
         if (chanSelectWasOpen != spectChanSelectTop.isVisible()) {
             spectChanSelectBot.setIsVisible(spectChanSelectTop.isVisible());
             chanSelectWasOpen = spectChanSelectTop.isVisible();
-            //Allow spectrogram to flex size and position depending on if the channel select is open
-            flexSpectrogramSizeAndPosition();
         }
+
+        //Allow spectrogram to flex size and position depending on if the channel select is open
+        flexSpectrogramSizeAndPosition();
 
         if (spectChanSelectTop.isVisible()) {
             lockElementsOnOverlapCheck(cp5ElementsToCheck);
@@ -184,7 +185,7 @@ class W_Spectrogram extends Widget {
             //for (int i = 0; i < fftLin_L.specSize() - 80; i++) {
             for (int i = 0; i <= dataImg.height/2; i++) {
                 //LEFT SPECTROGRAM ON TOP
-                float hueValue = hueLimit - map((fftAvgs(spectChanSelectTop.activeChan, i)*32), 0, 256, 0, hueLimit);
+                float hueValue = hueLimit - map((fftAvgs(spectChanSelectTop.getActiveChannels(), i)*32), 0, 256, 0, hueLimit);
                 if (settings.spectLogLinSave == 0) {
                     hueValue = map(log10(hueValue), 0, 2, 0, hueLimit);
                 }
@@ -203,7 +204,7 @@ class W_Spectrogram extends Widget {
                 }
 
                 //RIGHT SPECTROGRAM ON BOTTOM
-                hueValue = hueLimit - map((fftAvgs(spectChanSelectBot.activeChan, i)*32), 0, 256, 0, hueLimit);
+                hueValue = hueLimit - map((fftAvgs(spectChanSelectBot.getActiveChannels(), i)*32), 0, 256, 0, hueLimit);
                 if (settings.spectLogLinSave == 0) {
                     hueValue = map(log10(hueValue), 0, 2, 0, hueLimit);
                 }
@@ -246,11 +247,6 @@ class W_Spectrogram extends Widget {
         graphY = y + paddingTop;
         graphW = w - paddingRight - paddingLeft;
         graphH = h - paddingBottom - paddingTop;
-        //Allow spectrogram to flex size and position depending on if the channel select is open
-        if (spectChanSelectTop.isVisible()) {
-            graphY += navH * 2;
-            graphH -= navH * 2;
-        }
     }
 
     void mousePressed(){
@@ -300,11 +296,14 @@ class W_Spectrogram extends Widget {
         pushStyle();
             pushMatrix();
                 rotate(radians(-90));
-                translate(-h/2 - textWidth("Frequency (Hz)")/3, 20);
-                fill(255);
                 textSize(14);
-                //draw y axis label
-                text("Frequency (Hz)", -y, x);
+                int yAxisLabelOffset = spectChanSelectTop.isVisible() ? (int)textWidth("Frequency (Hz)") / 4 : 0;
+                translate(-h/2 - textWidth("Frequency (Hz)")/4, 20);
+                fill(255);
+                // Draw y axis label only when channel select is not visible due to overlap
+                if (!spectChanSelectTop.isVisible()) {
+                    text("Frequency (Hz)", -y - yAxisLabelOffset, x);
+                }
             popMatrix();
         popStyle();
 
@@ -368,10 +367,11 @@ class W_Spectrogram extends Widget {
     void activateDefaultChannels() {
         int[] topChansToActivate;
         int[] botChansToActivate; 
-        if (nchan == 4) {
+
+        if (globalChannelCount == 4) {
             topChansToActivate = new int[]{0, 2};
             botChansToActivate = new int[]{1, 3};
-        } else if (nchan == 8) {
+        } else if (globalChannelCount == 8) {
             topChansToActivate = new int[]{0, 2, 4, 6};
             botChansToActivate = new int[]{1, 3, 5, 7};
         } else {
@@ -390,12 +390,13 @@ class W_Spectrogram extends Widget {
     }
 
     void flexSpectrogramSizeAndPosition() {
+        int flexHeight = spectChanSelectTop.getHeight() + spectChanSelectBot.getHeight();
         if (spectChanSelectTop.isVisible()) {
-            graphY += navH * 2;
-            graphH -= navH * 2;
+            graphY = y + paddingTop + flexHeight;
+            graphH = h - paddingBottom - paddingTop - flexHeight;
         } else {
-            graphY -= navH * 2;
-            graphH += navH * 2;
+            graphY = y + paddingTop;
+            graphH = h - paddingBottom - paddingTop;
         }
     }
 
@@ -435,9 +436,19 @@ class W_Spectrogram extends Widget {
     private long getCurrentTimeStamp() {
         //return current playback time
         List<double[]> currentData = currentBoard.getData(1);
+        if (currentData.size() == 0 || currentData.get(0).length == 0) {
+            return 0;
+        }
         int timeStampChan = currentBoard.getTimestampChannel();
         long timestampMS = (long)(currentData.get(0)[timeStampChan] * 1000.0);
         return timestampMS;
+    }
+
+    public void clear() {
+        // Set all pixels to black (or any other background color you want to clear with)
+        for (int i = 0; i < w_spectrogram.dataImg.pixels.length; i++) {
+            dataImg.pixels[i] = color(0);  // Black background
+        }
     }
 };
 

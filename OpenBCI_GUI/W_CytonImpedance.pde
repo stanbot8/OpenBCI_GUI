@@ -39,8 +39,6 @@ class W_CytonImpedance extends Widget {
     private int imageFooterX, imageFooterY; //same width as imageContainerW
     private int footerHeight;
 
-    private Gif checkingImpedanceOnElectrodeGif;
-
     private int signalQualityStatusTimer;
     private String signalQualityStatusDescription;
 
@@ -70,9 +68,6 @@ class W_CytonImpedance extends Widget {
         threshold_ui_cp5 = new ControlP5(ourApplet);
         threshold_ui_cp5.setGraphics(ourApplet, 0,0);
         threshold_ui_cp5.setAutoDraw(false);
-
-        checkingImpedanceOnElectrodeGif = new Gif(ourApplet, "Rolling-1s-200px.gif");
-        checkingImpedanceOnElectrodeGif.loop();
 
         addDropdown("CytonImpedance_MasterCheckInterval", "Interval", masterCheckInterval.getEnumStringsAsList(), masterCheckInterval.getIndex());
         dropdownWidth = 85; //Override the widget header dropdown width to fit "impedance" mode
@@ -255,16 +250,16 @@ class W_CytonImpedance extends Widget {
     }
 
     private void initCytonImpedanceMap() {
-        if (nchan == 8) {
+        if (globalChannelCount == 8) {
             cytonHeadplotStatic = loadImage("Cyton_8Ch_Static_Headplot_Image.png");
         } else {
             cytonHeadplotStatic = loadImage("Cyton_16Ch_Static_Headplot_Image.png");
         }
         
         //Instantiate electrodeStatus for all electrodes!
-        cytonElectrodeStatus = new CytonElectrodeStatus[nchan];
+        cytonElectrodeStatus = new CytonElectrodeStatus[globalChannelCount];
         for (int i = 0; i < cytonElectrodeStatus.length; i++) {
-            cytonElectrodeStatus[i] = new CytonElectrodeStatus(imp_buttons_cp5, CytonElectrodeLocations.getByIndex(i), cytonBoard, checkingImpedanceOnElectrodeGif);
+            cytonElectrodeStatus[i] = new CytonElectrodeStatus(imp_buttons_cp5, CytonElectrodeLocations.getByIndex(i), cytonBoard);
             //println("CYTON ELECTRODE STATUS making electrode #", i);
         }
     }
@@ -351,23 +346,20 @@ class W_CytonImpedance extends Widget {
         pushStyle();
         textFont(p6, 10);
         textAlign(CENTER, TOP);
-        fill(ElectrodeState.GREYED_OUT.getColor());
+        fill(CytonElectrodeState.GREYED_OUT.getColor());
         text("Thresholds", thresholdTextX, dim.y + dim.h + padding);
         popStyle();
         
-        pushStyle();
-        textFont(p5, 12);
-        textAlign(CENTER);
+       
         String s;
-        color c = ElectrodeState.GREYED_OUT.getColor();
+        color c = CytonElectrodeState.GREYED_OUT.getColor();
         if (signalCheckMode == CytonSignalCheckMode.IMPEDANCE) {
-            Pair<String, ElectrodeState> pair = getImpedanceStringAndState();
+            Pair<String, CytonElectrodeState> pair = getImpedanceStringAndState();
             s = pair.getLeft();
             c = pair.getRight().getColor();
             //Skip over facepad electrodes that do not correspond to a channel number (PPG, EDA, BIAS, and SRB2)
             if (s == null) {
                 if (cytonImpedanceMasterCheck.getBooleanValue()) {
-                    popStyle();
                     return;
                 } else {
                     //If not checking impedance on all channels, display this text in the footer
@@ -377,6 +369,9 @@ class W_CytonImpedance extends Widget {
         } else {
             s = numberOfRailedChanDescription();
         }
+        pushStyle();
+        textFont(p5, 12);
+        textAlign(CENTER);
         fill(c);
         text(s, imageFooterX, imageFooterY);
         popStyle();
@@ -406,12 +401,12 @@ class W_CytonImpedance extends Widget {
         return signalQualityStatusDescription;
     }
 
-    private Pair<String, ElectrodeState> getImpedanceStringAndState() {
+    private Pair<String, CytonElectrodeState> getImpedanceStringAndState() {
         final Integer CHAN_X = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
         final Boolean CHAN_X_ISNPIN = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
         final int NUM_FRONT_CHAN = 8;
         if (CHAN_X == null && CHAN_X_ISNPIN == null) {
-            return new ImmutablePair<String, ElectrodeState>(null, ElectrodeState.GREYED_OUT);
+            return new ImmutablePair<String, CytonElectrodeState>(null, CytonElectrodeState.GREYED_OUT);
         }
 
         final Integer _CHAN = CHAN_X + 1;
@@ -419,13 +414,13 @@ class W_CytonImpedance extends Widget {
             //println(_chan, e.getGUIChannelNumber(), " -- ", chanX_isNpin, e.getIsNPin());
             if (_CHAN.equals(e.getGUIChannelNumber())
                 && CHAN_X_ISNPIN.equals(e.getIsNPin())) {
-                    return new ImmutablePair<String, ElectrodeState>(
+                    return new ImmutablePair<String, CytonElectrodeState>(
                         e.getImpedanceValueAsString(labelMode.getIsAnatomicalName()), 
-                        e.getElectrodeState()
+                        e.getCytonElectrodeState()
                     );
             }
         }
-        return new ImmutablePair<String, ElectrodeState>("Oops?", ElectrodeState.GREYED_OUT);
+        return new ImmutablePair<String, CytonElectrodeState>("Oops?", CytonElectrodeState.GREYED_OUT);
     }
 
     private Button createCytonImpMasterCheckButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
@@ -481,7 +476,7 @@ class W_CytonImpedance extends Widget {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //  Toggle impedance on an electrode using commands sent to board and override the testing button.              //
-    //  Do this asynchonously in a separate thread for the first time in the history of the GUI!!!                  //
+    //  Do this asynchronously in a separate thread for the first time in the history of the GUI!!!                  //
     //  This is the most important method in this class.                                                            //
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void toggleImpedanceOnElectrode(final boolean toggle, final Integer checkingChanX, final Boolean checkingChanX_isNpin, final int curMillis) {
@@ -599,7 +594,7 @@ class W_CytonImpedance extends Widget {
 
             /*
             if (guiSettings.getExpertModeBoolean()) {
-                numElectrodesToMasterCheck += nchan; //CHECK N AND P IF EXPERT MODE
+                numElectrodesToMasterCheck += globalChannelCount; //CHECK N AND P IF EXPERT MODE
             }
             */
             
