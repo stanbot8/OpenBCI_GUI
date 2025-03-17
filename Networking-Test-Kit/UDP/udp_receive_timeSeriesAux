@@ -7,12 +7,17 @@ import struct
 import os
 import json
 
+numSamples = 0
+
 # Print received message to console
 def print_message(*args):
     try:
         print(args[0]) #added to see raw data 
         obj = json.loads(args[0].decode())
         print(obj.get('data'))
+        sampleCountInData = len(obj.get('data')[0])
+        global numSamples
+        numSamples += sampleCountInData
         if obj:
             return True
         else:
@@ -46,7 +51,7 @@ if __name__ == "__main__":
   parser.add_argument("--ip",
       default="127.0.0.1", help="The ip to listen on")
   parser.add_argument("--port",
-      type=int, default=12345, help="The port to listen on")
+      type=int, default=12353, help="The port to listen on")
   parser.add_argument("--address",default="/openbci", help="address to listen to")
   parser.add_argument("--option",default="print",help="Debugger option")
   parser.add_argument("--len",default=8,help="Debugger option")
@@ -85,13 +90,11 @@ if __name__ == "__main__":
   # Receive messages
   print("Listening...")
   start = time.time()
-  numSamples = 0
   duration = 10
   while time.time() <= start + duration:
     data, addr = sock.recvfrom(65507) # buffer size is 65507 bytes
     if args.option=="print":
-      if print_message(data):
-        numSamples += 1
+        print_message(data)
     elif args.option=="record":
       record_to_file(data)
 print( "Samples == {}".format(numSamples) )
