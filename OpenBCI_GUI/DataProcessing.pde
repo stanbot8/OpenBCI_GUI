@@ -23,6 +23,10 @@ void processNewData() {
     int[] exgChannels = currentBoard.getEXGChannels();
     int channelCount = currentBoard.getNumEXGChannels();
 
+    if (currentData.size() == 0 || currentData.get(0).length == 0) {
+        return;
+    }
+
     //update the data buffers
     for (int Ichan=0; Ichan < channelCount; Ichan++) {
         for(int i = 0; i < getCurrentBoardBufferSize(); i++) {
@@ -35,13 +39,11 @@ void processNewData() {
     //apply additional processing for the time-domain montage plot (ie, filtering)
     dataProcessing.process(dataProcessingFilteredBuffer, fftBuff);
 
-    dataProcessing.newDataToSend = true;
-
     //look to see if the latest data is railed so that we can notify the user on the GUI
-    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataProcessingRawBuffer[Ichan], Ichan);
+    for (int Ichan=0; Ichan < globalChannelCount; Ichan++) is_railed[Ichan].update(dataProcessingRawBuffer[Ichan], Ichan);
 
     //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
+    for (int Ichan=0; Ichan < globalChannelCount; Ichan++) {
         // Calculate the impedance
         float impedance = (sqrt(2.0)*dataProcessing.data_std_uV[Ichan]*1.0e-6) / BoardCytonConstants.leadOffDrive_amps;
         // Subtract the 2.2kOhm resistor
@@ -59,7 +61,7 @@ void processNewData() {
 void initializeFFTObjects(ddf.minim.analysis.FFT[] fftBuff, float[][] dataProcessingRawBuffer, int Nfft, float fs_Hz) {
 
     float[] fooData;
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
+    for (int Ichan=0; Ichan < globalChannelCount; Ichan++) {
         //make the FFT objects...Following "SoundSpectrum" example that came with the Minim library
         fftBuff[Ichan].window(ddf.minim.analysis.FFT.HAMMING);
 
@@ -80,10 +82,8 @@ void initializeFFTObjects(ddf.minim.analysis.FFT[] fftBuff, float[][] dataProces
 
 class DataProcessing {
     private float fs_Hz;  //sample rate
-    private int nchan;
     float data_std_uV[];
     float polarity[];
-    boolean newDataToSend;
     final int[] processing_band_low_Hz = {
         1, 4, 8, 13, 30
     }; //lower bound for each frequency band of interest (2D classifier only)
@@ -94,17 +94,21 @@ class DataProcessing {
     float headWidePower[];
 
     public EmgSettings emgSettings;
+    public NetworkingSettings networkingSettings;
+    public NetworkingDataAccumulator networkingDataAccumulator;
 
-    DataProcessing(int NCHAN, float sample_rate_Hz) {
-        nchan = NCHAN;
+    private final int DOWNSAMPLING_FACTOR = getDownsamplingFactor();
+    private int downsamplingCounter = DOWNSAMPLING_FACTOR; // Start at DOWNSAMPLING_FACTOR to accept the first sample
+
+    DataProcessing(float sample_rate_Hz) {
         fs_Hz = sample_rate_Hz;
-        data_std_uV = new float[nchan];
-        polarity = new float[nchan];
-        newDataToSend = false;
-        avgPowerInBins = new float[nchan][processing_band_low_Hz.length];
+        data_std_uV = new float[globalChannelCount];
+        polarity = new float[globalChannelCount];
+        avgPowerInBins = new float[globalChannelCount][processing_band_low_Hz.length];
         headWidePower = new float[processing_band_low_Hz.length];
-
         emgSettings = new EmgSettings();
+        networkingSettings = new NetworkingSettings();
+        networkingDataAccumulator = new NetworkingDataAccumulator();
     }
     
     //Process data on a channel-by-channel basis
@@ -145,26 +149,42 @@ class DataProcessing {
             //Apply Environmental Noise filter on all channels. Do it like this since there are no codes for NONE or FIFTY_AND_SIXTY in BrainFlow
             switch (filterSettings.values.globalEnvFilter) {
                 case FIFTY_AND_SIXTY:
-                    DataFilter.remove_environmental_noise(
+                    DataFilter.perform_bandstop(
                         tempArray,
                         currentBoard.getSampleRate(),
-                        NoiseTypes.FIFTY.get_code());
-                    DataFilter.remove_environmental_noise(
+                        48d,
+                        52d,
+                        4,
+                        BrainFlowFilterType.BUTTERWORTH.getValue(),
+                        1d);
+                    DataFilter.perform_bandstop(
                         tempArray,
                         currentBoard.getSampleRate(),
-                        NoiseTypes.SIXTY.get_code());
+                        58d,
+                        62d,
+                        4,
+                        BrainFlowFilterType.BUTTERWORTH.getValue(),
+                        1d);
                     break;
                 case FIFTY:
-                    DataFilter.remove_environmental_noise(
+                    DataFilter.perform_bandstop(
                         tempArray,
                         currentBoard.getSampleRate(),
-                        NoiseTypes.FIFTY.get_code());
+                        48d,
+                        52d,
+                        4,
+                        BrainFlowFilterType.BUTTERWORTH.getValue(),
+                        1d);
                     break;
                 case SIXTY:
-                    DataFilter.remove_environmental_noise(
+                    DataFilter.perform_bandstop(
                         tempArray,
                         currentBoard.getSampleRate(),
-                        NoiseTypes.SIXTY.get_code());
+                        58d,
+                        62d,
+                        4,
+                        BrainFlowFilterType.BUTTERWORTH.getValue(),
+                        1d);
                     break;
                 default:
                     break;
@@ -264,17 +284,17 @@ class DataProcessing {
 
         float prevFFTdata[] = new float[fftBuff[0].specSize()];
 
-        for (int Ichan=0; Ichan < nchan; Ichan++) { 
+        for (int Ichan=0; Ichan < globalChannelCount; Ichan++) { 
             processChannel(Ichan, data_forDisplay_uV, prevFFTdata);
         } //end the loop over channels.
 
         for (int i = 0; i < processing_band_low_Hz.length; i++) {
             float sum = 0;
 
-            for (int j = 0; j < nchan; j++) {
+            for (int j = 0; j < globalChannelCount; j++) {
                 sum += avgPowerInBins[j][i];
             }
-            headWidePower[i] = sum/nchan;   // averaging power over all channels
+            headWidePower[i] = sum/globalChannelCount;   // averaging power over all channels
         }
 
         // Calculate data used for Headplot
@@ -284,7 +304,7 @@ class DataProcessing {
         float[] refData_uV = dataProcessingFilteredBuffer[refChanInd];  //use the filtered data
         refData_uV = Arrays.copyOfRange(refData_uV, refData_uV.length-((int)fs_Hz), refData_uV.length);   //just grab the most recent second of data
         // Compute polarity of each channel
-        for (int Ichan=0; Ichan < nchan; Ichan++) {
+        for (int Ichan=0; Ichan < globalChannelCount; Ichan++) {
             float[] fooData_filt = dataProcessingFilteredBuffer[Ichan];  //use the filtered data
             fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
             float dotProd = calcDotProduct(fooData_filt, refData_uV);
@@ -303,10 +323,64 @@ class DataProcessing {
         w_focus.updateFocusWidgetData();
         w_bandPower.updateBandPowerWidgetData();
         w_emgJoystick.updateEmgJoystickWidgetData();
-        if (w_pulsesensor != null) {
-            w_pulsesensor.updatePulseSensorWidgetData();
+        if (currentBoard instanceof BoardCyton) {
+            if (w_pulseSensor != null) {
+                w_pulseSensor.updatePulseSensorWidgetData();
+            }
         }
 
-        w_networking.updateNetworkingWidgetData();
+        networkingDataAccumulator.update();
+
+        addFilteredDataToDownsampledBuffer();
+    }
+
+    private void addFilteredDataToDownsampledBuffer() {
+        int[] exgChannels = currentBoard.getEXGChannels();
+        float[][] filteredData = dataProcessingFilteredBuffer;
+        double[][] frameData = currentBoard.getFrameData();
+
+        if (frameData[exgChannels[0]].length == 0) {
+            return;
+        }
+
+        if (!currentBoard.isStreaming()) {
+            return;
+        }
+        
+        int start = filteredData[0].length - frameData[exgChannels[0]].length;
+
+        for (int iSample = start; iSample < filteredData[exgChannels[0]].length; iSample++) {
+            if (downsamplingCounter == DOWNSAMPLING_FACTOR) {
+                downsamplingCounter = 0;
+                for (int iChannel = 0; iChannel < exgChannels.length; iChannel++) {
+                    downsampledFilteredBuffer.add(iChannel, filteredData[iChannel][iSample]);
+                }
+            }
+            downsamplingCounter++;
+        }
+    }
+
+    //Called when using the Playback Scrollbar to update the data while in Playback Mode
+    public void updateEntireDownsampledBuffer() {
+        int[] exgChannels = currentBoard.getEXGChannels();
+        float[][] filteredData = dataProcessingFilteredBuffer;
+        downsampledFilteredBuffer.initArrays();
+        
+
+        for (int iSample = 0; iSample < filteredData[0].length; iSample++) {
+            if (downsamplingCounter == DOWNSAMPLING_FACTOR) {
+                downsamplingCounter = 0;
+                for (int iChannel = 0; iChannel < exgChannels.length; iChannel++) {
+                    downsampledFilteredBuffer.add(iChannel, filteredData[iChannel][iSample]);
+                }
+            }
+            downsamplingCounter++;
+        }
+    }
+
+    private void clearCalculatedMetricWidgets() {
+        println("Clearing calculated metric widgets");
+        w_spectrogram.clear();
+        w_focus.clear();
     }
 }

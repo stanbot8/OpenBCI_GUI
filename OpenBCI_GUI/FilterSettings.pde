@@ -33,7 +33,7 @@ public class FilterSettingsValues {
 
     public FilterSettingsValues(int channelCount) {
         brainFlowFilter = BFFilter.BANDPASS;
-        filterChannelSelect = FilterChannelSelect.ALL_CHANNELS;
+        filterChannelSelect = FilterChannelSelect.CUSTOM_CHANNELS;
         globalEnvFilter = GlobalEnvironmentalFilter.FIFTY_AND_SIXTY;
 
         //Set Master Values for all channels for BandStop Filter
@@ -153,7 +153,11 @@ class FilterSettings {
         settingsFilename.append("Channels.json");
         String filename = settingsFilename.toString();
         File fileToSave = new File(filename);
-        selectOutput("Save filter settings to file", "storeFilterSettings", fileToSave);
+        FileChooser chooser = new FileChooser(
+            FileChooserMode.SAVE,
+            "storeFilterSettings",
+            fileToSave,
+            "Save filter settings to file");
     }
     //Avoid error with popup being in another thread.
     public void loadSettings() {
@@ -164,7 +168,11 @@ class FilterSettings {
         settingsFilename.append("Channels.json");
         String filename = settingsFilename.toString();
         File fileToLoad = new File(filename);
-        selectInput("Select settings file to load", "loadFilterSettings", fileToLoad);
+        FileChooser chooser = new FileChooser(
+            FileChooserMode.LOAD,
+            "loadFilterSettings",
+            fileToLoad,
+            "Select settings file to load");
     }
 }
 

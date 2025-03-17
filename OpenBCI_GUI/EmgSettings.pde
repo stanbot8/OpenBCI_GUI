@@ -85,7 +85,11 @@ class EmgSettings {
         settingsFilename.append("Channels.json");
         String filename = settingsFilename.toString();
         File fileToSave = new File(filename);
-        selectOutput("Save EMG settings to file", "storeEmgSettings", fileToSave);
+        FileChooser chooser = new FileChooser(
+            FileChooserMode.SAVE,
+            "storeEmgSettings",
+            fileToSave,
+            "Save EMG settings to file");
     }
 
     //Avoid error with popup being in another thread.
@@ -97,7 +101,12 @@ class EmgSettings {
         settingsFilename.append("Channels.json");
         String filename = settingsFilename.toString();
         File fileToLoad = new File(filename);
-        selectInput("Select EMG settings file to load", "loadEmgSettings", fileToLoad);
+        FileChooser chooser = new FileChooser(
+            FileChooserMode.LOAD,
+            "loadEmgSettings",
+            fileToLoad,
+            "Select EMG settings file to load");
+        
     }
 
     public boolean getSettingsWereLoaded() {

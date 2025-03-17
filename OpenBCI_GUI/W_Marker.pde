@@ -21,14 +21,19 @@ class W_Marker extends Widget {
     private final int MARKER_UI_GRID_ROWS = 4;
     private final int MARKER_UI_GRID_COLUMNS = 4;
     private Button[] markerButtons = new Button[MAX_NUMBER_OF_MARKER_BUTTONS];
-    private Grid markerUIGrid;
+    private Grid grid;
 
     private Textfield markerReceiveIPTextfield;
     private Textfield markerReceivePortTextfield;
     private String markerReceiveIP = "127.0.0.1";
-    private int markerReceivePort = 12350;
+    private int markerReceivePort = 12340;
     private final int MARKER_RECEIVE_TEXTFIELD_WIDTH = 108;
     private final int MARKER_RECEIVE_TEXTFIELD_HEIGHT = 22;
+
+    private Button markerReceiveToggle;
+    private final String START_BUTTON_TEXT = "Start Receiver";
+    private final String STOP_BUTTON_TEXT = "Stop Receiver";
+    private final int START_STOP_BUTTON_WIDTH = 200;
 
     private hypermedia.net.UDP udpReceiver;
 
@@ -41,7 +46,7 @@ class W_Marker extends Widget {
     private MarkerWindow markerWindow = MarkerWindow.FIVE;
 
     W_Marker(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+        super(_parent);
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
         localCP5 = new ControlP5(ourApplet);
@@ -50,21 +55,20 @@ class W_Marker extends Widget {
 
         createMarkerButtons();
 
-        updateGraphDims();
         addDropdown("markerVertScaleDropdown", "Vert Scale", markerVertScale.getEnumStringsAsList(), markerVertScale.getIndex());
         addDropdown("markerWindowDropdown", "Window", markerWindow.getEnumStringsAsList(), markerWindow.getIndex());
+        
+        updateGraphDims();
         markerBar = new MarkerBar(_parent, MAX_NUMBER_OF_MARKER_BUTTONS, markerWindow.getValue(), markerVertScale.getValue(), graphX, graphY, graphW, graphH);
 
-        markerUIGrid = new Grid(MARKER_UI_GRID_ROWS, MARKER_UI_GRID_COLUMNS, MARKER_UI_GRID_CELL_HEIGHT);
-        markerUIGrid.setDrawTableBorder(false);
-        markerUIGrid.setDrawTableInnerLines(false);
-        markerUIGrid.setTableFontAndSize(p4, 14);
-        markerUIGrid.setString("Receive IP", 3, 0);
-        markerUIGrid.setString("Receive Port", 3, 2);
+        grid = new Grid(MARKER_UI_GRID_ROWS, MARKER_UI_GRID_COLUMNS, MARKER_UI_GRID_CELL_HEIGHT);
+        grid.setDrawTableBorder(false);
+        grid.setDrawTableInnerLines(false);
+        grid.setTableFontAndSize(p4, 14);
+        grid.setString("Receive IP", 2, 0);
+        grid.setString("Receive Port", 2, 2);
 
-        createMarkerReceiveTextfields();
-
-        initUdpMarkerReceiver();
+        createMarkerReceiveUI();
 
         //Add all cp5 elements to a list so that they can be checked for overlap
         cp5ElementsToCheckForOverlap = new ArrayList<controlP5.Controller>();
@@ -73,36 +77,32 @@ class W_Marker extends Widget {
         }
         cp5ElementsToCheckForOverlap.add(markerReceiveIPTextfield);
         cp5ElementsToCheckForOverlap.add(markerReceivePortTextfield);
+        cp5ElementsToCheckForOverlap.add(markerReceiveToggle);
     }
 
     public void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
+        markerBar.update();
 
-        copyPaste.checkForCopyPaste(markerReceiveIPTextfield);
-        copyPaste.checkForCopyPaste(markerReceivePortTextfield);
+        textfieldUpdateHelper.checkTextfield(markerReceiveIPTextfield);
+        textfieldUpdateHelper.checkTextfield(markerReceivePortTextfield);
 
         lockElementsOnOverlapCheck(cp5ElementsToCheckForOverlap);
-
-        if (currentBoard.isStreaming()) {
-            markerBar.update();
-        }
 
     }
 
     public void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
-        markerUIGrid.draw();
+        grid.draw();
         markerBar.draw();
 
-        //This draws all cp5 objects in the local instance
         localCP5.draw();
     }
 
     public void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-
-        //Very important to allow users to interact with objects after app resize        
+        super.screenResized();
+      
         localCP5.setGraphics(ourApplet, 0, 0);
 
         resizeMarkerUIGrid();
@@ -123,11 +123,10 @@ class W_Marker extends Widget {
         int tableY = y + MARKER_UI_GRID_EXTERIOR_PADDING;
         int tableW = w - GRAPH_PADDING * 2;
         int tableH = y - graphY - GRAPH_PADDING * 2;
-        markerUIGrid.setDim(tableX, tableY, tableW);
-        markerUIGrid.setRowHeight(MARKER_UI_GRID_CELL_HEIGHT);
-        markerUIGrid.dynamicallySetTextVerticalPadding(3, 0);
-        markerUIGrid.dynamicallySetTextVerticalPadding(3, 2);
-        markerUIGrid.setHorizontalCenterTextInCells(true);
+        grid.setDim(tableX, tableY, tableW);
+        grid.setRowHeight(MARKER_UI_GRID_CELL_HEIGHT);
+        grid.dynamicallySetTextVerticalPadding(2, 0);
+        grid.setHorizontalCenterTextInCells(true);
 
         final int CELL_PADDING = 8;
         final int CELL_PADDING_TOTAL = CELL_PADDING * 2;
@@ -137,21 +136,24 @@ class W_Marker extends Widget {
         for (int i = 0; i < MAX_NUMBER_OF_MARKER_BUTTONS; i++) {
             int row = i < MARKER_UI_GRID_COLUMNS ? 0 : 1;
             int column = i % (MARKER_UI_GRID_COLUMNS);
-            RectDimensions cellDims = markerUIGrid.getCellDims(row, column);
+            RectDimensions cellDims = grid.getCellDims(row, column);
             markerButtons[i].setPosition(cellDims.x + CELL_PADDING, cellDims.y + HALF_CELL_PADDING);
             markerButtons[i].setSize(cellDims.w - CELL_PADDING_TOTAL, cellDims.h - CELL_PADDING);
         }
 
-        RectDimensions ipTextfieldPosition = markerUIGrid.getCellDims(3, 1);
+        RectDimensions ipTextfieldPosition = grid.getCellDims(2, 1);
         markerReceiveIPTextfield.setPosition(ipTextfieldPosition.x, ipTextfieldPosition.y + HALF_CELL_PADDING);
 
-        RectDimensions portTextfieldPosition = markerUIGrid.getCellDims(3, 3);
+        RectDimensions portTextfieldPosition = grid.getCellDims(2, 3);
         markerReceivePortTextfield.setPosition(portTextfieldPosition.x, portTextfieldPosition.y + HALF_CELL_PADDING);
+
+        RectDimensions markerToggleCellPosition = grid.getCellDims(3, 0);
+        int markerReceiveToggleX = x + w / 2 - START_STOP_BUTTON_WIDTH / 2;
+        markerReceiveToggle.setPosition(markerReceiveToggleX, markerToggleCellPosition.y + HALF_CELL_PADDING);
     }
 
     private void createMarkerButtons() {
         for (int i = 0; i < MAX_NUMBER_OF_MARKER_BUTTONS; i++) {
-            //Create marker buttons
             //Marker number is i + 1 because marker numbers start at 1, not 0. Otherwise, will throw BrainFlow error.
             //This initial position is temporary and will be updated in resizeMarkerUIGrid()
             markerButtons[i] = createMarkerButton(i + 1, x + 10 + (i * MARKER_BUTTON_WIDTH), y + 10);
@@ -204,9 +206,10 @@ class W_Marker extends Widget {
         }
     }
 
-    private void createMarkerReceiveTextfields() {
+    private void createMarkerReceiveUI() {
         markerReceiveIPTextfield = createTextfield("markerReceiveIPTextfield", markerReceiveIP);
         markerReceivePortTextfield = createTextfield("markerReceivePortTextfield", Integer.toString(markerReceivePort));
+        createMarkerReceiveToggle();
     }
 
     /* Create textfields for network parameters */
@@ -238,7 +241,6 @@ class W_Marker extends Widget {
             public void controlEvent(CallbackEvent theEvent) {
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && myTextfield.getText().equals("")) {
                     resetMarkerReceiveTextfield(myTextfield);
-                    initUdpMarkerReceiver();
                 }
             }
         });
@@ -247,15 +249,6 @@ class W_Marker extends Widget {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!myTextfield.isActive() && myTextfield.getText().equals("")) {
                     resetMarkerReceiveTextfield(myTextfield);
-                    initUdpMarkerReceiver();
-                }
-            }
-        });
-        //Reinitialize UDP receiver if user presses Enter key and textfield value is not null
-        myTextfield.addCallback(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && !myTextfield.getText().equals("")) {
-                    initUdpMarkerReceiver();
                 }
             }
         });
@@ -270,17 +263,50 @@ class W_Marker extends Widget {
         }
     }
 
+    private void createMarkerReceiveToggle() {
+        markerReceiveToggle = createButton(localCP5, "markerReceiveToggle", START_BUTTON_TEXT, x + MARKER_UI_GRID_EXTERIOR_PADDING, y + MARKER_UI_GRID_EXTERIOR_PADDING, START_STOP_BUTTON_WIDTH, MARKER_RECEIVE_TEXTFIELD_HEIGHT, p5, 12, TURN_ON_GREEN, OPENBCI_DARKBLUE);
+        markerReceiveToggle.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (udpReceiver == null) {
+                    initUdpMarkerReceiver();
+                    markerReceiveToggle.getCaptionLabel().setText(STOP_BUTTON_TEXT);
+                    markerReceiveToggle.setColorBackground(TURN_OFF_RED);
+                    return;
+                }
+
+                if (udpReceiver.isListening()) {
+                    markerReceiveToggle.getCaptionLabel().setText(START_BUTTON_TEXT);
+                    markerReceiveToggle.setColorBackground(TURN_ON_GREEN);
+                    disposeUdpMarkerReceiver();
+                } else {
+                    markerReceiveToggle.getCaptionLabel().setText(STOP_BUTTON_TEXT);
+                    markerReceiveToggle.setColorBackground(TURN_OFF_RED);
+                    initUdpMarkerReceiver();
+                }
+            }
+        });
+    }
+
     private void initUdpMarkerReceiver() {
         markerReceiveIP = getIpAddrFromStr(markerReceiveIPTextfield.getText());
         markerReceivePort = Integer.parseInt(dropNonPrintableChars(markerReceivePortTextfield.getText()));
-        if (udpReceiver != null) {
-            udpReceiver.close();
-        }
+        
+        disposeUdpMarkerReceiver();
+        
         udpReceiver = new UDP(ourApplet, markerReceivePort, markerReceiveIP);
         udpReceiver.listen(true);
+        udpReceiver.broadcast(false);
         udpReceiver.log(false);
         udpReceiver.setReceiveHandler("receiveMarkerViaUdp");
         outputSuccess("Marker Widget: Listening for markers on " + markerReceiveIP + ":" + markerReceivePort);
+    }
+
+    public void disposeUdpMarkerReceiver() {
+        if (udpReceiver != null) {
+            udpReceiver.close();
+            udpReceiver.dispose();
+            println("Marker Widget: Stopped listening for markers on " + markerReceiveIP + ":" + markerReceivePort);
+        }
     }
 
     private void insertMarker(int markerNumber) {
@@ -293,7 +319,7 @@ class W_Marker extends Widget {
         }
     }
 
-    public void insertMarkerFromExternal(float markerValue) {
+    public void insertMarkerFromExternal(double markerValue) {
         int markerChannel = ((DataSource)currentBoard).getMarkerChannel();
 
         if (currentBoard instanceof BoardBrainFlow) {
@@ -329,19 +355,19 @@ class W_Marker extends Widget {
         return dropNonPrintableChars(markerReceivePortTextfield.getText());
     }
 
-}; //end class W_Marker
+};
 
 //This class contains the time series plot for displaying the markers over time
 class MarkerBar {
-    //this class contains the plot for the 2d graph of marker data
     private int x, y, w, h;
     private int X_AXIS_PADDING = 22;
     private int Y_AXIS_PADDING = 30;
-    private int xOffset;
 
-    private GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
+    private GPlot plot;
     private GPointsArray markerPointsArray;
     private final String PLOT_LAYER = "layer1";
+    private final float AUTOSCALE_SPACING = .2f;
+    private GPlotAutoscaler gplotAutoscaler;
 
     private int nPoints;
     private int numSeconds;
@@ -362,26 +388,20 @@ class MarkerBar {
         yAxisMax = _yAxisMax;
         numSeconds = markerWindow;
 
-        // This widget is only instantiated when the board is accel capable, so we don't need to check
         markerBoard = (DataSource)currentBoard;
 
         x = _x;
         y = _y;
         w = _w;
         h = _h;
-        if (eegDataSource == DATASOURCE_CYTON) {
-            xOffset = 22;
-        } else {
-            xOffset = 0;
-        }
 
         plot = new GPlot(_parent);
-        plot.setPos(x + 36 + 4 + xOffset, y); //match marker plot position with Time Series
-        plot.setDim(w - 36 - 4 - xOffset, h);
+        plot.setPos(x + 36 + 4, y); //match marker plot position with Time Series
+        plot.setDim(w - 36 - 4, h);
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor(WHITE);
         plot.setXLim(-numSeconds, 0); //set the horizontal scale
-        plot.setYLim(-0.2, yLimit + .2); //change this to adjust vertical scale
+        plot.setYLim(-AUTOSCALE_SPACING, yLimit + AUTOSCALE_SPACING); //change this to adjust vertical scale
         //plot.setPointSize(2);
         plot.setPointColor(0);
         plot.getXAxis().setAxisLabelText("Time (s)");
@@ -396,9 +416,9 @@ class MarkerBar {
         plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
         plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
         plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        gplotAutoscaler = new GPlotAutoscaler(false, AUTOSCALE_SPACING);
 
         initArrays();
-
         
         plot.addLayer(PLOT_LAYER, markerPointsArray);
         plot.getLayer(PLOT_LAYER).setLineColor(ACCEL_X_COLOR);
@@ -420,22 +440,16 @@ class MarkerBar {
         markerPointsArray = new GPointsArray(markerTimeArray, tempMarkerFloatArray);
     }
 
-    //Used to update the accelerometerBar class
     public void update() {
         updateGPlotPoints();
-
-        if (isAutoscale) {
-            adjustYAxis(-1);
-        }
     }
 
     public void draw() {
         pushStyle();
         plot.beginDraw();
-        plot.drawBox(); //we won't draw this eventually ...
+        plot.drawBox();
         plot.drawGridLines(GPlot.BOTH);
         plot.drawLines(); //Draw a Line graph!
-        //plot.drawPoints(); //Used to draw Points instead of Lines
         plot.drawYAxis();
         plot.drawXAxis();
         plot.endDraw();
@@ -452,7 +466,7 @@ class MarkerBar {
 
         initArrays();
 
-        //Set the number of axis divisions...
+        //Set the number of axis divisions
         if (numSeconds > 1) {
             plot.getXAxis().setNTicks(numSeconds);
         } else {
@@ -461,26 +475,14 @@ class MarkerBar {
     }
 
     public void adjustYAxis(int _yAxisMax) {
-        if (_yAxisMax == -1) {
-            yAxisMax = 1;
-            isAutoscale = true;
+        boolean enableAutoscale = _yAxisMax == 0;
+        gplotAutoscaler.setEnabled(enableAutoscale);
+        if (enableAutoscale) {
             return;
         }
-        isAutoscale = false;
-        yAxisMax = _yAxisMax;
-        plot.setYLim(-0.2, yAxisMax + .2);
-    }
 
-    void applyAutoscale() {
-        //Do this once a second for all TimeSeries ChannelBars to save on resources
-        int newMillis = millis();
-        boolean doAutoscale = newMillis > previousMillis + 1000;
-        if (isAutoscale && currentBoard.isStreaming() && doAutoscale) {
-            autoscaleMin = (int) Math.floor(autoscaleMin);
-            autoscaleMax = (int) Math.ceil(autoscaleMax);
-            previousMillis = newMillis;
-            plot.setYLim(autoscaleMin, autoscaleMax); //<---- This is a very expensive method. Here is the bottleneck.
-        }
+        yAxisMax = _yAxisMax;
+        plot.setYLim(-AUTOSCALE_SPACING, yAxisMax + AUTOSCALE_SPACING);
     }
 
     //Used to update the Points within the graph
@@ -488,16 +490,12 @@ class MarkerBar {
         List<double[]> allData = markerBoard.getData(nPoints);
         int markerChannel = markerBoard.getMarkerChannel();
 
-        autoscaleMax = -Float.MAX_VALUE;
-        autoscaleMin = Float.MAX_VALUE;
-
         for (int i = 0; i < nPoints; i++) {
             markerPointsArray.set(i, markerTimeArray[i], (float)allData.get(i)[markerChannel], "");
-            autoscaleMax = Math.max((float)allData.get(i)[markerChannel], autoscaleMax);
-            autoscaleMin = Math.min((float)allData.get(i)[markerChannel], autoscaleMin);
         }
-        applyAutoscale();
         plot.setPoints(markerPointsArray, PLOT_LAYER);
+
+        gplotAutoscaler.update(plot, markerPointsArray);
     }
 
     public void screenResized(int _x, int _y, int _w, int _h) {
@@ -506,13 +504,12 @@ class MarkerBar {
         w = _w;
         h = _h;
         //reposition & resize the plot
-        plot.setPos(x + 36 + 4 + xOffset, y);
-        plot.setDim(w - 36 - 4 - xOffset, h);
+        plot.setPos(x + 36 + 4, y);
+        plot.setDim(w - 36 - 4, h);
 
     }
-}; //end of class
+};
 
-//Enum for the Marker Window in W_Marker class
 public enum MarkerWindow implements IndexingInterface
 {
     FIVE (0, 5, "5 sec"),
@@ -553,10 +550,9 @@ public enum MarkerWindow implements IndexingInterface
     }
 }
 
-//Enum for the Marker Vertical Scale in W_Marker class
 public enum MarkerVertScale implements IndexingInterface
 {
-    AUTO (0, -1, "Auto"),
+    AUTO (0, 0, "Auto"),
     TWO (1, 2, "2"),
     FOUR (2, 4, "4"),
     EIGHT (3, 8, "8"),
@@ -608,14 +604,13 @@ public void markerVertScaleDropdown(int n) {
 
 //Custom UDP receive handler for receiving markers from external sources
 public void receiveMarkerViaUdp( byte[] data, String ip, int port ) {
-    float markerValue = convertByteArrayToFloat(data);
-    String message = Float.toString(markerValue);
-    
+    double markerValue = convertByteArrayToDouble(data);
+    //String message = Double.toString(markerValue);
     //println( "received: \""+message+"\" from "+ip+" on port "+port );
     w_marker.insertMarkerFromExternal(markerValue);
 }
 
-public float convertByteArrayToFloat(byte[] array) {
+public double convertByteArrayToDouble(byte[] array) {
     ByteBuffer buffer = ByteBuffer.wrap(array);
-    return buffer.getFloat();
+    return buffer.getDouble();
 }

@@ -37,7 +37,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
     private final color BACKGROUND_COLOR = GREY_235;
     private final color LABEL_COLOR = WHITE;
 
-    private final int defaultWidth = 600;
+    private final int defaultWidth = 680;
     private final int defaultHeight = 600;
 
     public EmgSettingsValues emgSettingsValues;
@@ -52,8 +52,8 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
     private ScrollableList[] windowLists;
     private ScrollableList[] uvLimitLists;
-    private ScrollableList[] creepIncLists;
     private ScrollableList[] creepDecLists;
+    private ScrollableList[] creepIncLists;
     private ScrollableList[] minDeltaUvLists;
     private ScrollableList[] lowLimitLists;
 
@@ -98,7 +98,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
         ourApplet = this;
 
         surface.setTitle(HEADER_MESSAGE);
-        surface.setAlwaysOnTop(false);
+        surface.setAlwaysOnTop(true);
         surface.setResizable(false);
 
         Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
@@ -145,8 +145,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
         try {
             emgCp5.draw();
         } catch (ConcurrentModificationException e) {
-            e.printStackTrace();
-            outputError("EMG Settings UI: Unable to draw cp5 objects.");
+            println("EMG Settings UI: Error drawing cp5: " + e.getMessage());
         }
     }
 
@@ -218,12 +217,12 @@ class EmgSettingsUI extends PApplet implements Runnable {
             uvLimitLists[i].setSize(dropdownWidth, (uvLimitLists[i].getItems().size()+1) * DROPDOWN_HEIGHT);
 
             dropdownX += buttonXIncrement;
-            creepIncLists[i].setPosition(dropdownX, dropdownYPositions[i]);
-            creepIncLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
-
-            dropdownX += buttonXIncrement;
             creepDecLists[i].setPosition(dropdownX, dropdownYPositions[i]);
             creepDecLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
+
+            dropdownX += buttonXIncrement;
+            creepIncLists[i].setPosition(dropdownX, dropdownYPositions[i]);
+            creepIncLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
 
             dropdownX += buttonXIncrement;
             minDeltaUvLists[i].setPosition(dropdownX, dropdownYPositions[i]);
@@ -261,8 +260,8 @@ class EmgSettingsUI extends PApplet implements Runnable {
         channelColumnLabel = new TextBox("Channel", x + colOffset, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
         windowLabel = new TextBox("Window", x + colOffset + colWidth, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
         uvLimitLabel = new TextBox("uV Limit", x + colOffset + colWidth*2, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
-        creepIncLabel = new TextBox("Creep +", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
-        creepDecLabel = new TextBox("Creep -", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        creepDecLabel = new TextBox("Floor Creep", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        creepIncLabel = new TextBox("Ceiling Creep", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
         minDeltaUvLabel = new TextBox("Min \u0394uV", x + colOffset + colWidth*5, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
         lowLimitLabel = new TextBox("Low Limit", x + colOffset + colWidth*6, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
 
@@ -275,8 +274,8 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
         windowLists = new ScrollableList[channelCount];
         uvLimitLists = new ScrollableList[channelCount];
-        creepIncLists = new ScrollableList[channelCount];
         creepDecLists = new ScrollableList[channelCount];
+        creepIncLists = new ScrollableList[channelCount];
         minDeltaUvLists = new ScrollableList[channelCount];
         lowLimitLists = new ScrollableList[channelCount];
 
@@ -287,8 +286,8 @@ class EmgSettingsUI extends PApplet implements Runnable {
             int exgChannel = i;
             windowLists[i] = createDropdown(exgChannel, "smooth_ch_"+(i+1), emgSettingsValues.window[exgChannel].values(), emgSettingsValues.window[exgChannel]);
             uvLimitLists[i] = createDropdown(exgChannel, "uvLimit_ch_"+(i+1), emgSettingsValues.uvLimit[exgChannel].values(), emgSettingsValues.uvLimit[exgChannel]);
-            creepIncLists[i] = createDropdown(exgChannel, "creep_inc_ch_"+(i+1), emgSettingsValues.creepIncreasing[exgChannel].values(), emgSettingsValues.creepIncreasing[exgChannel]);   
             creepDecLists[i] = createDropdown(exgChannel, "creep_dec_ch_"+(i+1), emgSettingsValues.creepDecreasing[exgChannel].values(), emgSettingsValues.creepDecreasing[exgChannel]);   
+            creepIncLists[i] = createDropdown(exgChannel, "creep_inc_ch_"+(i+1), emgSettingsValues.creepIncreasing[exgChannel].values(), emgSettingsValues.creepIncreasing[exgChannel]);   
             minDeltaUvLists[i] = createDropdown(exgChannel, "minDeltaUv_ch_"+(i+1), emgSettingsValues.minimumDeltaUV[exgChannel].values(), emgSettingsValues.minimumDeltaUV[exgChannel]);       
             lowLimitLists[i] = createDropdown(exgChannel, "lowLimit_ch_"+(i+1), emgSettingsValues.lowerThresholdMinimum[exgChannel].values(), emgSettingsValues.lowerThresholdMinimum[exgChannel]);
         }
@@ -413,8 +412,8 @@ class EmgSettingsUI extends PApplet implements Runnable {
             //Update the ScrollableLists
             windowLists[i].getCaptionLabel().setText(updateSmoothing.getString());
             uvLimitLists[i].getCaptionLabel().setText(updateUVLimit.getString());
-            creepIncLists[i].getCaptionLabel().setText(updateCreepIncreasing.getString());
             creepDecLists[i].getCaptionLabel().setText(updateCreepDecreasing.getString());
+            creepIncLists[i].getCaptionLabel().setText(updateCreepIncreasing.getString());
             minDeltaUvLists[i].getCaptionLabel().setText(updateMinimumDeltaUV.getString());
             lowLimitLists[i].getCaptionLabel().setText(updateLowerThresholdMinimum.getString());
         }

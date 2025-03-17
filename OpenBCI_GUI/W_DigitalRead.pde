@@ -29,12 +29,7 @@ class W_DigitalRead extends Widget {
 
         digitalBoard = (DigitalCapableBoard)currentBoard;
 
-        //set number of digital reads
-        if (selectedProtocol == BoardProtocol.WIFI) {
-            numDigitalReadDots = 3;
-        } else {
-            numDigitalReadDots = 5;
-        }
+        numDigitalReadDots = 5;
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -60,11 +55,7 @@ class W_DigitalRead extends Widget {
             } else if (i == 1) {
                 digitalPin = 12;
             } else if (i == 2) {
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    digitalPin = 17;
-                } else {
-                    digitalPin = 13;
-                }
+                digitalPin = 13;
             } else if (i == 3) {
                 digitalPin = 17;
             } else {
@@ -166,28 +157,21 @@ class W_DigitalRead extends Widget {
                 if (!digitalBoard.isDigitalActive()) {
                     digitalBoard.setDigitalActive(true);
                     digitalModeButton.getCaptionLabel().setText("Turn Digital Read Off");	
-                    if (selectedProtocol == BoardProtocol.WIFI) {
-                        output("Starting to read digital inputs on pin marked D11, D12 and D17");
-                    } else {
-                        output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
-                    }
+                    output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
                     w_accelerometer.accelBoardSetActive(false);
                     w_analogRead.toggleAnalogReadButton(false);
-                    w_pulsesensor.toggleAnalogReadButton(false);
+                    w_pulseSensor.toggleAnalogReadButton(false);
                 } else {
                     digitalBoard.setDigitalActive(false);
                     digitalModeButton.getCaptionLabel().setText("Turn Digital Read On");
                     output("Starting to read accelerometer");
                     w_accelerometer.accelBoardSetActive(true);
                     w_analogRead.toggleAnalogReadButton(false);
-                    w_pulsesensor.toggleAnalogReadButton(false);
+                    w_pulseSensor.toggleAnalogReadButton(false);
                 }
             }
         });
-        String _helpText = (selectedProtocol == BoardProtocol.WIFI) ? 
-            "Click this button to activate/deactivate digital read on Cyton pins D11, D12, and D17." :
-            "Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18."
-            ;
+        String _helpText = "Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18.";
         digitalModeButton.setDescription(_helpText);
     }
 

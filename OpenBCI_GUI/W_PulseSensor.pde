@@ -156,10 +156,7 @@ class W_PulseSensor extends Widget {
                 }
             }
         });
-        String _helpText = (selectedProtocol == BoardProtocol.WIFI) ? 
-            "Click this button to activate/deactivate analog read on Cyton pins A5(D11) and A6(D12)." :
-            "Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13)."
-            ;
+        String _helpText = "Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13).";
         analogModeButton.setDescription(_helpText);
     }
 

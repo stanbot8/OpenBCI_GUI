@@ -21,7 +21,7 @@ class W_emg extends Widget {
     private final int EMG_SETTINGS_BUTTON_WIDTH = 125;
     private List<controlP5.Controller> cp5ElementsToCheck;
 
-    public ChannelSelect emgChannelSelect;
+    public ExGChannelSelect emgChannelSelect;
 
     W_emg (PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -30,8 +30,9 @@ class W_emg extends Widget {
         cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
         //Add channel select dropdown to this widget
-        emgChannelSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "EMG_Channels");
+        emgChannelSelect = new ExGChannelSelect(pApplet, x, y, w, navH);
         emgChannelSelect.activateAllButtons();
+        
         cp5ElementsToCheck.addAll(emgChannelSelect.getCp5ElementsForOverlapCheck());
 
         emgCp5 = new ControlP5(ourApplet);
@@ -92,7 +93,7 @@ class W_emg extends Widget {
         float scaleFactor = 1.0;
         float scaleFactorJaw = 1.5;
         int rowCount = 4;
-        int columnCount = ceil(emgChannelSelect.activeChan.size() / (rowCount * 1f));
+        int columnCount = ceil(emgChannelSelect.getActiveChannels().size() / (rowCount * 1f));
         float rowOffset = rh / rowCount;
         float colOffset = rw / columnCount;
         float currentX, currentY;
@@ -105,11 +106,11 @@ class W_emg extends Widget {
 
                 int index = i * columnCount + j;
 
-                if (index > emgChannelSelect.activeChan.size() - 1) {
+                if (index > emgChannelSelect.getActiveChannels().size() - 1) {
                     continue;
                 }
                 
-                channel = emgChannelSelect.activeChan.get(index);
+                channel = emgChannelSelect.getActiveChannels().get(index);
 
                 int colorIndex = channel % 8;
 
@@ -142,7 +143,7 @@ class W_emg extends Widget {
                 //draw normalized bar graph of uV w/ matching channel color
                 noStroke();
                 fill(channelColors[colorIndex], 200);
-                rect(_x, 3*_y + 1, _w, map(emgSettingsValues.getOutputNormalized(channel), 0, 1, 0, (-1) * int((4*rowOffset/8))));
+                rect(_x, 3*_y + 1, _w, map(emgSettingsValues.getNormalizedChannelValue(channel), 0, 1, 0, (-1) * int((4*rowOffset/8))));
 
                 //draw background bar container for mapped uV value indication
                 strokeWeight(1);

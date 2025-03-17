@@ -129,7 +129,11 @@ class W_playback extends Widget {
         selectPlaybackFileButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");
-                selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
+                FileChooser chooser = new FileChooser(
+                    FileChooserMode.LOAD,
+                    "playbackSelectedWidgetButton",
+                    new File(directoryManager.getGuiDataPath() + "Recordings"),
+                    "Select a file for playback");           
             }
         });
         selectPlaybackFileButton.setDescription("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");

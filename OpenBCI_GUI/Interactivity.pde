@@ -52,17 +52,19 @@ void parseKey(char val) {
     switch (val) {
         case ' ':
             // space to start/stop the stream
-            topNav.stopButtonWasPressed();
+            topNav.dataStreamTogglePressed();
             return;
         case ',':
             drawContainers = !drawContainers;
             return;
         case '{':
+            /*
             if(colorScheme == COLOR_SCHEME_DEFAULT){
                 colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
             } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
                 colorScheme = COLOR_SCHEME_DEFAULT;
             }
+            */
             //topNav.updateNavButtonsBasedOnColorScheme();
             output("New Dark color scheme coming soon!");
             return;
@@ -99,7 +101,7 @@ void parseKey(char val) {
         ///////////////////// Save User settings lowercase n
         case 'n':
             println("Interactivity: Save key pressed!");
-            settings.save(settings.getPath("User", eegDataSource, nchan));
+            settings.save(settings.getPath("User", eegDataSource, globalChannelCount));
             outputSuccess("Settings Saved! Using Expert Mode, you can load these settings using 'N' key. Click \"Default\" to revert to factory settings.");
             return;
 
@@ -116,16 +118,13 @@ void parseKey(char val) {
             return;
 
         case 'm':
-            String picfname = "OpenBCI-" + directoryManager.getFileNameDateTime() + ".jpg";
-            //println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-            saveFrame(directoryManager.getGuiDataPath() + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
-            output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
+            takeGUIScreenshot();
             return;
         default:
             break;
     }
 
-    if (nchan > 4) {
+    if (globalChannelCount > 4) {
         switch (val) {
             case '5':
                 currentBoard.setEXGChannelActive(5-1, false);
@@ -156,7 +155,7 @@ void parseKey(char val) {
         }
     }
 
-    if (nchan > 8) {
+    if (globalChannelCount > 8) {
         switch (val) {
             case 'q':
                 currentBoard.setEXGChannelActive(9-1, false);
@@ -266,9 +265,6 @@ synchronized void mousePressed() {
 
         }
     }
-
-    //topNav is always clickable
-    topNav.mousePressed();
 
     //interacting with control panel
     if (controlPanel.isOpen) {

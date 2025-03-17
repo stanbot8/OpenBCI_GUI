@@ -99,6 +99,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     public FilterUIPopup() {
         super();
         filterUIPopupIsOpen = true;
+        output("Filter UI: Filter UI opened.");
 
         Thread t = new Thread(this);
         t.start();
@@ -117,7 +118,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         fixedWidth = (HEADER_OBJ_WIDTH * 6) + SM_SPACER*5;
         maxHeight = HEADER_HEIGHT*3 + SM_SPACER*(numChans+5) + uiObjectHeight*(numChans+2) + EXPANDER_HEIGHT;
         shortHeight = HEADER_HEIGHT*2 + SM_SPACER*(1+5) + uiObjectHeight*(1+2) + LG_SPACER + EXPANDER_HEIGHT;
-        variableHeight = shortHeight;
+        variableHeight = maxHeight;
         //Include spacer on the outside left and right of all columns. Used to draw visual feedback
         widthOfAllChannelColumns = HEADER_OBJ_WIDTH*NUM_COLUMNS + LG_SPACER*(NUM_COLUMNS-1) + LG_SPACER*2;
     }
@@ -134,12 +135,8 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     @Override
     void setup() {
-        if (!EXPANDER_IS_USED) {
-            filterSettings.values.filterChannelSelect = FilterChannelSelect.CUSTOM_CHANNELS;
-        }
-
         surface.setTitle(headerMessage);
-        surface.setAlwaysOnTop(false);
+        surface.setAlwaysOnTop(true);
         surface.setResizable(false);
 
         Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
@@ -158,14 +155,15 @@ class FilterUIPopup extends PApplet implements Runnable {
 
         // Important: Reset the CP5 graphics reference points X,Y,W,H at the beginning of the next draw after screen has been resized.
         // Otherwise, the numbers are wrong.
-        if (needToResetCp5Graphics) {
+        if (needToResetCp5Graphics && EXPANDER_IS_USED) {
+            cp5.setGraphics(this, 0, 0);
             variableHeight = height;
             arrangeAllObjectsXY();
-            cp5.setGraphics(this, 0, 0);
         }
 
-        if (needToResizePopup) {
+        if (needToResizePopup && EXPANDER_IS_USED) {
             // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
+            // Currently, we cannot resize a popup window with Processing using JAVA2D renderer. This issue would need to be fixed upstream.
             surface.setSize(fixedWidth, newVariableHeight);
             needToResizePopup = false;
             needToResetCp5Graphics = true;
@@ -251,9 +249,8 @@ class FilterUIPopup extends PApplet implements Runnable {
         // No other Classes have access to the private Cp5 objects in this class.
         try {
             cp5.draw();
-        } catch (Exception e) {
-            //println(e.getMessage());
-            println("Caught ConcurrentModificationExcpetion in Filter UI...");
+        } catch (ConcurrentModificationException e) {
+            println("Filter UI: Error drawing cp5" + e.getMessage());
         }
         
     }
@@ -276,6 +273,14 @@ class FilterUIPopup extends PApplet implements Runnable {
         filterUIPopupIsOpen = false;
     }
 
+    // Dispose of the popup window externally
+    public void exitPopup() {
+        output("Filter UI: Closing Filter UI.");
+        Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
+        frame.dispose();
+        filterUIPopupIsOpen = false;
+    }
+
     private void checkIfSessionWasClosed() {
         if (systemMode == SYSTEMMODE_PREINIT) {
             noLoop();
@@ -290,7 +295,9 @@ class FilterUIPopup extends PApplet implements Runnable {
             try {
                 updateHeaderCp5Objects();
                 updateChannelCp5Objects();
-                setUItoChannelMode(filterSettings.values.filterChannelSelect);
+                if (EXPANDER_IS_USED) {
+                    setUItoChannelMode(filterSettings.values.filterChannelSelect);
+                }
             } catch (Exception e) {
                 println(e.getMessage());
                 outputError("Filter Settings: Unable to apply settings. Please save Filter Settings to a new file.");
@@ -985,7 +992,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     private void setUItoChannelMode(FilterChannelSelect myEnum) {
         int numChans = filterSettings.getChannelCount();
         boolean showAllChannels = myEnum == FilterChannelSelect.CUSTOM_CHANNELS;
-        newVariableHeight =  showAllChannels ? maxHeight : shortHeight;
+        newVariableHeight = showAllChannels ? maxHeight : shortHeight;
 
         for (int chan = 0; chan < numChans; chan++) {
             onOffButtons[chan].setVisible(showAllChannels);
