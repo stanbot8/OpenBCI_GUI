@@ -66,10 +66,10 @@ class W_EMGJoystick extends Widget {
     private TextBox yPositiveInputDropdownLabel;
     private TextBox yNegativeInputDropdownLabel;
 
-    private PImage xNegativeInputLabelImage = loadImage("LEFT_100x100.png");
-    private PImage xPositiveInputLabelImage = loadImage("RIGHT_100x100.png");
-    private PImage yPositiveInputLabelImage = loadImage("UP_100x100.png");
-    private PImage yNegativeInputLabelImage = loadImage("DOWN_100x100.png");
+    private PImage xNegativeInputLabelImage = loadImage("EMG_Joystick/LEFT_100x100.png");
+    private PImage xPositiveInputLabelImage = loadImage("EMG_Joystick/RIGHT_100x100.png");
+    private PImage yPositiveInputLabelImage = loadImage("EMG_Joystick/UP_100x100.png");
+    private PImage yNegativeInputLabelImage = loadImage("EMG_Joystick/DOWN_100x100.png");
 
     W_EMGJoystick(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)

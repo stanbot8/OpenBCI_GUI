@@ -279,7 +279,7 @@ final color[] channelColors = {
 final int COLOR_SCHEME_DEFAULT = 1;
 final int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
-int colorScheme = COLOR_SCHEME_DEFAULT;
+int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 WidgetManager wm;
 boolean wmVisible = true;
