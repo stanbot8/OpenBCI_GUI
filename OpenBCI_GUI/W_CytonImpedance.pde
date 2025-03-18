@@ -357,7 +357,6 @@ class W_CytonImpedance extends Widget {
             Pair<String, CytonElectrodeState> pair = getImpedanceStringAndState();
             s = pair.getLeft();
             c = pair.getRight().getColor();
-            //Skip over facepad electrodes that do not correspond to a channel number (PPG, EDA, BIAS, and SRB2)
             if (s == null) {
                 if (cytonImpedanceMasterCheck.getBooleanValue()) {
                     return;

@@ -1,7 +1,6 @@
 class DataLogger {
     //variables for writing EEG data out to a file
     private DataWriterODF fileWriterODF;
-    private DataWriterAuxODF fileWriterAuxODF;
     private DataWriterBDF fileWriterBDF;
     public DataWriterBF fileWriterBF; //Add the ability to simulataneously save to BrainFlow CSV, independent of BDF or ODF
     private String sessionName = "N/A";
@@ -43,6 +42,7 @@ class DataLogger {
         switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:
                 fileWriterODF.append(newData);
+                break;
             case OUTPUT_SOURCE_BDF:
                 fileWriterBDF.writeRawData_dataPacket(newData);
                 break;
@@ -174,10 +174,6 @@ class DataLogger {
             fileWriterODF.closeFile();
         }
         fileWriterODF = null;
-        if (fileWriterAuxODF != null) {
-            fileWriterAuxODF.closeFile();
-        }
-        fileWriterAuxODF = null;
     }
 
     public int getDataLoggerOutputFormat() {
