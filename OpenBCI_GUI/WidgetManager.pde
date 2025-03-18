@@ -152,9 +152,11 @@ class WidgetManager{
             widgets.add(w_analogRead);
         }
 
-        w_packetLoss = new W_PacketLoss(_this);
-        w_packetLoss.setTitle("Packet Loss");
-        widgets.add(w_packetLoss);
+        if (currentBoard instanceof Board) {
+            w_packetLoss = new W_PacketLoss(_this);
+            w_packetLoss.setTitle("Packet Loss");
+            widgets.add(w_packetLoss);
+        }
 
         w_marker = new W_Marker(_this);
         w_marker.setTitle("Marker");
