@@ -35,8 +35,6 @@ class ControlPanel {
     public int x, y, w, h;
     public boolean isOpen;
 
-    PlotFontInfo fontInfo;
-
     //various control panel elements that are unique to specific datasources
     DataSourceBox dataSourceBox;
     SerialBox serialBox;
@@ -78,7 +76,6 @@ class ControlPanel {
         h = height - int(helpWidget.h);
 
         isOpen = false;
-        fontInfo = new PlotFontInfo();
 
         globalPadding = 10;  //controls the padding of all elements on the control panel
 

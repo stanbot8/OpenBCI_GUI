@@ -25,6 +25,7 @@
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
+StringBuilder board_message;
 int _myCounter;
 int newPacketCounter = 0;
 boolean no_start_connection = false;
