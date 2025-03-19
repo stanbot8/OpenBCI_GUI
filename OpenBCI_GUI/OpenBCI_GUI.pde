@@ -171,12 +171,6 @@ boolean recentPlaybackFilesHaveUpdated = false;
 // Serial output
 processing.serial.Serial serial_output;
 
-//Control Panel for (re)configuring system settings
-PlotFontInfo fontInfo;
-
-//program variables
-StringBuilder board_message;
-
 //set window size
 int win_w;  //window width
 int win_h; //window height
@@ -456,7 +450,6 @@ void delayedSetup() {
 
     setupContainers();
 
-    fontInfo = new PlotFontInfo();
     helpWidget = new HelpWidget(0, win_h - 30, win_w, 30);
     //Instantiate buttonHelpText before any buttons have been made
     buttonHelpText = new ButtonHelpText();

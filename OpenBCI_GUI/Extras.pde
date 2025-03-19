@@ -576,14 +576,6 @@ class FilterConstants {
     }
 };
 
-class PlotFontInfo {
-        String fontName = "fonts/Raleway-Regular.otf";
-        int axisLabel_size = 16;
-        int tickLabel_size = 14;
-        int buttonLabel_size = 12;
-};
-
-
 class TextBox {
     private int x, y;
     private int w, h;
