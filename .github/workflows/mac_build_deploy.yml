@@ -86,10 +86,17 @@ jobs:
         run: |
           codesign -f -v -s "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)" $GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app
 
+      - name: Debug DMG Build Settings
+        run: |
+          echo "Examining license settings in dmgbuild_settings.py..."
+          cat release/mac/dmgbuild_settings.py
+          pip install --upgrade dmgbuild
+
       - name: Create DMG
         run: |
           dmgbuild -s release/mac/dmgbuild_settings.py \
             -D app=$GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app \
+            -D license_encoding=utf-8 \
             OpenBCI_GUI $GITHUB_WORKSPACE/application.macosx.dmg
 
       - name: Sign DMG
