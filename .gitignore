@@ -18,6 +18,7 @@ OpenBCI_GUI/application.*
 OpenBCI_GUI_unittests/UNITTEST_FAILURE
 openbcigui_*
 application.*
+!application.ico
 *.autosave
 .vscode/*
 temp/*
