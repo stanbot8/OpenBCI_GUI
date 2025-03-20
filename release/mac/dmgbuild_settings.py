@@ -191,14 +191,9 @@ list_column_sort_directions = {
 
 # Recognized language names are:
 #
-#  af_ZA, ar, be_BY, bg_BG, bn, bo, br, ca_ES, cs_CZ, cy, da_DK, de_AT, de_CH,
-#  de_DE, dz_BT, el_CY, el_GR, en_AU, en_CA, en_GB, en_IE, en_SG, en_US, eo,
-#  es_419, es_ES, et_EE, fa_IR, fi_FI, fo_FO, fr_001, fr_BE, fr_CA, fr_CH,
-#  fr_FR, ga-Latg_IE, ga_IE, gd, grc, gu_IN, gv, he_IL, hi_IN, hr_HR, hu_HU,
-#  hy_AM, is_IS, it_CH, it_IT, iu_CA, ja_JP, ka_GE, kl, ko_KR, lt_LT, lv_LV,
-#  mk_MK, mr_IN, mt_MT, nb_NO, ne_NP, nl_BE, nl_NL, nn_NO, pa, pl_PL, pt_BR,
-#  pt_PT, ro_RO, ru_RU, se, sk_SK, sl_SI, sr_RS, sv_SE, th_TH, to_TO, tr_TR,
-#  uk_UA, ur_IN, ur_PK, uz_UZ, vi_VN, zh_CN, zh_TW
+#    da_DK, de_AT, de_CH, de_DE, en_AU, en_GB, en_IE, en_SG, en_US, es_ES,
+#    fi_FI, fr_BE, fr_FR, fr_CA, fr_CH, it_IT, ja_JP, ko_KR, nb_NO, nl_BE,
+#    nl_NL, pt_BR, pt_PT, ru_RU, sv_SE, zh_CN, zh_TW,
 
 license = {
     "default-language": "en_US",
@@ -208,23 +203,23 @@ license = {
         # containing the license text.  If you're using RTF,
         # watch out for Python escaping (or read it from a file).
         "en_US": b"""{\\rtf1\\ansi\\ansicpg1252\\cocoartf1504\\cocoasubrtf820
-            {\\fonttbl\\f0\\fnil\\fcharset0 Helvetica-Bold;\\f1\\fnil\\fcharset0 Helvetica;}
-            {\\colortbl;\\red255\\green255\\blue255;\\red0\\green0\\blue0;}
-            {\\*\\expandedcolortbl;;\\cssrgb\\c0\\c0\\c0;}
-            \\paperw11905\\paperh16837\\margl1133\\margr1133\\margb1133\\margt1133
-            \\deftab720
-            \\pard\\pardeftab720\\sa160\\partightenfactor0
+ {\\fonttbl\\f0\\fnil\\fcharset0 Helvetica-Bold;\\f1\\fnil\\fcharset0 Helvetica;}
+ {\\colortbl;\\red255\\green255\\blue255;\\red0\\green0\\blue0;}
+ {\\*\\expandedcolortbl;;\\cssrgb\\c0\\c0\\c0;}
+ \\paperw11905\\paperh16837\\margl1133\\margr1133\\margb1133\\margt1133
+ \\deftab720
+ \\pard\\pardeftab720\\sa160\\partightenfactor0
 
-            \\f0\\b\\fs60 \\cf2 \\expnd0\\expndtw0\\kerning0
-            \\up0 \\nosupersub \\ulnone \\outl0\\strokewidth0 \\strokec2 Test License\\
-            \\pard\\pardeftab720\\sa160\\partightenfactor0
+ \\f0\\b\\fs60 \\cf2 \\expnd0\\expndtw0\\kerning0
+ \\up0 \\nosupersub \\ulnone \\outl0\\strokewidth0 \\strokec2 Test License\\
+ \\pard\\pardeftab720\\sa160\\partightenfactor0
 
-            \\fs36 \\cf2 \\strokec2 What is this?\\
-            \\pard\\pardeftab720\\sa160\\partightenfactor0
+ \\fs36 \\cf2 \\strokec2 What is this?\\
+ \\pard\\pardeftab720\\sa160\\partightenfactor0
 
-            \\f1\\b0\\fs22 \\cf2 \\strokec2 This is the English license. It says what you are allowed to do with this software.\\
-            \\
-            }""",
+ \\f1\\b0\\fs22 \\cf2 \\strokec2 This is the English license. It says what you are allowed to do with this software.\\
+ \\
+ }""",
     },
     "buttons": {
         # For each language, text for the buttons on the licensing window.
