@@ -207,7 +207,24 @@ license = {
         # RTF (in which case it must start "{\rtf1"), or a path to a file
         # containing the license text.  If you're using RTF,
         # watch out for Python escaping (or read it from a file).
-        "en_US": "/release/wix/openbci-eula.rtf",
+        "en_US": b"""{\\rtf1\\ansi\\ansicpg1252\\cocoartf1504\\cocoasubrtf820
+            {\\fonttbl\\f0\\fnil\\fcharset0 Helvetica-Bold;\\f1\\fnil\\fcharset0 Helvetica;}
+            {\\colortbl;\\red255\\green255\\blue255;\\red0\\green0\\blue0;}
+            {\\*\\expandedcolortbl;;\\cssrgb\\c0\\c0\\c0;}
+            \\paperw11905\\paperh16837\\margl1133\\margr1133\\margb1133\\margt1133
+            \\deftab720
+            \\pard\\pardeftab720\\sa160\\partightenfactor0
+
+            \\f0\\b\\fs60 \\cf2 \\expnd0\\expndtw0\\kerning0
+            \\up0 \\nosupersub \\ulnone \\outl0\\strokewidth0 \\strokec2 Test License\\
+            \\pard\\pardeftab720\\sa160\\partightenfactor0
+
+            \\fs36 \\cf2 \\strokec2 What is this?\\
+            \\pard\\pardeftab720\\sa160\\partightenfactor0
+
+            \\f1\\b0\\fs22 \\cf2 \\strokec2 This is the English license. It says what you are allowed to do with this software.\\
+            \\
+            }""",
     },
     "buttons": {
         # For each language, text for the buttons on the licensing window.
