@@ -27,3 +27,6 @@ libGanglionLib.so
 libGanglionScan.so
 libunicorn.so
 OpenBCI_GUI/out/
+release/wix/bin/*
+release/wix/obj/*
+UNITTEST_FAILURE
