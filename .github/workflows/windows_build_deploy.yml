@@ -142,7 +142,7 @@ jobs:
           echo "${{ steps.branch-name.outputs.head_ref_branch }}"
           set S3_BRANCH_FOLDER=s3://openbci-public-gui-v7/${{ steps.branch-name.outputs.head_ref_branch }}
           echo %S3_BRANCH_FOLDER%
-          aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+          aws s3 rm s3://openbci-public-gui-v7/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
           aws s3 cp ${{ github.workspace }}/. %S3_BRANCH_FOLDER%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
           aws s3 cp ${{ github.workspace }}/. s3://openbci-public-gui-v7/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
         shell: cmd
