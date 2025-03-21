@@ -137,12 +137,17 @@ jobs:
 
       - name: Store Build on AWS
         run: |
-          cd ${{ github.workspace }}
+          cd ${{ env.msi-path }}
           ls
           echo "${{ steps.branch-name.outputs.head_ref_branch }}"
           set S3_BRANCH_FOLDER=s3://openbci-public-gui-v7/${{ steps.branch-name.outputs.head_ref_branch }}
-          echo %S3_BRANCH_FOLDER%
-          aws s3 rm s3://openbci-public-gui-v7/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-          aws s3 cp ${{ github.workspace }}/. %S3_BRANCH_FOLDER%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-          aws s3 cp ${{ github.workspace }}/. s3://openbci-public-gui-v7/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+          echo Branch Folder: %S3_BRANCH_FOLDER%
+          set S3_LATEST_FOLDER=s3://openbci-public-gui-v7/latest
+          echo Latest Folder: %S3_LATEST_FOLDER%
+          aws s3 rm %S3_LATEST_FOLDER%  --recursive
+          aws s3 rm %S3_BRANCH_FOLDER%  --recursive
+          aws s3 cp . %S3_BRANCH_FOLDER% --recursive --exclude "*" --include "*.msi"
+          aws s3 cp . %S3_LATEST_FOLDER% --recursive --exclude "*" --include "*.msi"
+        env:
+          msi-path: ${{ github.workspace }}\release\wix\bin\Release\en-US\
         shell: cmd
