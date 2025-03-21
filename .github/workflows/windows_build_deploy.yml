@@ -144,8 +144,8 @@ jobs:
           echo Branch Folder: %S3_BRANCH_FOLDER%
           set S3_LATEST_FOLDER=s3://openbci-public-gui-v7/latest
           echo Latest Folder: %S3_LATEST_FOLDER%
-          aws s3 rm %S3_LATEST_FOLDER%  --recursive
-          aws s3 rm %S3_BRANCH_FOLDER%  --recursive
+          aws s3 rm %S3_LATEST_FOLDER%  --recursive --exclude "*" --include "*.msi"
+          aws s3 rm %S3_BRANCH_FOLDER%  --recursive --exclude "*" --include "*.msi"
           aws s3 cp . %S3_BRANCH_FOLDER% --recursive --exclude "*" --include "*.msi"
           aws s3 cp . %S3_LATEST_FOLDER% --recursive --exclude "*" --include "*.msi"
         env:
