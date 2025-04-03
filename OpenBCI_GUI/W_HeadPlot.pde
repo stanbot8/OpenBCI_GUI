@@ -8,56 +8,54 @@
 //
 //    Created by: Conor Russomanno, November 2016
 //    Based on code written by: Chip Audette, Oct 2013
+//    Refactored by: Richard Waltman, March 2025
 //
 ///////////////////////////////////////////////////,
 
 
-float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98, 0.99, 0.999}; //used by FFT & Headplot
-int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
+// ----- these variable/methods are used for adjusting the intensity factor of the headplot opacity ---------------------------------------------------------------------------------------------------------
+//float default_vertScale_uV = 200.0; 
+//float[] vertScaleFactor = { 0.25f, 0.5f, 1.0f, 2.0f, 5.0f, 50.0f};
 
 class W_HeadPlot extends Widget {
-    HeadPlot headPlot;
+    
+    private HeadPlot headPlot;
+
+    private HeadPlotIntensity headPlotIntensity = HeadPlotIntensity.INTENSITY_1;
+    private HeadPlotPolarity headPlotPolarity = HeadPlotPolarity.PLUS_AND_MINUS;
+    private HeadPlotContours headPlotContours = HeadPlotContours.ON;
+    private HeadPlotSmoothing headPlotSmoothing = HeadPlotSmoothing.SMOOTH_98;
+
+    private final float DEFAULT_VERTICAL_SCALE_UV = 200f; //this defines the Y-scale on the montage plots...this is the vertical space between traces
 
     W_HeadPlot(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+        super(_parent);
 
-        //Headplot settings
-        settings.hpIntensitySave = 2;
-        settings.hpPolaritySave = 0;
-        settings.hpContoursSave = 0;
-        settings.hpSmoothingSave = 3;
-        //This is the protocol for setting up dropdowns.
-        //Note that these 3 dropdowns correspond to the 3 global functions below
-        //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        // addDropdown("Ten20", "Layout", Arrays.asList("10-20", "5-10"), 0);
-        // addDropdown("Headset", "Headset", Arrays.asList("None", "Mark II", "Mark III", "Mark IV "), 0);
-        addDropdown("Intensity", "Intensity", Arrays.asList("4x", "2x", "1x", "0.5x", "0.2x", "0.02x"), vertScaleFactor_ind);
-        addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), settings.hpPolaritySave);
-        addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), settings.hpContoursSave);
-        addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind);
-        //Initialize the headplot
+        addDropdown("headPlotIntensityDropdown", "Intensity", headPlotIntensity.getEnumStringsAsList(), headPlotIntensity.getIndex());
+        addDropdown("headPlotPolarityDropdown", "Polarity", headPlotPolarity.getEnumStringsAsList(), headPlotPolarity.getIndex());
+        addDropdown("headPlotContoursDropdown", "Contours", headPlotContours.getEnumStringsAsList(), headPlotContours.getIndex());
+        addDropdown("headPlotSmoothingDropdown", "Smooth", headPlotSmoothing.getEnumStringsAsList(), headPlotSmoothing.getIndex());
+
         updateHeadPlot();
     }
 
-    void updateHeadPlot() {
+    private void updateHeadPlot() {
         headPlot = new HeadPlot(x, y, w, h, win_w, win_h);
-        //FROM old Gui_Manager
         headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
         headPlot.setPolarityData_byRef(dataProcessing.polarity);
-        setSmoothFac(smoothFac[smoothFac_ind]);
     }
 
-    void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+    public void update(){
+        super.update();
         headPlot.update();
     }
 
-    void draw(){
+    public void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
         headPlot.draw(); //draw the actual headplot
     }
 
-    void screenResized(){
+    public void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
         headPlot.hp_x = x;
         headPlot.hp_y = y;
@@ -66,88 +64,69 @@ class W_HeadPlot extends Widget {
         headPlot.hp_win_x = x;
         headPlot.hp_win_y = y;
 
-        thread("doHardCalcs");
+        thread("doHardCalculations");
     }
 
-    void mousePressed(){
+    public void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         headPlot.mousePressed();
     }
 
-    void mouseReleased(){
+    public void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
         headPlot.mouseReleased();
     }
 
-    void mouseDragged(){
+    public void mouseDragged(){
         super.mouseDragged(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
         headPlot.mouseDragged();
     }
 
-    //add custom class functions here
-    void setSmoothFac(float fac) {
-        headPlot.smooth_fac = fac;
+    public void setIntensity(int n) {
+        headPlotIntensity = HeadPlotIntensity.values[n];
+        float maxIntensityUv = DEFAULT_VERTICAL_SCALE_UV * headPlotIntensity.getValue();
+        headPlot.setMaxIntensity_uV(maxIntensityUv);
+    }
+
+    public void setPolarity(int n) {
+        headPlotPolarity = HeadPlotPolarity.values[n];
+        headPlot.use_polarity = headPlotPolarity == HeadPlotPolarity.PLUS_AND_MINUS;
+    }
+
+    public void setContours(int n) {
+        headPlotContours = HeadPlotContours.values[n];
+        headPlot.drawHeadAsContours = headPlotContours == HeadPlotContours.ON;
+    }
+
+    public void setSmoothing(int n) {
+        headPlotSmoothing = HeadPlotSmoothing.values[n];
+        headPlot.smoothingFactor = headPlotSmoothing.getValue();
+    }
+
+    private void doHardCalculations() {
+        if (!headPlot.threadLock) {
+            headPlot.threadLock = true;
+            headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
+            headPlot.hardCalcsDone = true;
+            headPlot.threadLock = false;
+        }
     }
 };
 
-//triggered when there is an event in the Polarity Dropdown
-void Polarity(int n) {
-
-    if (n==0) {
-        w_headPlot.headPlot.use_polarity = true;
-    } else {
-        w_headPlot.headPlot.use_polarity = false;
-    }
-    settings.hpPolaritySave = n;
+public void headPlotIntensityDropdown(int n) {
+    w_headPlot.setIntensity(n);
 }
 
-void ShowContours(int n){
-    if(n==0){
-        //turn headplot contours on
-        w_headPlot.headPlot.drawHeadAsContours = true;
-    } else if(n==1){
-        //turn headplot contours off
-        w_headPlot.headPlot.drawHeadAsContours = false;
-    }
-    settings.hpContoursSave = n;
+public void headPlotPolarityDropdown(int n) {
+    w_headPlot.setPolarity(n);
 }
 
-//triggered when there is an event in the SmoothingHeadPlot Dropdown
-void SmoothingHeadPlot(int n) {
-    w_headPlot.setSmoothFac(smoothFac[n]);
-    settings.hpSmoothingSave = n;
+public void headPlotContoursDropdown(int n) {
+    w_headPlot.setContours(n);
 }
 
-void Intensity(int n){
-    vertScaleFactor_ind = n;
-    updateVertScale();
-    settings.hpIntensitySave = n;
-}
-
-// ----- these variable/methods are used for adjusting the intensity factor of the headplot opacity ---------------------------------------------------------------------------------------------------------
-float default_vertScale_uV = 200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces
-float[] vertScaleFactor = { 0.25f, 0.5f, 1.0f, 2.0f, 5.0f, 50.0f};
-int vertScaleFactor_ind = 2;
-float vertScale_uV = default_vertScale_uV;
-
-void setVertScaleFactor_ind(int ind) {
-    vertScaleFactor_ind = max(0,ind);
-    if (ind >= vertScaleFactor.length) vertScaleFactor_ind = 0;
-    updateVertScale();
-}
-
-void updateVertScale() {
-    vertScale_uV = default_vertScale_uV * vertScaleFactor[vertScaleFactor_ind];
-    w_headPlot.headPlot.setMaxIntensity_uV(vertScale_uV);
-}
-
-void doHardCalcs() {
-    if (!w_headPlot.headPlot.threadLock) {
-        w_headPlot.headPlot.threadLock = true;
-        w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
-        w_headPlot.headPlot.hardCalcsDone = true;
-        w_headPlot.headPlot.threadLock = false;
-    }
+public void headPlotSmoothingDropdown(int n) {
+    w_headPlot.setSmoothing(n);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -190,7 +169,7 @@ class HeadPlot {
     private int image_x, image_y;
     public boolean drawHeadAsContours;
     private boolean plot_color_as_log = true;
-    public float smooth_fac = 0.0f;
+    public float smoothingFactor = 0.0f;
     private boolean use_polarity = true;
     private int mouse_over_elec_index = -1;
     private boolean isDragging = false;
@@ -238,12 +217,12 @@ class HeadPlot {
     }
 
     public void setIntensityData_byRef(float[] data, DataStatus[] is_rail) {
-        intensity_data_uV = data;  //simply alias the data held externally.  DOES NOT COPY THE DATA ITSEF!  IT'S SIMPLY LINKED!
+        intensity_data_uV = data;  //simply alias the data held externally.  DOES NOT COPY THE DATA ITSELF!  IT'S SIMPLY LINKED!
         is_railed = is_rail;
     }
 
     public void setPolarityData_byRef(float[] data) {
-        polarity_data = data;//simply alias the data held externally.  DOES NOT COPY THE DATA ITSEF!  IT'S SIMPLY LINKED!
+        polarity_data = data;//simply alias the data held externally.  DOES NOT COPY THE DATA ITSELF!  IT'S SIMPLY LINKED!
     }
 
     public String getUsePolarityTrueFalse() {
@@ -1033,7 +1012,7 @@ class HeadPlot {
         }
 
         //smooth in time
-        if (smooth_fac > 0.0f) voltage = smooth_fac*prev_val + (1.0-smooth_fac)*voltage;
+        if (smoothingFactor > 0.0f) voltage = smoothingFactor*prev_val + (1.0-smoothingFactor)*voltage;
 
         return voltage;
     }

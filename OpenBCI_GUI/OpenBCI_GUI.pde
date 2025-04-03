@@ -305,7 +305,7 @@ final int navBarHeight = 32;
 TopNav topNav;
 
 ddf.minim.analysis.FFT[] fftBuff = new ddf.minim.analysis.FFT[globalChannelCount];    //from the minim library
-boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
+GlobalFFTSettings globalFFTSettings;
 
 StringBuilder globalScreenResolution;
 StringBuilder globalScreenDPI;
@@ -803,7 +803,7 @@ public int getDownsampledBufferSize() {
 * @description Get the correct points of FFT based on sampling rate
 * @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
 */
-int getNfftSafe() {
+int getNumFFTPoints() {
     int sampleRate = currentBoard.getSampleRate();
     switch (sampleRate) {
         case 500:
@@ -837,15 +837,17 @@ void initCoreDataObjects() {
 
 void initFFTObjectsAndBuffer() {
     //initialize the FFT objects
-    for (int Ichan=0; Ichan < globalChannelCount; Ichan++) {
-        // verbosePrint("Init FFT Buff – " + Ichan);
-        fftBuff[Ichan] = new ddf.minim.analysis.FFT(getNfftSafe(), currentBoard.getSampleRate());
+    for (int channel = 0; channel < globalChannelCount; channel++) {
+        // verbosePrint("Init FFT Buff – " + channel);
+        fftBuff[channel] = new ddf.minim.analysis.FFT(getNumFFTPoints(), currentBoard.getSampleRate());
     }  //make the FFT objects
+
+    globalFFTSettings = new GlobalFFTSettings();
 
     //Attempt initialization. If error, print to console and exit function.
     //Fixes GUI crash when trying to load outdated recordings
     try {
-        initializeFFTObjects(fftBuff, dataProcessingRawBuffer, getNfftSafe(), currentBoard.getSampleRate());
+        initializeFFTObjects(fftBuff, dataProcessingRawBuffer, getNumFFTPoints(), currentBoard.getSampleRate());
     } catch (ArrayIndexOutOfBoundsException e) {
         e.printStackTrace();
         outputError("Playback file load error. Try using a more recent recording.");

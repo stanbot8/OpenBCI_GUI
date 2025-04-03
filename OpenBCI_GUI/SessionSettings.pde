@@ -36,7 +36,7 @@
 /////////////////////////////////
 class SessionSettings {
     //Current version to save to JSON
-    String settingsVersion = "3.0.0";
+    String settingsVersion = "4.0.0";
     //for screen resizing
     boolean screenHasBeenResized = false;
     float timeOfLastScreenResize = 0;
@@ -61,26 +61,13 @@ class SessionSettings {
     //Accelerometer settings
     int accVertScaleSave;
     int accHorizScaleSave;
-    //FFT plot settings,
-    int fftMaxFrqSave;
-    int fftMaxuVSave;
-    int fftLogLinSave;
-    int fftSmoothingSave;
-    int fftFilterSave;
     //Analog Read settings
     int arVertScaleSave;
     int arHorizScaleSave;
-    //Headplot settings
-    int hpIntensitySave;
-    int hpPolaritySave;
-    int hpContoursSave;
-    int hpSmoothingSave;
-    //Used to check if a playback file has data
-    int minNumRowsPlaybackFile = int(currentBoard.getSampleRate());
     //Spectrogram Widget settings
+    //FIX ME REMOVE THIS
     int spectMaxFrqSave;
     int spectSampleRateSave;
-    int spectLogLinSave;
 
     //default configuration settings file location and file name variables
     private String sessionPath = "";
@@ -103,13 +90,6 @@ class SessionSettings {
         "SynthSixteenDefaultSettings.json"
         };
 
-    //Used to set text in dropdown menus when loading FFT settings
-    String[] fftMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"};
-    String[] fftVertScaleArray = {"10 uV", "50 uV", "100 uV", "1000 uV"};
-    String[] fftLogLinArray = {"Log", "Linear"}; //share this with spectrogram also
-    String[] fftSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98", "0.99", "0.999"};
-    String[] fftFilterArray = {"Filtered", "Unfilt."};
-
     //Used to set text in dropdown menus when loading Accelerometer settings
     String[] accVertScaleArray = {"Auto","1 g", "2 g"};
     String[] accHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
@@ -117,12 +97,6 @@ class SessionSettings {
     //Used to set text in dropdown menus when loading Analog Read settings
     String[] arVertScaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
     String[] arHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
-
-    //Used to set text in dropdown menus when loading Head Plot settings
-    String[] hpIntensityArray = {"4x", "2x", "1x", "0.5x", "0.2x", "0.02x"};
-    String[] hpPolarityArray = {"+/-", " + "};
-    String[] hpContoursArray = {"ON", "OFF"};
-    String[] hpSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
 
     //Used to set text in dropdown menus when loading Spectrogram Setings
     String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
@@ -344,6 +318,8 @@ class SessionSettings {
         ///////////////////////////////////////////////Setup new JSON object to save FFT settings
         JSONObject saveFFTSettings = new JSONObject();
 
+        //FIX ME
+        /*
         //Save FFT_Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the FFT widget
         saveFFTSettings.setInt("FFT_Max Freq", fftMaxFrqSave);
         //Save FFT_Max uV Setting. The max uV variable is updated also when user selects dropdown in the FFT widget
@@ -356,6 +332,7 @@ class SessionSettings {
         if (isFFTFiltered == true)  fftFilterSave = 0;
         if (isFFTFiltered == false)  fftFilterSave = 1;
         saveFFTSettings.setInt("FFT_Filter",  fftFilterSave);
+        */
         //Set the FFT JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyFFT, saveFFTSettings); //next object will be set to sessionSettingsChannelCount+3, etc.
 
@@ -376,6 +353,8 @@ class SessionSettings {
         if (w_headPlot != null) {
             JSONObject saveHeadplotSettings = new JSONObject();
 
+            //FIX ME
+            /*
             //Save Headplot Intesity
             saveHeadplotSettings.setInt("HP_intensity", hpIntensitySave);
             //Save Headplot Polarity
@@ -385,12 +364,15 @@ class SessionSettings {
             //Save Headplot Smoothing Setting
             saveHeadplotSettings.setInt("HP_smoothing", hpSmoothingSave);
             //Set the Headplot JSON Object
+            */
             saveSettingsJSONData.setJSONObject(kJSONKeyHeadplot, saveHeadplotSettings);
         }
 
         ///////////////////////////////////////////////Setup new JSON object to save Band Power settings
         JSONObject saveBPSettings = new JSONObject();
-
+        
+        /*
+        //FIX ME
         //Save data from the Active channel checkBoxes
         JSONArray saveActiveChanBP = new JSONArray();
         int numActiveBPChan = w_bandPower.bpChanSelect.getActiveChannels().size();
@@ -402,6 +384,7 @@ class SessionSettings {
         saveBPSettings.setInt("bpAutoClean", w_bandPower.getAutoClean().getIndex());
         saveBPSettings.setInt("bpAutoCleanThreshold", w_bandPower.getAutoCleanThreshold().getIndex());
         saveBPSettings.setInt("bpAutoCleanTimer", w_bandPower.getAutoCleanTimer().getIndex());
+        */
         saveSettingsJSONData.setJSONObject(kJSONKeyBandPower, saveBPSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Spectrogram settings
@@ -423,9 +406,12 @@ class SessionSettings {
         }
         saveSpectrogramSettings.setJSONArray("activeChannelsBot", saveActiveChanSpectBot);
         //Save Spectrogram_Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the spectrogram widget
+        //FIX ME
+        /*
         saveSpectrogramSettings.setInt("Spectrogram_Max Freq", spectMaxFrqSave);
         saveSpectrogramSettings.setInt("Spectrogram_Sample Rate", spectSampleRateSave);
         saveSpectrogramSettings.setInt("Spectrogram_LogLin", spectLogLinSave);
+        */
         saveSettingsJSONData.setJSONObject(kJSONKeySpectrogram, saveSpectrogramSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save EMG Settings
@@ -540,12 +526,15 @@ class SessionSettings {
         Boolean loadDataSmoothingSetting = (currentBoard instanceof SmoothingCapableBoard) ? loadGlobalSettings.getBoolean("Data Smoothing") : null;
 
         //get the FFT settings
+        //FIX ME
+        /*
         JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFFT);
         fftMaxFrqLoad = loadFFTSettings.getInt("FFT_Max Freq");
         fftMaxuVLoad = loadFFTSettings.getInt("FFT_Max uV");
         fftLogLinLoad = loadFFTSettings.getInt("FFT_LogLin");
         fftSmoothingLoad = loadFFTSettings.getInt("FFT_Smoothing");
         fftFilterLoad = loadFFTSettings.getInt("FFT_Filter");
+        */
 
         //get the Accelerometer settings
         if (w_accelerometer != null) {
@@ -559,14 +548,19 @@ class SessionSettings {
 
         //get the  Headplot settings
         if (w_headPlot != null) {
+            //FIX ME
+            /*
             JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject(kJSONKeyHeadplot);
             hpIntensityLoad = loadHeadplotSettings.getInt("HP_intensity");
             hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
             hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
             hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
+            */
         }
 
         //Get Band Power widget settings
+        //FIX ME
+        /*
         loadBPActiveChans.clear();
         JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
         JSONArray loadBPChan = loadBPSettings.getJSONArray("activeChannels");
@@ -577,6 +571,7 @@ class SessionSettings {
         loadBPAutoCleanThreshold = loadBPSettings.getInt("bpAutoCleanThreshold");
         loadBPAutoCleanTimer = loadBPSettings.getInt("bpAutoCleanTimer");
         //println("Settings: band power active chans loaded = " + loadBPActiveChans );
+        */
 
         try {
             //Get Spectrogram widget settings
@@ -681,6 +676,8 @@ class SessionSettings {
         loadApplyTimeSeriesSettings();
 
         if (w_headPlot != null) {
+            //FIX ME
+            /*
             //Force headplot to redraw if it is active
             int hpWidgetNumber;
             if (eegDataSource == DATASOURCE_GANGLION) {
@@ -692,6 +689,7 @@ class SessionSettings {
                 w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
                 println("Headplot is active: Redrawing");
             }
+            */
         }
     } //end of loadGUISettings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -702,6 +700,8 @@ class SessionSettings {
         ////////Apply Time Series dropdown settings in loadApplyTimeSeriesSettings() instead of here
 
         ////////Apply FFT settings
+        //FIX ME
+        /*
         MaxFreq(fftMaxFrqLoad); //This changes the back-end
             w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(fftMaxFrqArray[fftMaxFrqLoad]); //This changes front-end... etc.
 
@@ -716,6 +716,7 @@ class SessionSettings {
 
         UnfiltFilt(fftFilterLoad);
             w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(fftFilterArray[fftFilterLoad]);
+        */
 
         ////////Apply Accelerometer settings;
         if (w_accelerometer != null) {
@@ -737,6 +738,8 @@ class SessionSettings {
         }
 
         ////////////////////////////Apply Headplot settings
+        //FIX ME
+        /*
         if (w_headPlot != null) {
             Intensity(hpIntensityLoad);
                 w_headPlot.cp5_widget.getController("Intensity").getCaptionLabel().setText(hpIntensityArray[hpIntensityLoad]);
@@ -753,8 +756,12 @@ class SessionSettings {
             //Force redraw headplot on load. Fixes issue where heaplot draws outside of the widget.
             w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
         }
+        */
 
         ////////////////////////////Apply Band Power settings
+
+        //FIX ME
+        /*
         try {
             //apply channel checkbox settings
             w_bandPower.bpChanSelect.deactivateAllButtons();;
@@ -771,15 +778,17 @@ class SessionSettings {
         w_bandPower.cp5_widget.getController("bpAutoCleanThresholdDropdown").getCaptionLabel().setText(w_bandPower.getAutoCleanThreshold().getString());
         w_bandPower.setAutoCleanTimer(loadBPAutoCleanTimer);
         w_bandPower.cp5_widget.getController("bpAutoCleanTimerDropdown").getCaptionLabel().setText(w_bandPower.getAutoCleanTimer().getString());
+        */
 
         ////////////////////////////Apply Spectrogram settings
         //Apply Max Freq dropdown
         SpectrogramMaxFreq(spectMaxFrqLoad);
-            w_spectrogram.cp5_widget.getController("SpectrogramMaxFreq").getCaptionLabel().setText(spectMaxFrqArray[spectMaxFrqLoad]);
+        w_spectrogram.cp5_widget.getController("SpectrogramMaxFreq").getCaptionLabel().setText(spectMaxFrqArray[spectMaxFrqLoad]);
         SpectrogramSampleRate(spectSampleRateLoad);
-            w_spectrogram.cp5_widget.getController("SpectrogramSampleRate").getCaptionLabel().setText(spectSampleRateArray[spectSampleRateLoad]);
+        w_spectrogram.cp5_widget.getController("SpectrogramSampleRate").getCaptionLabel().setText(spectSampleRateArray[spectSampleRateLoad]);
         SpectrogramLogLin(spectLogLinLoad);
-            w_spectrogram.cp5_widget.getController("SpectrogramLogLin").getCaptionLabel().setText(fftLogLinArray[spectLogLinLoad]);
+        //FIX ME
+        //w_spectrogram.cp5_widget.getController("SpectrogramLogLin").getCaptionLabel().setText(fftLogLinArray[spectLogLinLoad]);
         try {
             //apply channel checkbox settings
             w_spectrogram.spectChanSelectTop.deactivateAllButtons();
