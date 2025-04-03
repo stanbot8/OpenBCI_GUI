@@ -63,6 +63,8 @@ class W_Spectrogram extends Widget {
     float[] topFFTAvg;
     float[] botFFTAvg;
 
+    private FFTLogLin logLin = FFTLogLin.LIN;
+
     W_Spectrogram(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -81,10 +83,11 @@ class W_Spectrogram extends Widget {
         graphY = y + paddingTop;
         graphW = w - paddingRight - paddingLeft;
         graphH = h - paddingBottom - paddingTop;
-
+        
+        //FIX ME REMOVE THESE
         settings.spectMaxFrqSave = 2;
         settings.spectSampleRateSave = 4;
-        settings.spectLogLinSave = 1;
+
         vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
         horizAxisLabel = horizAxisLabels[settings.spectSampleRateSave];
         horizAxisLabelStrings = new StringList();
@@ -96,7 +99,7 @@ class W_Spectrogram extends Widget {
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
         addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.spectMaxFrqArray), settings.spectMaxFrqSave);
         addDropdown("SpectrogramSampleRate", "Window", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
-        addDropdown("SpectrogramLogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.spectLogLinSave);
+        addDropdown("SpectrogramLogLin", "Log/Lin", logLin.getEnumStringsAsList(), logLin.getIndex());
 
         //Resize the height of the data image using default 
         dataImageH = vertAxisLabel[0] * 2;
@@ -186,7 +189,7 @@ class W_Spectrogram extends Widget {
             for (int i = 0; i <= dataImg.height/2; i++) {
                 //LEFT SPECTROGRAM ON TOP
                 float hueValue = hueLimit - map((fftAvgs(spectChanSelectTop.getActiveChannels(), i)*32), 0, 256, 0, hueLimit);
-                if (settings.spectLogLinSave == 0) {
+                if (logLin == FFTLogLin.LOG) {
                     hueValue = map(log10(hueValue), 0, 2, 0, hueLimit);
                 }
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
@@ -205,7 +208,7 @@ class W_Spectrogram extends Widget {
 
                 //RIGHT SPECTROGRAM ON BOTTOM
                 hueValue = hueLimit - map((fftAvgs(spectChanSelectBot.getActiveChannels(), i)*32), 0, 256, 0, hueLimit);
-                if (settings.spectLogLinSave == 0) {
+                if (logLin == FFTLogLin.LOG) {
                     hueValue = map(log10(hueValue), 0, 2, 0, hueLimit);
                 }
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
@@ -350,7 +353,7 @@ class W_Spectrogram extends Widget {
             //draw color scale reference to the right of the spectrogram
             for (int i = 0; i < colorScaleHeight; i++) {
                 float hueValue = hueLimit - map(i * 2, 0, colorScaleHeight*2, 0, hueLimit);
-                if (settings.spectLogLinSave == 0) {
+                if (logLin == FFTLogLin.LOG) {
                     hueValue = map(log(hueValue) / log(10), 0, 2, 0, hueLimit);
                 }
                 //println(hueValue);
@@ -450,6 +453,10 @@ class W_Spectrogram extends Widget {
             dataImg.pixels[i] = color(0);  // Black background
         }
     }
+
+    public void setLogLin(int n) {
+        logLin = logLin.values()[n];
+    }
 };
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
@@ -489,6 +496,6 @@ void SpectrogramSampleRate(int n) {
     w_spectrogram.fetchTimeStrings(w_spectrogram.numHorizAxisDivs);
 }
 
-void SpectrogramLogLin(int n) {
-    settings.spectLogLinSave = n;
+public void SpectrogramLogLin(int n) {
+    w_spectrogram.setLogLin(n);
 }

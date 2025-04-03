@@ -10,129 +10,9 @@
 //                                                                                                    //
 //    Created by: Wangshu Sun, May 2017                                                               //
 //    Modified by: Richard Waltman, March 2022                                                        //
+//    Refactored by: Richard Waltman, March 2025                                                      //
 //                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-public enum BPAutoClean implements IndexingInterface
-{
-    ON (0, "On"),
-    OFF (1, "Off");
-
-    private int index;
-    private String label;
-    private static BPAutoClean[] vals = values();
-
-    BPAutoClean(int _index, String _label) {
-        this.index = _index;
-        this.label = _label;
-    }
-
-    @Override
-    public String getString() {
-        return label;
-    }
-
-    @Override
-    public int getIndex() {
-        return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
-}
-
-public enum BPAutoCleanThreshold implements IndexingInterface
-{
-    FORTY (0, 40f, "40 uV"),
-    FIFTY (1, 50f, "50 uV"),
-    SIXTY (2, 60f, "60 uV"),
-    SEVENTY (3, 70f, "70 uV"),
-    EIGHTY (4, 80f, "80 uV"),
-    NINETY (5, 90f, "90 uV"),
-    ONE_HUNDRED(6, 100f, "100 uV");
-
-    private int index;
-    private float value;
-    private String label;
-    private static BPAutoCleanThreshold[] vals = values();
-
-    BPAutoCleanThreshold(int _index, float _value, String _label) {
-        this.index = _index;
-        this.value = _value;
-        this.label = _label;
-    }
-
-    public float getValue() {
-        return value;
-    }
-
-    @Override
-    public String getString() {
-        return label;
-    }
-
-    @Override
-    public int getIndex() {
-        return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
-}
-
-public enum BPAutoCleanTimer implements IndexingInterface
-{
-    HALF_SECOND (0, 500, ".5 sec"),
-    ONE_SECOND (1, 1000, "1 sec"),
-    THREE_SECONDS (2, 2000, "3 sec"),
-    FIVE_SECONDS (3, 5000, "5 sec"),
-    TEN_SECONDS (4, 10000, "10 sec"),
-    TWENTY_SECONDS (5, 20000, "20 sec"),
-    THIRTY_SECONDS(6, 30000, "30 sec");
-
-    private int index;
-    private float value;
-    private String label;
-    private static BPAutoCleanTimer[] vals = values();
-
-    BPAutoCleanTimer(int _index, float _value, String _label) {
-        this.index = _index;
-        this.value = _value;
-        this.label = _label;
-    }
-
-    public float getValue() {
-        return value;
-    }
-
-    @Override
-    public String getString() {
-        return label;
-    }
-
-    @Override
-    public int getIndex() {
-        return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
-}
 
 class W_BandPower extends Widget {
 
@@ -153,9 +33,10 @@ class W_BandPower extends Widget {
 
     private List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
-    BPAutoClean bpAutoClean = BPAutoClean.OFF;
-    BPAutoCleanThreshold bpAutoCleanThreshold = BPAutoCleanThreshold.FIFTY;
-    BPAutoCleanTimer bpAutoCleanTimer = BPAutoCleanTimer.THREE_SECONDS;
+    BPAutoClean autoClean = BPAutoClean.OFF;
+    BPAutoCleanThreshold autoCleanThreshold = BPAutoCleanThreshold.FIFTY;
+    BPAutoCleanTimer autoCleanTimer = BPAutoCleanTimer.THREE_SECONDS;
+
     int[] autoCleanTimers;
     boolean[] previousThresholdCrossed;
 
@@ -173,13 +54,15 @@ class W_BandPower extends Widget {
         
         //Add settings dropdowns
         //Note: This is the correct way to create a dropdown using an enum -RW
-        addDropdown("bpAutoCleanDropdown", "AutoClean", bpAutoClean.getEnumStringsAsList(), bpAutoClean.getIndex());
-        addDropdown("bpAutoCleanThresholdDropdown", "Threshold", bpAutoCleanThreshold.getEnumStringsAsList(), bpAutoCleanThreshold.getIndex());
-        addDropdown("bpAutoCleanTimerDropdown", "Timer", bpAutoCleanTimer.getEnumStringsAsList(), bpAutoCleanTimer.getIndex());
+        addDropdown("bandPowerAutoCleanDropdown", "AutoClean", autoClean.getEnumStringsAsList(), autoClean.getIndex());
+        addDropdown("bandPowerAutoCleanThresholdDropdown", "Threshold", autoCleanThreshold.getEnumStringsAsList(), autoCleanThreshold.getIndex());
+        addDropdown("bandPowerAutoCleanTimerDropdown", "Timer", autoCleanTimer.getEnumStringsAsList(), autoCleanTimer.getIndex());
         //Note: This is a legacy way to create a dropdown which is sloppy and disorganized -RW
         //These two dropdowns also have to mirror the settings in the FFT widget
-        addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
-        addDropdown("UnfiltFilt", "Filters?", Arrays.asList(settings.fftFilterArray), settings.fftFilterSave);
+        FFTSmoothingFactor smoothingFactor = globalFFTSettings.getSmoothingFactor();
+        FFTFilteredEnum filteredEnum = globalFFTSettings.getFilteredEnum();
+        addDropdown("bandPowerSmoothingDropdown", "Smooth", smoothingFactor.getEnumStringsAsList(), smoothingFactor.getIndex());
+        addDropdown("bandPowerDataFilteringDropdown", "Filtered?", filteredEnum.getEnumStringsAsList(), filteredEnum.getIndex());
 
         // Setup for the BandPower plot
         bp_plot = new GPlot(_parent, x, y-navHeight, w, h+navHeight);
@@ -302,14 +185,14 @@ class W_BandPower extends Widget {
     }
 
     private void autoCleanByEnableDisableChannels() {
-        if (bpAutoClean == BPAutoClean.OFF) {
+        if (autoClean == BPAutoClean.OFF) {
             return;
         }
 
         int numChannels = currentBoard.getNumEXGChannels();
         for (int i = 0; i < numChannels; i++) {
             float uvrms = dataProcessing.data_std_uV[i];
-            boolean thresholdCrossed = uvrms > bpAutoCleanThreshold.getValue();
+            boolean thresholdCrossed = uvrms > autoCleanThreshold.getValue();
 
             int currentMillis = millis();
 
@@ -320,7 +203,7 @@ class W_BandPower extends Widget {
             }
             
             //Auto-disable a channel if it's above the threshold and has been for the timer duration
-            boolean timerDurationExceeded = currentMillis - autoCleanTimers[i] > bpAutoCleanTimer.getValue();
+            boolean timerDurationExceeded = currentMillis - autoCleanTimers[i] > autoCleanTimer.getValue();
             if (timerDurationExceeded) {
                 boolean enableChannel = !thresholdCrossed;
                 bpChanSelect.setToggleState(i, enableChannel);
@@ -329,44 +212,42 @@ class W_BandPower extends Widget {
     }
 
     public BPAutoClean getAutoClean() {
-        return bpAutoClean;
+        return autoClean;
     }
 
     public BPAutoCleanThreshold getAutoCleanThreshold() {
-        return bpAutoCleanThreshold;
+        return autoCleanThreshold;
     }
 
     public BPAutoCleanTimer getAutoCleanTimer() {
-        return bpAutoCleanTimer;
+        return autoCleanTimer;
     }
 
     public void setAutoClean(int n) {
-        bpAutoClean = bpAutoClean.values()[n];
+        autoClean = autoClean.values()[n];
         Arrays.fill(previousThresholdCrossed, false);
         Arrays.fill(autoCleanTimers, 0);
     }
 
     public void setAutoCleanThreshold(int n) {
-        bpAutoCleanThreshold = bpAutoCleanThreshold.values()[n];
+        autoCleanThreshold = autoCleanThreshold.values()[n];
     }
 
     public void setAutoCleanTimer(int n) {
-        bpAutoCleanTimer = bpAutoCleanTimer.values()[n];
+        autoCleanTimer = autoCleanTimer.values()[n];
     }
+
     //Called in DataProcessing.pde to update data even if widget is closed
     public void updateBandPowerWidgetData() {
         float normalizingSum = 0;
 
         for (int i = 0; i < NUM_BANDS; i++) {
             float sum = 0;
-
             for (int j = 0; j < bpChanSelect.getActiveChannels().size(); j++) {
                 int chan = bpChanSelect.getActiveChannels().get(j);
                 sum += dataProcessing.avgPowerInBins[chan][i];
             }
-
             activePower[i] = sum / bpChanSelect.getActiveChannels().size();
-
             normalizingSum += activePower[i];
         }
 
@@ -376,14 +257,24 @@ class W_BandPower extends Widget {
     }
 };
 
-public void bpAutoCleanDropdown(int n) {
+public void bandPowerAutoCleanDropdown(int n) {
     w_bandPower.setAutoClean(n);
 }
 
-public void bpAutoCleanThresholdDropdown(int n) {
+public void bandPowerAutoCleanThresholdDropdown(int n) {
     w_bandPower.setAutoCleanThreshold(n);
 }
 
-public void bpAutoCleanTimerDropdown(int n) {
+public void bandPowerAutoCleanTimerDropdown(int n) {
     w_bandPower.setAutoCleanTimer(n);
+}
+
+public void bandPowerSmoothingDropdown(int n) {
+    globalFFTSettings.setSmoothingFactor(FFTSmoothingFactor.values()[n]);
+    //FIX ME TO UPDATE THE FFT WIDGET DROPDOWN ALSO
+}
+
+public void bandPowerDataFilteringDropdown(int n) {
+    globalFFTSettings.setFilteredEnum(FFTFilteredEnum.values()[n]);
+    //FIX ME TO UPDATE THE FFT WIDGET DROPDOWN ALSO
 }
