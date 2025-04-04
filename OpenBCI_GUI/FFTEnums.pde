@@ -77,7 +77,7 @@ public enum FFTSmoothingFactor implements IndexingInterface {
 // Used by FFT Widget and Band Power Widget
 public enum FFTFilteredEnum implements IndexingInterface {
     FILTERED (0, "Filtered"),
-    UNFILTERED (1, "Unfiltered");
+    UNFILTERED (1, "Unfilt.");
 
     private final int index;
     private final String label;

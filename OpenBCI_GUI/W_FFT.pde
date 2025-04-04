@@ -198,6 +198,16 @@ class W_fft extends Widget {
             fftPlot.setLogScale("");
         }
     }
+
+    public void setSmoothingDropdownFrontend(FFTSmoothingFactor _smoothingFactor) {
+        String s = _smoothingFactor.getString();
+        cp5_widget.getController("fftSmoothingDropdown").getCaptionLabel().setText(s);
+    }
+
+    public void setFilteringDropdownFrontend(FFTFilteredEnum _filteredEnum) {
+        String s = _filteredEnum.getString();
+        cp5_widget.getController("fftFilteringDropdown").getCaptionLabel().setText(s);
+    }
 };
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
@@ -215,10 +225,12 @@ public void fftLogLinDropdown(int n) {
 
 public void fftSmoothingDropdown(int n) {
     globalFFTSettings.setSmoothingFactor(FFTSmoothingFactor.values()[n]);
-    //FIX ME TO UPDATE THE BAND POWER WIDGET DROPDOWN ALSO
+    FFTSmoothingFactor smoothingFactor = globalFFTSettings.getSmoothingFactor();
+    w_bandPower.setSmoothingDropdownFrontend(smoothingFactor);
 }
 
 public void fftFilteringDropdown(int n) {
     globalFFTSettings.setFilteredEnum(FFTFilteredEnum.values()[n]);
-    //FIX ME TO UPDATE THE BAND POWER WIDGET DROPDOWN ALSO
+    FFTFilteredEnum filteredEnum = globalFFTSettings.getFilteredEnum();
+    w_bandPower.setFilteringDropdownFrontend(filteredEnum);
 }

@@ -255,6 +255,16 @@ class W_BandPower extends Widget {
             normalizedBandPowers[i] = activePower[i] / normalizingSum;
         }
     }
+
+    public void setSmoothingDropdownFrontend(FFTSmoothingFactor _smoothingFactor) {
+        String s = _smoothingFactor.getString();
+        cp5_widget.getController("bandPowerSmoothingDropdown").getCaptionLabel().setText(s);
+    }
+
+    public void setFilteringDropdownFrontend(FFTFilteredEnum _filteredEnum) {
+        String s = _filteredEnum.getString();
+        cp5_widget.getController("bandPowerDataFilteringDropdown").getCaptionLabel().setText(s);
+    }
 };
 
 public void bandPowerAutoCleanDropdown(int n) {
@@ -271,10 +281,12 @@ public void bandPowerAutoCleanTimerDropdown(int n) {
 
 public void bandPowerSmoothingDropdown(int n) {
     globalFFTSettings.setSmoothingFactor(FFTSmoothingFactor.values()[n]);
-    //FIX ME TO UPDATE THE FFT WIDGET DROPDOWN ALSO
+    FFTSmoothingFactor smoothingFactor = globalFFTSettings.getSmoothingFactor();
+    w_fft.setSmoothingDropdownFrontend(smoothingFactor);
 }
 
 public void bandPowerDataFilteringDropdown(int n) {
     globalFFTSettings.setFilteredEnum(FFTFilteredEnum.values()[n]);
-    //FIX ME TO UPDATE THE FFT WIDGET DROPDOWN ALSO
+    FFTFilteredEnum filteredEnum = globalFFTSettings.getFilteredEnum();
+    w_fft.setFilteringDropdownFrontend(filteredEnum);
 }
