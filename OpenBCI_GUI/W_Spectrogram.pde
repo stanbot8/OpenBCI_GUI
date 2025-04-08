@@ -39,30 +39,13 @@ class W_Spectrogram extends Widget {
     int paddingRight = 26;   
     int paddingTop = 8;
     int paddingBottom = 50;
-    int numHorizAxisDivs = 2; // == 40Hz
-    int numVertAxisDivs = 8;
-    final int[][] vertAxisLabels = {
-        {20, 15, 10, 5, 0, 5, 10, 15, 20},
-        {40, 30, 20, 10, 0, 10, 20, 30, 40},
-        {60, 45, 30, 15, 0, 15, 30, 45, 60},
-        {100, 75, 50, 25, 0, 25,  50, 75, 100},
-        {120, 90, 60, 30, 0, 30, 60, 90, 120},
-        {250, 188, 125, 63, 0, 63, 125, 188, 250}
-    };
-    int[] vertAxisLabel;
-    final float[][] horizAxisLabels = {
-        {30, 25, 20, 15, 10, 5, 0},
-        {6, 5, 4, 3, 2, 1, 0},
-        {3, 2, 1, 0},
-        {1.5, 1, .5, 0},
-        {1, .5, 0}
-    };
-    float[] horizAxisLabel;
-    StringList horizAxisLabelStrings;
+    StringList horizontalAxisLabelStrings;
 
     float[] topFFTAvg;
     float[] botFFTAvg;
 
+    private SpectrogramMaxFrequency maxFrequency = SpectrogramMaxFrequency.MAX_60;
+    private SpectrogramWindowSize windowSize = SpectrogramWindowSize.ONE_MINUTE;
     private FFTLogLin logLin = FFTLogLin.LIN;
 
     W_Spectrogram(PApplet _parent) {
@@ -84,25 +67,18 @@ class W_Spectrogram extends Widget {
         graphW = w - paddingRight - paddingLeft;
         graphH = h - paddingBottom - paddingTop;
         
-        //FIX ME REMOVE THESE
-        settings.spectMaxFrqSave = 2;
-        settings.spectSampleRateSave = 4;
-
-        vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
-        horizAxisLabel = horizAxisLabels[settings.spectSampleRateSave];
-        horizAxisLabelStrings = new StringList();
         //Fetch/calculate the time strings for the horizontal axis ticks
-        fetchTimeStrings(numHorizAxisDivs);
+        horizontalAxisLabelStrings = fetchTimeStrings();
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.spectMaxFrqArray), settings.spectMaxFrqSave);
-        addDropdown("SpectrogramSampleRate", "Window", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
-        addDropdown("SpectrogramLogLin", "Log/Lin", logLin.getEnumStringsAsList(), logLin.getIndex());
+        addDropdown("spectrogramMaxFrequencyDropdown", "Max Hz", maxFrequency.getEnumStringsAsList(), maxFrequency.getIndex());
+        addDropdown("spectrogramSampleRateDropdown", "Window", windowSize.getEnumStringsAsList(), windowSize.getIndex());
+        addDropdown("spectrogramLogLinDropdown", "Log/Lin", logLin.getEnumStringsAsList(), logLin.getIndex());
 
         //Resize the height of the data image using default 
-        dataImageH = vertAxisLabel[0] * 2;
+        dataImageH = maxFrequency.getAxisLabels()[0] * 2;
         //Create image using correct dimensions! Fixes bug where image size and labels do not align on session start.
         dataImg = createImage(dataImageW, dataImageH, RGB);
     }
@@ -133,7 +109,8 @@ class W_Spectrogram extends Widget {
             //Make sure we are always draw new pixels on the right
             xPos = dataImg.width - 1;
             //Fetch/calculate the time strings for the horizontal axis ticks
-            fetchTimeStrings(numHorizAxisDivs);
+            horizontalAxisLabelStrings.clear();
+            horizontalAxisLabelStrings = fetchTimeStrings();
         }
         
         //State change check
@@ -281,17 +258,18 @@ class W_Spectrogram extends Widget {
         pushStyle();
             //draw horizontal axis ticks from left to right
             int tickMarkSize = 7; //in pixels
-            float horizAxisX = graphX;
-            float horizAxisY = graphY + scaledH * dataImageH;
+            float horizontalAxisX = graphX;
+            float horizontalAxisY = graphY + scaledH * dataImageH;
             stroke(255);
             fill(255);
             strokeWeight(2);
             textSize(11);
-            for (int i = 0; i <= numHorizAxisDivs; i++) {
-                float offset = scaledW * dataImageW * (float(i) / numHorizAxisDivs);
-                line(horizAxisX + offset, horizAxisY, horizAxisX + offset, horizAxisY + tickMarkSize);
-                if (horizAxisLabelStrings.get(i) != null) {
-                    text(horizAxisLabelStrings.get(i), horizAxisX + offset - (int)textWidth(horizAxisLabelStrings.get(i))/2, horizAxisY + tickMarkSize * 3);
+            int horizontalAxisDivCount = windowSize.getAxisLabels().length;
+            for (int i = 0; i < horizontalAxisDivCount; i++) {
+                float offset = scaledW * dataImageW * (float(i) / horizontalAxisDivCount);
+                line(horizontalAxisX + offset, horizontalAxisY, horizontalAxisX + offset, horizontalAxisY + tickMarkSize);
+                if (horizontalAxisLabelStrings.get(i) != null) {
+                    text(horizontalAxisLabelStrings.get(i), horizontalAxisX + offset - (int)textWidth(horizontalAxisLabelStrings.get(i))/2, horizontalAxisY + tickMarkSize * 3);
                 }
             }
         popStyle();
@@ -312,19 +290,20 @@ class W_Spectrogram extends Widget {
 
         pushStyle();
             //draw vertical axis ticks from top to bottom
-            float vertAxisX = graphX;
-            float vertAxisY = graphY;
+            float verticalAxisX = graphX;
+            float verticalAxisY = graphY;
             stroke(255);
             fill(255);
             textSize(12);
             strokeWeight(2);
-            for (int i = 0; i <= numVertAxisDivs; i++) {
-                float offset = scaledH * dataImageH * (float(i) / numVertAxisDivs);
-                //if (i <= numVertAxisDivs/2) offset -= 2;
-                line(vertAxisX, vertAxisY + offset, vertAxisX - tickMarkSize, vertAxisY + offset);
-                if (vertAxisLabel[i] == 0) midLineY = int(vertAxisY + offset);
+            int verticalAxisDivCount = maxFrequency.getAxisLabels().length - 1;
+            for (int i = 0; i < verticalAxisDivCount; i++) {
+                float offset = scaledH * dataImageH * (float(i) / verticalAxisDivCount);
+                //if (i <= verticalAxisDivCount/2) offset -= 2;
+                line(verticalAxisX, verticalAxisY + offset, verticalAxisX - tickMarkSize, verticalAxisY + offset);
+                if (maxFrequency.getAxisLabels()[i] == 0) midLineY = int(verticalAxisY + offset);
                 offset += paddingTop/2;
-                text(vertAxisLabel[i], vertAxisX - tickMarkSize*2 - textWidth(Integer.toString(vertAxisLabel[i])), vertAxisY + offset);
+                text(maxFrequency.getAxisLabels()[i], verticalAxisX - tickMarkSize*2 - textWidth(Integer.toString(maxFrequency.getAxisLabels()[i])), verticalAxisY + offset);
             }
         popStyle();
 
@@ -415,23 +394,22 @@ class W_Spectrogram extends Widget {
         return sum / _activeChan.size();
     }
 
-    void fetchTimeStrings(int numAxisTicks) {
-        horizAxisLabelStrings.clear();
+    private StringList fetchTimeStrings() {
+        StringList output = new StringList();
         LocalDateTime time;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-
         if (getCurrentTimeStamp() == 0) {
             time = LocalDateTime.now();
         } else {
             time = LocalDateTime.ofInstant(Instant.ofEpochMilli(getCurrentTimeStamp()), 
                                             TimeZone.getDefault().toZoneId()); 
         }
-        
-        for (int i = 0; i <= numAxisTicks; i++) {
-            long l = (long)(horizAxisLabel[i] * 60f);
+        for (int i = 0; i < windowSize.getAxisLabels().length; i++) {
+            long l = (long)(windowSize.getAxisLabels()[i] * 60f);
             LocalDateTime t = time.minus(l, ChronoUnit.SECONDS);
-            horizAxisLabelStrings.append(t.format(formatter));
+            output.append(t.format(formatter));
         }
+        return output;
     }
 
     //Identical to the method in TimeSeries, but allows spectrogram to get the data directly from the playback data in the background
@@ -457,45 +435,33 @@ class W_Spectrogram extends Widget {
     public void setLogLin(int n) {
         logLin = logLin.values()[n];
     }
+
+    public void setMaxFrequency(int n) {
+        maxFrequency = maxFrequency.values()[n];
+        // Resize the height of the data image
+        dataImageH = maxFrequency.getAxisLabels()[0] * 2;
+        // Overwrite the existing image
+        dataImg = createImage(dataImageW, dataImageH, RGB);
+    }
+
+    public void setWindowSize(int n) {
+        windowSize = windowSize.values()[n];
+        setScrollSpeed(windowSize.getScrollSpeed());
+        horizontalAxisLabelStrings.clear();
+        horizontalAxisLabelStrings = fetchTimeStrings();
+        dataImg = createImage(dataImageW, dataImageH, RGB);
+
+    }
 };
 
-//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-//triggered when there is an event in the Spectrogram Widget MaxFreq. Dropdown
-void SpectrogramMaxFreq(int n) {
-    settings.spectMaxFrqSave = n;
-    //reset the vertical axis labels
-    w_spectrogram.vertAxisLabel = w_spectrogram.vertAxisLabels[n];
-    //Resize the height of the data image
-    w_spectrogram.dataImageH = w_spectrogram.vertAxisLabel[0] * 2;
-    //overwrite the existing image because the sample rate is about to change
-    w_spectrogram.dataImg = createImage(w_spectrogram.dataImageW, w_spectrogram.dataImageH, RGB);
+public void spectrogramMaxFrequencyDropdown(int n) {
+    w_spectrogram.setMaxFrequency(n);
 }
 
-void SpectrogramSampleRate(int n) {
-    settings.spectSampleRateSave = n;
-    //overwrite the existing image because the sample rate is about to change
-    w_spectrogram.dataImg = createImage(w_spectrogram.dataImageW, w_spectrogram.dataImageH, RGB);
-    w_spectrogram.horizAxisLabel = w_spectrogram.horizAxisLabels[n];
-    if (n == 0) {
-        w_spectrogram.numHorizAxisDivs = 6;
-        w_spectrogram.setScrollSpeed(1000);
-    } else if (n == 1) {
-        w_spectrogram.numHorizAxisDivs = 6;
-        w_spectrogram.setScrollSpeed(200);
-    } else if (n == 2) {
-        w_spectrogram.numHorizAxisDivs = 3;
-        w_spectrogram.setScrollSpeed(100);
-    } else if (n == 3) {
-        w_spectrogram.numHorizAxisDivs = 3;
-        w_spectrogram.setScrollSpeed(50);
-    } else if (n == 4) {
-        w_spectrogram.numHorizAxisDivs = 2;
-        w_spectrogram.setScrollSpeed(25);
-    }
-    w_spectrogram.horizAxisLabelStrings.clear();
-    w_spectrogram.fetchTimeStrings(w_spectrogram.numHorizAxisDivs);
+public void spectrogramWindowDropdown(int n) {
+    w_spectrogram.setWindowSize(n);
 }
 
-public void SpectrogramLogLin(int n) {
+public void spectrogramLogLinDropdown(int n) {
     w_spectrogram.setLogLin(n);
 }
