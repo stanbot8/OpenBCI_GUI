@@ -64,10 +64,6 @@ class SessionSettings {
     //Analog Read settings
     int arVertScaleSave;
     int arHorizScaleSave;
-    //Spectrogram Widget settings
-    //FIX ME REMOVE THIS
-    int spectMaxFrqSave;
-    int spectSampleRateSave;
 
     //default configuration settings file location and file name variables
     private String sessionPath = "";
@@ -97,10 +93,6 @@ class SessionSettings {
     //Used to set text in dropdown menus when loading Analog Read settings
     String[] arVertScaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
     String[] arHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
-
-    //Used to set text in dropdown menus when loading Spectrogram Setings
-    String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
-    String[] spectSampleRateArray = {"30 Min.", "6 Min.", "3 Min.", "1.5 Min.", "1 Min."};
 
     //Load Accel. dropdown variables
     int loadAccelVertScale;
@@ -782,11 +774,14 @@ class SessionSettings {
 
         ////////////////////////////Apply Spectrogram settings
         //Apply Max Freq dropdown
+        //FIX ME
+        /*
         SpectrogramMaxFreq(spectMaxFrqLoad);
         w_spectrogram.cp5_widget.getController("SpectrogramMaxFreq").getCaptionLabel().setText(spectMaxFrqArray[spectMaxFrqLoad]);
         SpectrogramSampleRate(spectSampleRateLoad);
         w_spectrogram.cp5_widget.getController("SpectrogramSampleRate").getCaptionLabel().setText(spectSampleRateArray[spectSampleRateLoad]);
         SpectrogramLogLin(spectLogLinLoad);
+        */
         //FIX ME
         //w_spectrogram.cp5_widget.getController("SpectrogramLogLin").getCaptionLabel().setText(fftLogLinArray[spectLogLinLoad]);
         try {
