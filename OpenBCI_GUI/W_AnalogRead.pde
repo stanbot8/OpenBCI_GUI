@@ -431,7 +431,7 @@ class AnalogReadBar{
             return;
         }
         
-        plot.setYLim(-_vertScaleValue, _vertScaleValue);
+        plot.setYLim(-10, _vertScaleValue);
     }
 
     void screenResized(int _x, int _y, int _w, int _h) {
