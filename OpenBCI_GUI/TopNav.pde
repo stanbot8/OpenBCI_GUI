@@ -696,20 +696,8 @@ class LayoutSelector {
 
     void toggleVisibility() {
         isVisible = !isVisible;
-        if (isVisible) {
-            //the very convoluted way of locking all controllers of a single controlP5 instance...
-            for (int i = 0; i < widgetManager.widgets.size(); i++) {
-                for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                    widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
-                }
-            }
-        } else {
-            //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-            for (int i = 0; i < widgetManager.widgets.size(); i++) {
-                for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                    widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
-                }
-            }
+        if (widgetManager != null) {
+            widgetManager.lockCp5ObjectsInAllWidgets(isVisible);
         }
     }
 
@@ -880,23 +868,9 @@ class ConfigSelector {
 
     void toggleVisibility() {
         isVisible = !isVisible;
-        if (systemMode >= SYSTEMMODE_POSTINIT) {
-            if (isVisible) {
-                //the very convoluted way of locking all controllers of a single controlP5 instance...
-                for (int i = 0; i < widgetManager.widgets.size(); i++) {
-                    for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                        widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
-                    }
-                }
-                clearAllSettingsPressed = false;
-            } else {
-                //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-                for (int i = 0; i < widgetManager.widgets.size(); i++) {
-                    for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                        widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
-                    }
-                }
-            }
+        if (widgetManager != null) {
+            widgetManager.lockCp5ObjectsInAllWidgets(isVisible);
+            clearAllSettingsPressed = !isVisible;
         }
 
         //When closed by any means and confirmation buttons are open...
@@ -1188,22 +1162,8 @@ class TutorialSelector {
 
     void toggleVisibility() {
         isVisible = !isVisible;
-        if (systemMode >= SYSTEMMODE_POSTINIT) {
-            if (isVisible) {
-                //the very convoluted way of locking all controllers of a single controlP5 instance...
-                for (int i = 0; i < widgetManager.widgets.size(); i++) {
-                    for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                        widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
-                    }
-                }
-            } else {
-                //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-                for (int i = 0; i < widgetManager.widgets.size(); i++) {
-                    for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                        widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
-                    }
-                }
-            }
+        if (widgetManager != null) {
+            widgetManager.lockCp5ObjectsInAllWidgets(isVisible);
         }
     }
 
