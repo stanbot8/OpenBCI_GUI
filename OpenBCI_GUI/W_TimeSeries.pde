@@ -11,134 +11,6 @@
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-public enum TimeSeriesXLim implements IndexingInterface
-{
-    ONE (0, 1, "1 sec"),
-    THREE (1, 3, "3 sec"),
-    FIVE (2, 5, "5 sec"),
-    TEN (3, 10, "10 sec"),
-    TWENTY (4, 20, "20 sec");
-
-    private int index;
-    private int value;
-    private String label;
-    private static TimeSeriesXLim[] vals = values();
-
-    TimeSeriesXLim(int _index, int _value, String _label) {
-        this.index = _index;
-        this.value = _value;
-        this.label = _label;
-    }
-
-    public int getValue() {
-        return value;
-    }
-
-    @Override
-    public String getString() {
-        return label;
-    }
-
-    @Override
-    public int getIndex() {
-        return index;
-    }
-    
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
-}
-
-public enum TimeSeriesYLim implements IndexingInterface
-{
-    AUTO (0, 0, "Auto"),
-    UV_10(1, 10, "10 uV"),
-    UV_25(2, 25, "25 uV"),
-    UV_50 (3, 50, "50 uV"),
-    UV_100 (4, 100, "100 uV"),
-    UV_200 (5, 200, "200 uV"),
-    UV_400 (6, 400, "400 uV"),
-    UV_1000 (7, 1000, "1000 uV"),
-    UV_10000 (8, 10000, "10000 uV");
-
-    private int index;
-    private int value;
-    private String label;
-    private static TimeSeriesYLim[] vals = values();
-
-    TimeSeriesYLim(int _index, int _value, String _label) {
-        this.index = _index;
-        this.value = _value;
-        this.label = _label;
-    }
-
-    public int getValue() {
-        return value;
-    }
-
-    @Override
-    public String getString() {
-        return label;
-    }
-
-    @Override
-    public int getIndex() {
-        return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
-}
-
-public enum TimeSeriesLabelMode implements IndexingInterface
-{
-    OFF (0, 0, "Off"),
-    MINIMAL (1, 1, "Minimal"),
-    ON (2, 2, "On");
-
-    private int index;
-    private int value;
-    private String label;
-    private static TimeSeriesLabelMode[] vals = values();
-
-    TimeSeriesLabelMode(int _index, int _value, String _label) {
-        this.index = _index;
-        this.value = _value;
-        this.label = _label;
-    }
-
-    public int getValue() {
-        return value;
-    }
-
-    @Override
-    public String getString() {
-        return label;
-    }
-
-    @Override
-    public int getIndex() {
-        return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
-}
-
 class W_timeSeries extends Widget {
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
@@ -206,9 +78,9 @@ class W_timeSeries extends Widget {
         numChannelBars = globalChannelCount; //set number of channel bars = to current globalChannelCount of system (4, 8, or 16)
 
         //This is a newer protocol for setting up dropdowns.
-        addDropdown("VertScale_TS", "Vert Scale", yLimit.getEnumStringsAsList(), yLimit.getIndex());
-        addDropdown("Duration", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
-        addDropdown("LabelMode_TS", "Labels", labelMode.getEnumStringsAsList(), labelMode.getIndex());
+        addDropdown("timeSeriesVerticalScaleDropdown", "Vert Scale", yLimit.getEnumStringsAsList(), yLimit.getIndex());
+        addDropdown("timeSeriesHorizontalScaleDropdown", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
+        addDropdown("timeSeriesLabelModeDropdown", "Labels", labelMode.getEnumStringsAsList(), labelMode.getIndex());
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -256,7 +128,7 @@ class W_timeSeries extends Widget {
             adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.getActiveChannels(), x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
 
-        setTSVertScale(yLimit.getIndex());
+        setVerticalScale(yLimit.getIndex());
     }
 
     void update() {
@@ -456,66 +328,48 @@ class W_timeSeries extends Widget {
         return myButton;
     }
 
-    public TimeSeriesYLim getTSVertScale() {
+    public TimeSeriesYLim getVerticalScale() {
         return yLimit;
     }
 
-    public TimeSeriesXLim getTSHorizScale() {
+    public TimeSeriesXLim getHorizontalScale() {
         return xLimit;
     }
 
-    public TimeSeriesLabelMode getTSLabelMode() {
+    public TimeSeriesLabelMode getLabelMode() {
         return labelMode;
     }
 
-    public void setTSVertScale(int n) {
+    public void setVerticalScale(int n) {
         yLimit = yLimit.values()[n];
         for (int i = 0; i < numChannelBars; i++) {
             channelBars[i].adjustVertScale(yLimit.getValue());
         }
     }
 
-    public void setTSHorizScale(int n) {
+    public void setHorizontalScale(int n) {
         xLimit = xLimit.values()[n];
         for (int i = 0; i < numChannelBars; i++) {
             channelBars[i].adjustTimeAxis(xLimit.getValue());
         }
     }
 
-    public void setTSLabelMode(int n) {
+    public void setLabelMode(int n) {
         labelMode = labelMode.values()[n];
     }
 };
 
 //These functions are activated when an item from the corresponding dropdown is selected
-void VertScale_TS(int n) {
-    w_timeSeries.setTSVertScale(n);
+void timeSeriesVerticalScaleDropdown(int n) {
+    w_timeSeries.setVerticalScale(n);
 }
 
-//triggered when there is an event in the Duration Dropdown
-void Duration(int n) {
-    w_timeSeries.setTSHorizScale(n);
-
-    int newDuration = w_timeSeries.getTSHorizScale().getValue();
-    //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-    if (currentBoard instanceof AccelerometerCapableBoard) {
-        if (settings.accHorizScaleSave == 0) {
-            //set accelerometer x axis to the duration selected from dropdown
-            w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
-        }
-    }
-    if (currentBoard instanceof AnalogCapableBoard) {
-        if (settings.arHorizScaleSave == 0) {
-            //set analog read x axis to the duration selected from dropdown
-            for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
-                w_analogRead.analogReadBars[i].adjustTimeAxis(newDuration);
-            }
-        }
-    }
+void timeSeriesHorizontalScaleDropdown(int n) {
+    w_timeSeries.setHorizontalScale(n);
 }
 
 void LabelMode_TS(int n) {
-    w_timeSeries.setTSLabelMode(n);
+    w_timeSeries.setLabelMode(n);
 }
 
 //========================================================================================================================

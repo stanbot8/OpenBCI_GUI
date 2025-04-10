@@ -56,14 +56,6 @@ class SessionSettings {
     private long logFileMaxDurationNano = -1;
     //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
     CColor dropdownColors = new CColor();
-    ///These `Save` vars are set to default when each widget instantiates
-    ///and updated every time user selects from dropdown
-    //Accelerometer settings
-    int accVertScaleSave;
-    int accHorizScaleSave;
-    //Analog Read settings
-    int arVertScaleSave;
-    int arHorizScaleSave;
 
     //default configuration settings file location and file name variables
     private String sessionPath = "";
@@ -85,14 +77,6 @@ class SessionSettings {
         "SynthEightDefaultSettings.json",
         "SynthSixteenDefaultSettings.json"
         };
-
-    //Used to set text in dropdown menus when loading Accelerometer settings
-    String[] accVertScaleArray = {"Auto","1 g", "2 g"};
-    String[] accHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
-
-    //Used to set text in dropdown menus when loading Analog Read settings
-    String[] arVertScaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
-    String[] arHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
     //Load Accel. dropdown variables
     int loadAccelVertScale;
@@ -278,9 +262,9 @@ class SessionSettings {
 
         //Make a new JSON Object for Time Series Settings
         JSONObject saveTSSettings = new JSONObject();
-        saveTSSettings.setInt("Time Series Vert Scale", w_timeSeries.getTSVertScale().getIndex());
-        saveTSSettings.setInt("Time Series Horiz Scale", w_timeSeries.getTSHorizScale().getIndex());
-        saveTSSettings.setInt("Time Series Label Mode", w_timeSeries.getTSLabelMode().getIndex());
+        saveTSSettings.setInt("Time Series Vert Scale", w_timeSeries.getVerticalScale().getIndex());
+        saveTSSettings.setInt("Time Series Horiz Scale", w_timeSeries.getHorizontalScale().getIndex());
+        saveTSSettings.setInt("Time Series Label Mode", w_timeSeries.getLabelMode().getIndex());
         //Save data from the Active channel checkBoxes
         JSONArray saveActiveChanTS = new JSONArray();
         int numActiveTSChan = w_timeSeries.tsChanSelect.getActiveChannels().size();
@@ -294,8 +278,11 @@ class SessionSettings {
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
         JSONObject saveGlobalSettings = new JSONObject();
         saveGlobalSettings.setInt("Current Layout", currentLayout);
+        //FIX ME
+        /*
         saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
         saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
+        */
         if (currentBoard instanceof SmoothingCapableBoard) {
             saveGlobalSettings.setBoolean("Data Smoothing", ((SmoothingCapableBoard)currentBoard).getSmoothingActive());
         }
@@ -329,12 +316,15 @@ class SessionSettings {
         saveSettingsJSONData.setJSONObject(kJSONKeyFFT, saveFFTSettings); //next object will be set to sessionSettingsChannelCount+3, etc.
 
         ///////////////////////////////////////////////Setup new JSON object to save Accelerometer settings
+        //FIX ME
+        /*
         if (w_accelerometer != null) {
             JSONObject saveAccSettings = new JSONObject();
             saveAccSettings.setInt("Accelerometer Vert Scale", accVertScaleSave);
             saveAccSettings.setInt("Accelerometer Horiz Scale", accHorizScaleSave);
             saveSettingsJSONData.setJSONObject(kJSONKeyAccel, saveAccSettings);
         }
+        */
 
         ///////////////////////////////////////////////Save Networking settings
         String nwSettingsValues = dataProcessing.networkingSettings.getJson();
@@ -512,8 +502,11 @@ class SessionSettings {
         JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject(kJSONKeySettings);
         //Store loaded layout to current layout variable
         currentLayout = loadGlobalSettings.getInt("Current Layout");
+        //FIX ME
+        /*
         loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
         loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
+        */
         //Load more global settings after this line, if needed
         Boolean loadDataSmoothingSetting = (currentBoard instanceof SmoothingCapableBoard) ? loadGlobalSettings.getBoolean("Data Smoothing") : null;
 
@@ -528,12 +521,15 @@ class SessionSettings {
         fftFilterLoad = loadFFTSettings.getInt("FFT_Filter");
         */
 
+        //FIX ME
+        /*
         //get the Accelerometer settings
         if (w_accelerometer != null) {
             JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject(kJSONKeyAccel);
             loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
             loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
         }
+        */
 
         //get the Networking Settings
         loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
@@ -710,7 +706,9 @@ class SessionSettings {
             w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(fftFilterArray[fftFilterLoad]);
         */
 
-        ////////Apply Accelerometer settings;
+        ////////Apply Accelerometer settings
+        //FIX ME
+        /*
         if (w_accelerometer != null) {
             accelVertScale(loadAccelVertScale);
                 w_accelerometer.cp5_widget.getController("accelVertScale").getCaptionLabel().setText(accVertScaleArray[loadAccelVertScale]);
@@ -718,16 +716,19 @@ class SessionSettings {
             accelDuration(loadAccelHorizScale);
                 w_accelerometer.cp5_widget.getController("accelDuration").getCaptionLabel().setText(accHorizScaleArray[loadAccelHorizScale]);
         }
+        */
 
         ////////Apply Anolog Read dropdowns to Live Cyton Only
+        //FIX ME
+        /*
         if (eegDataSource == DATASOURCE_CYTON) {
-            ////////Apply Analog Read settings
             VertScale_AR(loadAnalogReadVertScale);
                 w_analogRead.cp5_widget.getController("VertScale_AR").getCaptionLabel().setText(arVertScaleArray[loadAnalogReadVertScale]);
 
             Duration_AR(loadAnalogReadHorizScale);
                 w_analogRead.cp5_widget.getController("Duration_AR").getCaptionLabel().setText(arHorizScaleArray[loadAnalogReadHorizScale]);
         }
+        */
 
         ////////////////////////////Apply Headplot settings
         //FIX ME
@@ -854,14 +855,14 @@ class SessionSettings {
 
         JSONObject loadTimeSeriesSettings = loadSettingsJSONData.getJSONObject(kJSONKeyTimeSeries);
         ////////Apply Time Series widget settings
-        w_timeSeries.setTSVertScale(loadTimeSeriesSettings.getInt("Time Series Vert Scale"));
-        w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(w_timeSeries.getTSVertScale().getString()); //changes front-end
+        w_timeSeries.setVerticalScale(loadTimeSeriesSettings.getInt("Time Series Vert Scale"));
+        w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(w_timeSeries.getVerticalScale().getString()); //changes front-end
         
-        w_timeSeries.setTSHorizScale(loadTimeSeriesSettings.getInt("Time Series Horiz Scale"));
-        w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(w_timeSeries.getTSHorizScale().getString());
+        w_timeSeries.setHorizontalScale(loadTimeSeriesSettings.getInt("Time Series Horiz Scale"));
+        w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(w_timeSeries.getHorizontalScale().getString());
 
-        w_timeSeries.setTSLabelMode(loadTimeSeriesSettings.getInt("Time Series Label Mode"));
-        w_timeSeries.cp5_widget.getController("LabelMode_TS").getCaptionLabel().setText(w_timeSeries.getTSLabelMode().getString());
+        w_timeSeries.setLabelMode(loadTimeSeriesSettings.getInt("Time Series Label Mode"));
+        w_timeSeries.cp5_widget.getController("LabelMode_TS").getCaptionLabel().setText(w_timeSeries.getLabelMode().getString());
 
         JSONArray loadTSChan = loadTimeSeriesSettings.getJSONArray("activeChannels");
         w_timeSeries.tsChanSelect.deactivateAllButtons();

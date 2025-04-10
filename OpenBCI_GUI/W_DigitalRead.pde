@@ -10,15 +10,13 @@
 
 class W_DigitalRead extends Widget {
     private int numDigitalReadDots;
-    float xF, yF, wF, hF;
-    int dot_padding;
-    //values for actual time series chart (rectangle encompassing all digitalReadDots)
-    float dot_x, dot_y, dot_h, dot_w;
-    float plotBottomWell;
-    float playbackWidgetHeight;
-    int digitalReaddotHeight;
+    private int dot_padding;
+    private float dot_x, dot_y, dot_h, dot_w;
+    private float plotBottomWell;
+    private float playbackWidgetHeight;
+    private int digitalReaddotHeight;
 
-    DigitalReadDot[] digitalReadDots;
+    private DigitalReadDot[] digitalReadDots;
 
     private Button digitalModeButton;
 
@@ -31,16 +29,11 @@ class W_DigitalRead extends Widget {
 
         numDigitalReadDots = 5;
 
-        xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
-        yF = float(y);
-        wF = float(w);
-        hF = float(h);
-
         dot_padding = 10;
-        dot_x = xF + dot_padding;
-        dot_y = yF + (dot_padding);
-        dot_w = wF - dot_padding*2;
-        dot_h = hF - playbackWidgetHeight - plotBottomWell - (dot_padding*2);
+        dot_x = float(x) + dot_padding;
+        dot_y = float(y) + (dot_padding);
+        dot_w = float(w) - dot_padding*2;
+        dot_h = float(h) - playbackWidgetHeight - plotBottomWell - (dot_padding*2);
         digitalReaddotHeight = int(dot_h/numDigitalReadDots);
 
         digitalReadDots = new DigitalReadDot[numDigitalReadDots];
@@ -113,28 +106,23 @@ class W_DigitalRead extends Widget {
     public void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
-        yF = float(y);
-        wF = float(w);
-        hF = float(h);
-
-        if (wF > hF) {
-            digitalReaddotHeight = int(hF/(numDigitalReadDots+1));
+        if (w > h) {
+            digitalReaddotHeight = int(h/(numDigitalReadDots+1));
         } else {
-            digitalReaddotHeight = int(wF/(numDigitalReadDots+1));
+            digitalReaddotHeight = int(w/(numDigitalReadDots+1));
         }
 
         if (numDigitalReadDots == 3) {
-            digitalReadDots[0].screenResized(x+int(wF*(1.0/3.0)), y+int(hF*(1.0/3.0)), digitalReaddotHeight, digitalReaddotHeight); //bar x, bar y, bar w, bar h
-            digitalReadDots[1].screenResized(x+int(wF/2), y+int(hF/2), digitalReaddotHeight, digitalReaddotHeight); //bar x, bar y, bar w, bar h
-            digitalReadDots[2].screenResized(x+int(wF*(2.0/3.0)), y+int(hF*(2.0/3.0)), digitalReaddotHeight, digitalReaddotHeight); //bar x, bar y, bar w, bar h
+            digitalReadDots[0].screenResized(x+int(w*(1.0/3.0)), y+int(h*(1.0/3.0)), digitalReaddotHeight, digitalReaddotHeight); //bar x, bar y, bar w, bar h
+            digitalReadDots[1].screenResized(x+int(w/2), y+int(h/2), digitalReaddotHeight, digitalReaddotHeight); //bar x, bar y, bar w, bar h
+            digitalReadDots[2].screenResized(x+int(w*(2.0/3.0)), y+int(h*(2.0/3.0)), digitalReaddotHeight, digitalReaddotHeight); //bar x, bar y, bar w, bar h
         } else {
             int y_pad = y + dot_padding;
-            digitalReadDots[0].screenResized(x+int(wF*(1.0/8.0)), y_pad+int(hF*(1.0/8.0)), digitalReaddotHeight, digitalReaddotHeight);
-            digitalReadDots[2].screenResized(x+int(wF/2), y_pad+int(hF/2), digitalReaddotHeight, digitalReaddotHeight);
-            digitalReadDots[4].screenResized(x+int(wF*(7.0/8.0)), y_pad+int(hF*(7.0/8.0)), digitalReaddotHeight, digitalReaddotHeight);
-            digitalReadDots[1].screenResized(digitalReadDots[0].dotX+int(wF*(3.0/16.0)), digitalReadDots[0].dotY+int(hF*(3.0/16.0)), digitalReaddotHeight, digitalReaddotHeight);
-            digitalReadDots[3].screenResized(digitalReadDots[2].dotX+int(wF*(3.0/16.0)), digitalReadDots[2].dotY+int(hF*(3.0/16.0)), digitalReaddotHeight, digitalReaddotHeight);
+            digitalReadDots[0].screenResized(x+int(w*(1.0/8.0)), y_pad+int(h*(1.0/8.0)), digitalReaddotHeight, digitalReaddotHeight);
+            digitalReadDots[2].screenResized(x+int(w/2), y_pad+int(h/2), digitalReaddotHeight, digitalReaddotHeight);
+            digitalReadDots[4].screenResized(x+int(w*(7.0/8.0)), y_pad+int(h*(7.0/8.0)), digitalReaddotHeight, digitalReaddotHeight);
+            digitalReadDots[1].screenResized(digitalReadDots[0].dotX+int(w*(3.0/16.0)), digitalReadDots[0].dotY+int(h*(3.0/16.0)), digitalReaddotHeight, digitalReaddotHeight);
+            digitalReadDots[3].screenResized(digitalReadDots[2].dotX+int(w*(3.0/16.0)), digitalReadDots[2].dotY+int(h*(3.0/16.0)), digitalReaddotHeight, digitalReaddotHeight);
 
         }
 
