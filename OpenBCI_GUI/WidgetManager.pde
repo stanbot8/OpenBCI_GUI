@@ -347,6 +347,17 @@ class WidgetManager{
 
         println("Widget Manager: All widgets set to null.");
     }
+
+    // Useful in places like TopNav which overlap widget dropdowns
+    public void lockCp5ObjectsInAllWidgets(boolean lock) {
+        for (int i = 0; i < widgets.size(); i++) {
+            for (int j = 0; j < widgets.get(i).cp5_widget.getAll().size(); j++) {
+                ControlP5 cp5Instance = widgets.get(i).cp5_widget;
+                String widgetAddress = cp5Instance.getAll().get(j).getAddress();
+                cp5Instance.getController(widgetAddress).setLock(lock);
+            }
+        }
+    }
 };
 
 //the Layout class is an orgnanizational tool ... a layout consists of a combination of containers ... refer to Container.pde
