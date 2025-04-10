@@ -21,10 +21,10 @@ class W_playback extends Widget {
 
     private boolean menuHasUpdated = false;
 
-    W_playback(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_playback(String _widgetName) {
+        super(_widgetName);
 
-        cp5_playback = new ControlP5(pApplet);
+        cp5_playback = new ControlP5(ourApplet);
         cp5_playback.setGraphics(ourApplet, 0,0);
         cp5_playback.setAutoDraw(false);
 
@@ -34,7 +34,7 @@ class W_playback extends Widget {
     }
 
     void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
         if (!menuHasUpdated) {
             refreshPlaybackList();
             menuHasUpdated = true;
@@ -56,7 +56,7 @@ class W_playback extends Widget {
     }
 
     void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //x,y,w,h are the positioning variables of the Widget class
         pushStyle();
@@ -77,11 +77,11 @@ class W_playback extends Widget {
     } //end draw loop
 
     void screenResized() {
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         //**IMPORTANT FOR CP5**//
         //This makes the cp5 objects within the widget scale properly
-        cp5_playback.setGraphics(pApplet, 0, 0);
+        cp5_playback.setGraphics(ourApplet, 0, 0);
 
         //Resize and position cp5 objects within this widget
         selectPlaybackFileButton.setPosition(x + w - selectPlaybackFileButton.getWidth() - 2, y - navHeight + 2);

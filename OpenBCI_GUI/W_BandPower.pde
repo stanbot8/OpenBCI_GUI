@@ -40,14 +40,14 @@ class W_BandPower extends Widget {
     int[] autoCleanTimers;
     boolean[] previousThresholdCrossed;
 
-    W_BandPower(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_BandPower(String _widgetName) {
+        super(_widgetName);
 
         autoCleanTimers = new int[currentBoard.getNumEXGChannels()];
         previousThresholdCrossed = new boolean[currentBoard.getNumEXGChannels()];
 
         //Add channel select dropdown to this widget
-        bpChanSelect = new ExGChannelSelect(pApplet, x, y, w, navH);
+        bpChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
         bpChanSelect.activateAllButtons();
 
         cp5ElementsToCheck.addAll(bpChanSelect.getCp5ElementsForOverlapCheck());
@@ -65,7 +65,7 @@ class W_BandPower extends Widget {
         addDropdown("bandPowerDataFilteringDropdown", "Filtered?", filteredEnum.getEnumStringsAsList(), filteredEnum.getIndex());
 
         // Setup for the BandPower plot
-        bp_plot = new GPlot(_parent, x, y-navHeight, w, h+navHeight);
+        bp_plot = new GPlot(ourApplet, x, y-navHeight, w, h+navHeight);
         // bp_plot.setPos(x, y+navHeight);
         bp_plot.setDim(w, h);
         bp_plot.setLogScale("y");
@@ -107,7 +107,7 @@ class W_BandPower extends Widget {
     }
 
     public void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         // If enabled, automatically turn channels on or off in ExGChannelSelect for this widget
         autoCleanByEnableDisableChannels();
@@ -135,7 +135,7 @@ class W_BandPower extends Widget {
     }
 
     public void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
         pushStyle();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
@@ -158,15 +158,15 @@ class W_BandPower extends Widget {
     }
 
     public void screenResized() {
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         flexGPlotSizeAndPosition();
 
-        bpChanSelect.screenResized(pApplet);
+        bpChanSelect.screenResized(ourApplet);
     }
 
     public void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
         bpChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
 

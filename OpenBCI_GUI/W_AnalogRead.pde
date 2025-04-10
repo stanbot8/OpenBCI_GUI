@@ -28,8 +28,8 @@ class W_AnalogRead extends Widget {
 
     private AnalogCapableBoard analogBoard;
 
-    W_AnalogRead(PApplet _parent) {
-        super(_parent);
+    W_AnalogRead(String _widgetName) {
+        super(_widgetName);
 
         analogBoard = (AnalogCapableBoard)currentBoard;
 
@@ -49,7 +49,7 @@ class W_AnalogRead extends Widget {
         //create our channel bars and populate our analogReadBars array!
         for(int i = 0; i < analogReadBars.length; i++) {
             int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
-            AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
+            AnalogReadBar tempBar = new AnalogReadBar(ourApplet, i+5, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
             analogReadBars[i] = tempBar;
         }
 
@@ -60,7 +60,7 @@ class W_AnalogRead extends Widget {
     }
 
     public void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         if (currentBoard instanceof DataSourcePlayback) {
             if (((DataSourcePlayback)currentBoard) instanceof AnalogCapableBoard
@@ -87,7 +87,7 @@ class W_AnalogRead extends Widget {
     }
 
     public void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         if (analogBoard.isAnalogActive()) {
@@ -98,7 +98,7 @@ class W_AnalogRead extends Widget {
     }
 
     public void screenResized() {
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         ar_x = float(x) + arPadding;
         ar_y = float(y) + (arPadding);
@@ -115,11 +115,11 @@ class W_AnalogRead extends Widget {
     }
 
     public void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
     }
 
     public void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
     }
 
     private void createAnalogModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
@@ -212,7 +212,7 @@ class AnalogReadBar{
 
     private AnalogCapableBoard analogBoard;
 
-    AnalogReadBar(PApplet _parent, int _analogInputPin, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
+    AnalogReadBar(PApplet _parentApplet, int _analogInputPin, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
         analogInputPin = _analogInputPin;
         int digitalPinNum = 0;
@@ -236,7 +236,7 @@ class AnalogReadBar{
         h = _h;
 
         numSeconds = 20;
-        plot = new GPlot(_parent);
+        plot = new GPlot(_parentApplet);
         plot.setPos(x + 36 + 4, y);
         plot.setDim(w - 36 - 4, h);
         plot.setMar(0f, 0f, 0f, 0f);

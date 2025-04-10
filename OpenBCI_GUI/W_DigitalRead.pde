@@ -22,8 +22,8 @@ class W_DigitalRead extends Widget {
 
     private DigitalCapableBoard digitalBoard;
 
-    W_DigitalRead(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_DigitalRead(String _widgetName) {
+        super(_widgetName);
 
         digitalBoard = (DigitalCapableBoard)currentBoard;
 
@@ -54,7 +54,7 @@ class W_DigitalRead extends Widget {
             } else {
                 digitalPin = 18;
             }
-            DigitalReadDot tempDot = new DigitalReadDot(_parent, digitalPin, digitalReaddotX, digitalReaddotY, int(dot_w), digitalReaddotHeight, dot_padding);
+            DigitalReadDot tempDot = new DigitalReadDot(ourApplet, digitalPin, digitalReaddotX, digitalReaddotY, int(dot_w), digitalReaddotHeight, dot_padding);
             digitalReadDots[i] = tempDot;
         }
 
@@ -66,7 +66,7 @@ class W_DigitalRead extends Widget {
     }
 
     public void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         if (currentBoard instanceof DataSourcePlayback) {
             if (((DataSourcePlayback)currentBoard) instanceof DigitalCapableBoard
@@ -93,7 +93,7 @@ class W_DigitalRead extends Widget {
     }
 
     public void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //draw channel bars
         if (digitalBoard.isDigitalActive()) {
@@ -104,7 +104,7 @@ class W_DigitalRead extends Widget {
     }
 
     public void screenResized() {
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         if (w > h) {
             digitalReaddotHeight = int(h/(numDigitalReadDots+1));
@@ -130,11 +130,11 @@ class W_DigitalRead extends Widget {
     }
 
     public void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
     }
 
     public void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
     }
 
     private void createDigitalModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
@@ -205,7 +205,7 @@ class DigitalReadDot{
 
     DigitalCapableBoard digitalBoard;
 
-    DigitalReadDot(PApplet _parent, int _digitalInputPin, int _x, int _y, int _w, int _h, int _padding) { // channel number, x/y location, height, width
+    DigitalReadDot(PApplet _parentApplet, int _digitalInputPin, int _x, int _y, int _w, int _h, int _padding) { // channel number, x/y location, height, width
 
         digitalBoard = (DigitalCapableBoard)currentBoard;
 

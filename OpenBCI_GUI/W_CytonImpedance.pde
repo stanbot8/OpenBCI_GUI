@@ -56,8 +56,8 @@ class W_CytonImpedance extends Widget {
     private int thresholdTFWidth = 60; //Hard-code this value since there are deep errors with controlp5.textfield.setSize() and creating new graphics in this class - RW 12/13/2021
     
 
-    W_CytonImpedance(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_CytonImpedance(String _widgetName){
+        super(_widgetName);
 
         cytonBoard = (BoardCyton) currentBoard;
 
@@ -101,7 +101,7 @@ class W_CytonImpedance extends Widget {
     }
 
     public void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         if (is_railed == null) {
             return;
@@ -131,7 +131,7 @@ class W_CytonImpedance extends Widget {
     }
 
     public void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         dataGrid.draw();
 
@@ -176,7 +176,7 @@ class W_CytonImpedance extends Widget {
     }
 
     public void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         int overrideDropdownWidth = 64;
         cp5_widget.get(ScrollableList.class, "CytonImpedance_MasterCheckInterval").setWidth(overrideDropdownWidth);
@@ -184,8 +184,8 @@ class W_CytonImpedance extends Widget {
 
         //**IMPORTANT FOR CP5**//
         //This makes the cp5 objects within the widget scale properly
-        imp_buttons_cp5.setGraphics(pApplet, 0, 0);
-        threshold_ui_cp5.setGraphics(pApplet, 0, 0);
+        imp_buttons_cp5.setGraphics(ourApplet, 0, 0);
+        threshold_ui_cp5.setGraphics(ourApplet, 0, 0);
 
         cytonResetAllChannels.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
         cytonImpedanceMasterCheck.setPosition((int)(x0 + 1 + padding_3 + 90), (int)(y0 + navHeight + 1));
@@ -242,11 +242,11 @@ class W_CytonImpedance extends Widget {
     }
 
     public void mousePressed(){
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
     }
 
     public void mouseReleased(){
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
     }
 
     private void initCytonImpedanceMap() {

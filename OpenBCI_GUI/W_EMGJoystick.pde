@@ -71,8 +71,8 @@ class W_EMGJoystick extends Widget {
     private PImage yPositiveInputLabelImage = loadImage("EMG_Joystick/UP_100x100.png");
     private PImage yNegativeInputLabelImage = loadImage("EMG_Joystick/DOWN_100x100.png");
 
-    W_EMGJoystick(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_EMGJoystick(String _widgetName) {
+        super(_widgetName);
 
         emgCp5 = new ControlP5(ourApplet);
         emgCp5.setGraphics(ourApplet, 0,0);
@@ -102,12 +102,12 @@ class W_EMGJoystick extends Widget {
     }
 
     public void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
         lockElementsOnOverlapCheck(cp5ElementsToCheck);
     }
 
     public void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         drawJoystickXYGraph();
 
@@ -122,7 +122,7 @@ class W_EMGJoystick extends Widget {
     }
 
     public void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         emgCp5.setGraphics(ourApplet, 0, 0);
         emgSettingsButton.setPosition(x0 + 1, y0 + navH + 1);

@@ -28,8 +28,8 @@ class W_HeadPlot extends Widget {
 
     private final float DEFAULT_VERTICAL_SCALE_UV = 200f; //this defines the Y-scale on the montage plots...this is the vertical space between traces
 
-    W_HeadPlot(PApplet _parent){
-        super(_parent);
+    W_HeadPlot(String _widgetName) {
+        super(_widgetName);
 
         addDropdown("headPlotIntensityDropdown", "Intensity", headPlotIntensity.getEnumStringsAsList(), headPlotIntensity.getIndex());
         addDropdown("headPlotPolarityDropdown", "Polarity", headPlotPolarity.getEnumStringsAsList(), headPlotPolarity.getIndex());
@@ -51,12 +51,12 @@ class W_HeadPlot extends Widget {
     }
 
     public void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
         headPlot.draw(); //draw the actual headplot
     }
 
     public void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
         headPlot.hp_x = x;
         headPlot.hp_y = y;
         headPlot.hp_w = w;
@@ -68,17 +68,17 @@ class W_HeadPlot extends Widget {
     }
 
     public void mousePressed(){
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
         headPlot.mousePressed();
     }
 
     public void mouseReleased(){
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
         headPlot.mouseReleased();
     }
 
     public void mouseDragged(){
-        super.mouseDragged(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseDragged();
         headPlot.mouseDragged();
     }
 

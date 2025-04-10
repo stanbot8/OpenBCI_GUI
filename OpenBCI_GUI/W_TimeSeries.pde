@@ -51,14 +51,14 @@ class W_timeSeries extends Widget {
 
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
-    W_timeSeries(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_timeSeries(String _widgetName) {
+        super(_widgetName);
 
-        tscp5 = new ControlP5(_parent);
-        tscp5.setGraphics(_parent, 0, 0);
+        tscp5 = new ControlP5(ourApplet);
+        tscp5.setGraphics(ourApplet, 0, 0);
         tscp5.setAutoDraw(false);
         
-        tsChanSelect = new ExGChannelSelect(pApplet, x, y, w, navH);
+        tsChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
         //Activate all channels in channelSelect by default for this widget
         tsChanSelect.activateAllButtons();
 
@@ -113,7 +113,7 @@ class W_timeSeries extends Widget {
         //create our channel bars and populate our channelBars array!
         for(int i = 0; i < numChannelBars; i++) {
             int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
-            ChannelBar tempBar = new ChannelBar(_parent, i, int(ts_x), channelBarY, int(ts_w), channelBarHeight, expand_default, expand_hover, expand_active, contract_default, contract_hover, contract_active);
+            ChannelBar tempBar = new ChannelBar(ourApplet, i, int(ts_x), channelBarY, int(ts_w), channelBarHeight, expand_default, expand_hover, expand_active, contract_default, contract_hover, contract_active);
             channelBars[i] = tempBar;
         }
 
@@ -125,14 +125,14 @@ class W_timeSeries extends Widget {
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hwSettingsButton = createHSCButton("HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y0 + navHeight + 1), 120, navHeight - 3);
             cp5ElementsToCheck.add((controlP5.Controller)hwSettingsButton);
-            adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.getActiveChannels(), x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
+            adsSettingsController = new ADS1299SettingsController(ourApplet, tsChanSelect.getActiveChannels(), x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
 
         setVerticalScale(yLimit.getIndex());
     }
 
     void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         // offset based on whether channel select or hardware settings are open or not
         int chanSelectOffset = tsChanSelect.isVisible() ? tsChanSelect.getHeight() : 0;
@@ -178,7 +178,7 @@ class W_timeSeries extends Widget {
     }
 
     void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         //draw channel bars
@@ -206,12 +206,12 @@ class W_timeSeries extends Widget {
     }
 
     void screenResized() {
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         //Very important to allow users to interact with objects after app resize
         tscp5.setGraphics(ourApplet, 0,0);
         
-        tsChanSelect.screenResized(pApplet);
+        tsChanSelect.screenResized(ourApplet);
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -262,7 +262,7 @@ class W_timeSeries extends Widget {
     }
 
     void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
         tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
 
         for(int i = 0; i < tsChanSelect.getActiveChannels().size(); i++) {
@@ -272,7 +272,7 @@ class W_timeSeries extends Widget {
     }
     
     void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
 
         for(int i = 0; i < tsChanSelect.getActiveChannels().size(); i++) {
             int activeChannel = tsChanSelect.getActiveChannels().get(i);
@@ -415,7 +415,7 @@ class ChannelBar {
 
     boolean drawVoltageValue;
 
-    ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h, PImage expand_default, PImage expand_hover, PImage expand_active, PImage contract_default, PImage contract_hover, PImage contract_active) {
+    ChannelBar(PApplet _parentApplet, int _channelIndex, int _x, int _y, int _w, int _h, PImage expand_default, PImage expand_hover, PImage expand_active, PImage contract_default, PImage contract_hover, PImage contract_active) {
         
         cbCp5 = new ControlP5(ourApplet);
         cbCp5.setGraphics(ourApplet, x, y);
@@ -438,7 +438,7 @@ class ChannelBar {
         yAxisUpperLim = 200;
         yAxisLowerLim = -200;
         numSeconds = 5;
-        plot = new GPlot(_parent);
+        plot = new GPlot(_parentApplet);
         plot.setPos(x + uiSpaceWidth, y);
         plot.setDim(w - uiSpaceWidth, h);
         plot.setMar(0f, 0f, 0f, 0f);
@@ -712,8 +712,8 @@ class ChannelBar {
         onOffButton.setPosition(x + 6, y + int(h/2) - int(onOff_diameter/2));
     }
 
-    public void updateCP5(PApplet _parent) {
-        cbCp5.setGraphics(_parent, 0, 0);
+    public void updateCP5(PApplet _parentApplet) {
+        cbCp5.setGraphics(_parentApplet, 0, 0);
     }
 
     private boolean isBottomChannel() {

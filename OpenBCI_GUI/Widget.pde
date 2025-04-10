@@ -15,8 +15,6 @@ interface IndexingInterface {
 
 class Widget {
 
-    protected PApplet pApplet;
-
     protected int x0, y0, w0, h0; //true x,y,w,h of container
     protected int x, y, w, h; //adjusted x,y,w,h of white space `blank rectangle` under the nav...
 
@@ -41,9 +39,9 @@ class Widget {
     protected int dropdownWidth = 64;
     private boolean initialResize = false; //used to properly resize the widgetSelector when loading default settings
 
-    Widget(PApplet _parent){
-        pApplet = _parent;
-        cp5_widget = new ControlP5(pApplet);
+    Widget(String _title) {
+        widgetTitle = _title;
+        cp5_widget = new ControlP5(ourApplet);
         cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
         dropdowns = new ArrayList<NavBarDropdown>();
 
@@ -217,10 +215,6 @@ class Widget {
         mapToCurrentContainer();
     }
 
-    public void setTitle(String _widgetTitle){
-        widgetTitle = _widgetTitle;
-    }
-
     public void setContainer(int _currentContainer){
         currentContainer = _currentContainer;
         mapToCurrentContainer();
@@ -256,7 +250,7 @@ class Widget {
         h = h0 - navH*2;
 
         //This line resets the origin for all cp5 elements under "cp5_widget" when the screen is resized, otherwise there will be drawing errors
-        cp5_widget.setGraphics(pApplet, 0, 0);
+        cp5_widget.setGraphics(ourApplet, 0, 0);
 
         if (cp5_widget.getController("WidgetSelector") != null) {
             resizeWidgetSelector();

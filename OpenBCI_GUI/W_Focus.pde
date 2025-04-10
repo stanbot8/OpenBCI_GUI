@@ -64,11 +64,11 @@ class W_Focus extends Widget {
 
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
-    W_Focus(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_Focus(String _widgetName) {
+        super(_widgetName);
 
          //Add channel select dropdown to this widget
-        focusChanSelect = new ExGChannelSelect(pApplet, x, y, w, navH);
+        focusChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
         focusChanSelect.activateAllButtons();
         
         cp5ElementsToCheck.addAll(focusChanSelect.getCp5ElementsForOverlapCheck());
@@ -103,13 +103,13 @@ class W_Focus extends Widget {
 
         //create our focus graph
         updateGraphDims();
-        focusBar = new FifoChannelBar(_parent, "Metric Value", xLimit.getValue(), focusBarHardYAxisLimit, graphX, graphY, graphW, graphH, ACCEL_X_COLOR, FocusXLim.TWENTY.getValue());
+        focusBar = new FifoChannelBar(ourApplet, "Metric Value", xLimit.getValue(), focusBarHardYAxisLimit, graphX, graphY, graphW, graphH, ACCEL_X_COLOR, FocusXLim.TWENTY.getValue());
         
         initBrainFlowMetric();
     }
 
     public void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         //Update channel checkboxes and active channels
         focusChanSelect.update(x, y, w);
@@ -129,7 +129,7 @@ class W_Focus extends Widget {
     }
 
     public void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
 
         //Draw data table
@@ -159,7 +159,7 @@ class W_Focus extends Widget {
     }
 
     public void screenResized() {
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         resizeTable();
 
@@ -168,7 +168,7 @@ class W_Focus extends Widget {
 
         updateGraphDims();
         focusBar.screenResized(graphX, graphY, graphW, graphH);
-        focusChanSelect.screenResized(pApplet);
+        focusChanSelect.screenResized(ourApplet);
 
         //Custom resize these dropdowns due to longer text strings as options
         cp5_widget.get(ScrollableList.class, "focusMetricDropdown").setWidth(METRIC_DROPDOWN_W);
@@ -179,7 +179,7 @@ class W_Focus extends Widget {
     }
 
     void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
         focusChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
 
