@@ -241,7 +241,7 @@ void mouseDragged() {
 
         //calling mouse dragged inly outside of Control Panel
         if (controlPanel.isOpen == false) {
-            wm.mouseDragged();
+            widgetManager.mouseDragged();
         }
     }
 }
@@ -261,7 +261,7 @@ synchronized void mousePressed() {
         if (controlPanel.isOpen == false) {
             //was the stopButton pressed?
 
-            wm.mousePressed();
+            widgetManager.mousePressed();
 
         }
     }
@@ -295,7 +295,7 @@ synchronized void mouseReleased() {
     if (systemMode >= SYSTEMMODE_POSTINIT) {
 
         // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
-        wm.mouseReleased();
+        widgetManager.mouseReleased();
     }
 }
 

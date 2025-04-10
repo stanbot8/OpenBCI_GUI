@@ -56,7 +56,7 @@ class W_AnalogRead extends Widget {
         setVerticalScale(verticalScale.getIndex());
         setHorizontalScale(horizontalScale.getIndex());
 
-        createAnalogModeButton("analogModeButton", "Turn Analog Read On", (int)(x0 + 1), (int)(y0 + navHeight + 1), 128, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        createAnalogModeButton("analogModeButton", "Turn Analog Read On", (int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1), 128, NAV_HEIGHT - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     public void update() {
@@ -111,7 +111,7 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
         }
 
-        analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
+        analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1));
     }
 
     public void mousePressed() {

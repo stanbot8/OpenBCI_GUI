@@ -2509,7 +2509,7 @@ class InitBox {
             w_focus.killAuditoryFeedback();
             w_marker.disposeUdpMarkerReceiver();
             haltSystem();
-            wm.setAllWidgetsNull();
+            widgetManager.setAllWidgetsNull();
         }
     }
 

@@ -37,43 +37,32 @@ class WidgetManager{
     //this holds all of the widgets ... when creating/adding new widgets, we will add them to this ArrayList (below)
     ArrayList<Widget> widgets;
     ArrayList<String> widgetOptions; //List of Widget Titles, used to populate cp5 widgetSelector dropdown of all widgets
-
-    //Variables for
     int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
     ArrayList<Layout> layouts = new ArrayList<Layout>();  //this holds all of the different layouts ...
 
-    public boolean isWMInitialized = false;
     private boolean visible = true;
 
     WidgetManager() {
         widgets = new ArrayList<Widget>();
         widgetOptions = new ArrayList<String>();
-        isWMInitialized = false;
 
         //DO NOT re-order the functions below
         setupLayouts();
         setupWidgets();
         setupWidgetSelectorDropdowns();
 
-        if(globalChannelCount == 4 && eegDataSource == DATASOURCE_GANGLION) {
+        if((globalChannelCount == 4 && eegDataSource == DATASOURCE_GANGLION) || eegDataSource == DATASOURCE_PLAYBACKFILE) {
             currentContainerLayout = 1;
-            sessionSettings.currentLayout = 1; // used for save/load settings
-            setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            currentContainerLayout = 1;
-            sessionSettings.currentLayout = 1; // used for save/load settings
-            setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
+            sessionSettings.currentLayout = 1;
         } else {
             currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
-            sessionSettings.currentLayout = 4; // used for save/load settings
-            setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
+            sessionSettings.currentLayout = 4;
         }
 
-        isWMInitialized = true;
+        setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
     }
 
     void setupWidgets() {
-        // println("  setupWidgets start -- " + millis());
 
         w_timeSeries = new W_timeSeries("Time Series");
         widgets.add(w_timeSeries);

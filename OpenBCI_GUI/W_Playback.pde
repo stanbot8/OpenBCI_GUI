@@ -30,7 +30,7 @@ class W_playback extends Widget {
 
         int initialWidth = w - padding*2;
         createPlaybackMenuList(cp5_playback, "playbackMenuList", x + padding/2, y + 2, initialWidth, h - padding*2, p3);
-        createSelectPlaybackFileButton("selectPlaybackFile_Session", "Select Playback File", x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6);
+        createSelectPlaybackFileButton("selectPlaybackFile_Session", "Select Playback File", x + w/2 - (padding*2), y - NAV_HEIGHT + 2, 200, NAV_HEIGHT - 6);
     }
 
     void update() {
@@ -84,7 +84,7 @@ class W_playback extends Widget {
         cp5_playback.setGraphics(ourApplet, 0, 0);
 
         //Resize and position cp5 objects within this widget
-        selectPlaybackFileButton.setPosition(x + w - selectPlaybackFileButton.getWidth() - 2, y - navHeight + 2);
+        selectPlaybackFileButton.setPosition(x + w - selectPlaybackFileButton.getWidth() - 2, y - NAV_HEIGHT + 2);
 
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(w - padding*2, h - padding*2);

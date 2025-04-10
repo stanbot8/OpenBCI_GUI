@@ -94,8 +94,8 @@ class W_CytonImpedance extends Widget {
         //Init the electrode map and fill and create signal check buttons
         initCytonImpedanceMap();
 
-        cytonResetAllChannels = createCytonResetChannelsButton("cytonResetAllChannels", "Reset Channels", (int)(x0 + 1), (int)(y0 + navHeight + 1), 90, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
-        cytonImpedanceMasterCheck = createCytonImpMasterCheckButton("cytonImpedanceMasterCheck", "Check All Channels", (int)(x0 + 1 + padding_3 + 90), (int)(y0 + navHeight + 1), 120, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        cytonResetAllChannels = createCytonResetChannelsButton("cytonResetAllChannels", "Reset Channels", (int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1), 90, NAV_HEIGHT - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        cytonImpedanceMasterCheck = createCytonImpMasterCheckButton("cytonImpedanceMasterCheck", "Check All Channels", (int)(x0 + 1 + padding_3 + 90), (int)(y0 + NAV_HEIGHT + 1), 120, NAV_HEIGHT - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         errorThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "errorThreshold", x + tableWidth + padding, y + h - navH, thresholdTFWidth, thresholdTFHeight, SIGNAL_CHECK_RED, signalCheckMode);
         warningThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "warningThreshold", x + tableWidth + padding, y + h - navH/2, thresholdTFWidth, thresholdTFHeight, SIGNAL_CHECK_YELLOW, signalCheckMode);
     }
@@ -187,8 +187,8 @@ class W_CytonImpedance extends Widget {
         imp_buttons_cp5.setGraphics(ourApplet, 0, 0);
         threshold_ui_cp5.setGraphics(ourApplet, 0, 0);
 
-        cytonResetAllChannels.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
-        cytonImpedanceMasterCheck.setPosition((int)(x0 + 1 + padding_3 + 90), (int)(y0 + navHeight + 1));
+        cytonResetAllChannels.setPosition((int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1));
+        cytonImpedanceMasterCheck.setPosition((int)(x0 + 1 + padding_3 + 90), (int)(y0 + NAV_HEIGHT + 1));
 
         resizeTable();
 

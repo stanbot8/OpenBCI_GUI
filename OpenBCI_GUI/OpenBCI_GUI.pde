@@ -275,12 +275,10 @@ final int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
-WidgetManager wm;
-boolean wmVisible = true;
-CColor cp5_colors;
+WidgetManager widgetManager;
 
 //Global variable for general navigation bar height
-final int navHeight = 22;
+final int NAV_HEIGHT = 22;
 
 ButtonHelpText buttonHelpText;
 
@@ -743,7 +741,7 @@ void initSystem() {
     topNav.controlPanelCollapser.setOff();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-    wm = new WidgetManager();
+    widgetManager = new WidgetManager();
     
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + millis());
 
@@ -993,12 +991,12 @@ void systemUpdate() { // for updating data values and variables
         if (sessionSettings.screenHasBeenResized && sessionSettings.timeOfLastScreenResize + 500 > millis()) {
             ourApplet = this; //reset PApplet...
             topNav.screenHasBeenResized(width, height);
-            wm.screenResized();
+            widgetManager.screenResized();
             sessionSettings.screenHasBeenResized = false;
         }
 
-        if (wm.isWMInitialized) {
-            wm.update();
+        if (widgetManager != null) {
+            widgetManager.update();
         }
     }
 }
@@ -1010,7 +1008,7 @@ void systemDraw() { //for drawing to the screen
     //background(255);  //clear the screen
 
     if (systemMode >= SYSTEMMODE_POSTINIT) {
-        wm.draw();
+        widgetManager.draw();
         drawContainers();
     }
 

@@ -65,8 +65,8 @@ class W_BandPower extends Widget {
         addDropdown("bandPowerDataFilteringDropdown", "Filtered?", filteredEnum.getEnumStringsAsList(), filteredEnum.getIndex());
 
         // Setup for the BandPower plot
-        bp_plot = new GPlot(ourApplet, x, y-navHeight, w, h+navHeight);
-        // bp_plot.setPos(x, y+navHeight);
+        bp_plot = new GPlot(ourApplet, x, y-NAV_HEIGHT, w, h+NAV_HEIGHT);
+        // bp_plot.setPos(x, y+NAV_HEIGHT);
         bp_plot.setDim(w, h);
         bp_plot.setLogScale("y");
         bp_plot.setYLim(0.1, 100);
@@ -151,7 +151,7 @@ class W_BandPower extends Widget {
 
         //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
         fill(200, 200, 200);
-        rect(x, y - navHeight, w, navHeight); //button bar
+        rect(x, y - NAV_HEIGHT, w, NAV_HEIGHT); //button bar
 
         popStyle();
         bpChanSelect.draw();

@@ -76,7 +76,7 @@ class W_PulseSensor extends Widget {
         setPulseWidgetVariables();
         initializePulseFinderVariables();
 
-        createAnalogModeButton("pulseSensorAnalogModeButton", "Turn Analog Read On", (int)(x0 + 1), (int)(y0 + navHeight + 1), 128, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        createAnalogModeButton("pulseSensorAnalogModeButton", "Turn Analog Read On", (int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1), 128, NAV_HEIGHT - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     public void update(){
@@ -131,7 +131,7 @@ class W_PulseSensor extends Widget {
         super.screenResized();
 
         setPulseWidgetVariables();
-        analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
+        analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1));
     }
 
     private void createAnalogModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
