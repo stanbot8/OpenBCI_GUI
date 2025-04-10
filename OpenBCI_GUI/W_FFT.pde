@@ -28,10 +28,10 @@ class W_fft extends Widget {
 
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
-    W_fft(PApplet _parent){
-        super(_parent);
+    W_fft(String _widgetName) {
+        super(_widgetName);
 
-        fftChanSelect = new ExGChannelSelect(pApplet, x, y, w, navH);
+        fftChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
         fftChanSelect.activateAllButtons();
         
         cp5ElementsToCheck.addAll(fftChanSelect.getCp5ElementsForOverlapCheck());
@@ -45,12 +45,12 @@ class W_fft extends Widget {
         addDropdown("fftFilteringDropdown", "Filters?", filteredEnum.getEnumStringsAsList(), filteredEnum.getIndex());
 
         fftGplotPoints = new GPointsArray[globalChannelCount];
-        initializeFFTPlot(_parent);
+        initializeFFTPlot();
     }
 
-    void initializeFFTPlot(PApplet _parent) {
+    void initializeFFTPlot() {
         //setup GPlot for FFT
-        fftPlot = new GPlot(_parent, x, y-navHeight, w, h+navHeight);
+        fftPlot = new GPlot(ourApplet, x, y-navHeight, w, h+navHeight);
         fftPlot.setAllFontProperties("Arial", 0, 14);
         fftPlot.getXAxis().setAxisLabelText("Frequency (Hz)");
         fftPlot.getYAxis().setAxisLabelText("Amplitude (uV)");
@@ -90,7 +90,7 @@ class W_fft extends Widget {
 
     void update(){
 
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
         float sampleRate = currentBoard.getSampleRate();
         int fftPointCount = getNumFFTPoints();
 
@@ -117,7 +117,7 @@ class W_fft extends Widget {
     }
 
     void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
@@ -150,20 +150,20 @@ class W_fft extends Widget {
     }
 
     void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         flexGPlotSizeAndPosition();
 
-        fftChanSelect.screenResized(pApplet);
+        fftChanSelect.screenResized(ourApplet);
     }
 
     void mousePressed(){
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
         fftChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
 
     void mouseReleased(){
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
     }
 
     void flexGPlotSizeAndPosition() {

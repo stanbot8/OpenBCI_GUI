@@ -45,8 +45,8 @@ class W_Marker extends Widget {
     private MarkerVertScale markerVertScale = MarkerVertScale.EIGHT;
     private MarkerWindow markerWindow = MarkerWindow.FIVE;
 
-    W_Marker(PApplet _parent){
-        super(_parent);
+    W_Marker(String _widgetName) {
+        super(_widgetName);
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
         localCP5 = new ControlP5(ourApplet);
@@ -59,7 +59,7 @@ class W_Marker extends Widget {
         addDropdown("markerWindowDropdown", "Window", markerWindow.getEnumStringsAsList(), markerWindow.getIndex());
         
         updateGraphDims();
-        markerBar = new MarkerBar(_parent, MAX_NUMBER_OF_MARKER_BUTTONS, markerWindow.getValue(), markerVertScale.getValue(), graphX, graphY, graphW, graphH);
+        markerBar = new MarkerBar(ourApplet, MAX_NUMBER_OF_MARKER_BUTTONS, markerWindow.getValue(), markerVertScale.getValue(), graphX, graphY, graphW, graphH);
 
         grid = new Grid(MARKER_UI_GRID_ROWS, MARKER_UI_GRID_COLUMNS, MARKER_UI_GRID_CELL_HEIGHT);
         grid.setDrawTableBorder(false);
@@ -383,7 +383,7 @@ class MarkerBar {
     private float autoscaleMax;
     private int previousMillis = 0;
 
-    MarkerBar(PApplet _parent, int _yAxisMax, int markerWindow, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
+    MarkerBar(PApplet _parentApplet, int _yAxisMax, int markerWindow, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         
         yAxisMax = _yAxisMax;
         numSeconds = markerWindow;
@@ -395,7 +395,7 @@ class MarkerBar {
         w = _w;
         h = _h;
 
-        plot = new GPlot(_parent);
+        plot = new GPlot(_parentApplet);
         plot.setPos(x + 36 + 4, y); //match marker plot position with Time Series
         plot.setDim(w - 36 - 4, h);
         plot.setMar(0f, 0f, 0f, 0f);

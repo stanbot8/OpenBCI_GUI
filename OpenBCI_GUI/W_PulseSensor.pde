@@ -62,8 +62,8 @@ class W_PulseSensor extends Widget {
 
     private AnalogCapableBoard analogBoard;
 
-    W_PulseSensor(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_PulseSensor(String _widgetName) {
+        super(_widgetName);
 
         analogBoard = (AnalogCapableBoard)currentBoard;
 
@@ -80,7 +80,7 @@ class W_PulseSensor extends Widget {
     }
 
     public void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         if(currentBoard instanceof DataSourcePlayback) {
             if (((DataSourcePlayback)currentBoard) instanceof AnalogCapableBoard
@@ -104,7 +104,7 @@ class W_PulseSensor extends Widget {
     }
 
     public void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
@@ -128,7 +128,7 @@ class W_PulseSensor extends Widget {
     }
 
     public void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         setPulseWidgetVariables();
         analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));

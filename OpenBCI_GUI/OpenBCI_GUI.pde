@@ -342,6 +342,9 @@ void settings() {
 }
 
 void setup() {
+
+    ourApplet = this;
+
     frameRate(120);
 
     copyPaste = new CopyPaste();
@@ -431,9 +434,6 @@ void setup() {
     sessionSettings = new SessionSettings();
     guiSettings = new GuiSettings(directoryManager.getSettingsPath());
     userPlaybackHistoryFile = directoryManager.getSettingsPath()+"UserPlaybackHistory.json";
-
-    //open window
-    ourApplet = this;
 
     // Bug #426: If setup takes too long, JOGL will time out waiting for the GUI to draw something.
     // moving the setup to a separate thread solves this. We just have to make sure not to
@@ -743,7 +743,7 @@ void initSystem() {
     topNav.controlPanelCollapser.setOff();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-    wm = new WidgetManager(this);
+    wm = new WidgetManager();
     
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + millis());
 

@@ -8,7 +8,7 @@
     - use the WidgetTemplate.pde file as a starting point for creating new widgets (also check out W_timeSeries.pde, W_fft.pde, and W_HeadPlot.pde)
 */
 
-// MAKE YOUR WIDGET GLOBALLY
+// MAKE YOUR WIDGET GLOBAL HERE
 W_timeSeries w_timeSeries;
 W_fft w_fft;
 W_BandPower w_bandPower;
@@ -16,7 +16,7 @@ W_Accelerometer w_accelerometer;
 W_CytonImpedance w_cytonImpedance;
 W_GanglionImpedance w_ganglionImpedance;
 W_HeadPlot w_headPlot;
-W_template w_template1;
+W_template w_template;
 W_emg w_emg;
 W_PulseSensor w_pulseSensor;
 W_AnalogRead w_analogRead;
@@ -45,14 +45,14 @@ class WidgetManager{
     public boolean isWMInitialized = false;
     private boolean visible = true;
 
-    WidgetManager(PApplet _this){
+    WidgetManager() {
         widgets = new ArrayList<Widget>();
         widgetOptions = new ArrayList<String>();
         isWMInitialized = false;
 
         //DO NOT re-order the functions below
         setupLayouts();
-        setupWidgets(_this);
+        setupWidgets();
         setupWidgetSelectorDropdowns();
 
         if(globalChannelCount == 4 && eegDataSource == DATASOURCE_GANGLION) {
@@ -72,100 +72,82 @@ class WidgetManager{
         isWMInitialized = true;
     }
 
-    void setupWidgets(PApplet _this) {
+    void setupWidgets() {
         // println("  setupWidgets start -- " + millis());
 
-        w_timeSeries = new W_timeSeries(_this);
-        w_timeSeries.setTitle("Time Series");
+        w_timeSeries = new W_timeSeries("Time Series");
         widgets.add(w_timeSeries);
 
-        w_fft = new W_fft(_this);
-        w_fft.setTitle("FFT Plot");
+        w_fft = new W_fft("FFT Plot");
         widgets.add(w_fft);
 
         boolean showAccelerometerWidget = currentBoard instanceof AccelerometerCapableBoard;
         if (showAccelerometerWidget) {
-            w_accelerometer = new W_Accelerometer(_this);
-            w_accelerometer.setTitle("Accelerometer");
+            w_accelerometer = new W_Accelerometer("Accelerometer");
             widgets.add(w_accelerometer);
         }
 
         if (currentBoard instanceof BoardCyton) {
-            w_cytonImpedance = new W_CytonImpedance(_this);
-            w_cytonImpedance.setTitle("Cyton Signal");
+            w_cytonImpedance = new W_CytonImpedance("Cyton Signal");
             widgets.add(w_cytonImpedance);
         }
 
         if (currentBoard instanceof DataSourcePlayback && w_playback == null) {
-            w_playback = new W_playback(_this);
-            w_playback.setTitle("Playback History");
+            w_playback = new W_playback("Playback History");
             widgets.add(w_playback);
         }
 
         //only instantiate this widget if you are using a Ganglion board for live streaming
         if(globalChannelCount == 4 && currentBoard instanceof BoardGanglion){
             //If using Ganglion, this is Widget_3
-            w_ganglionImpedance = new W_GanglionImpedance(_this);
-            w_ganglionImpedance.setTitle("Ganglion Signal");
+            w_ganglionImpedance = new W_GanglionImpedance("Ganglion Signal");
             widgets.add(w_ganglionImpedance);
         }
 
-        w_focus = new W_Focus(_this);
-        w_focus.setTitle("Focus");
+        w_focus = new W_Focus("Focus");
         widgets.add(w_focus);
 
-        w_bandPower = new W_BandPower(_this);
-        w_bandPower.setTitle("Band Power");
+        w_bandPower = new W_BandPower("Band Power");
         widgets.add(w_bandPower);
 
-        w_headPlot = new W_HeadPlot(_this);
-        w_headPlot.setTitle("Head Plot");
+        w_headPlot = new W_HeadPlot("Head Plot");
         widgets.add(w_headPlot);
 
-        w_emg = new W_emg(_this);
-        w_emg.setTitle("EMG");
+        w_emg = new W_emg("EMG");
         widgets.add(w_emg);
     
-        w_emgJoystick = new W_EMGJoystick(_this);
-        w_emgJoystick.setTitle("EMG Joystick");
+        w_emgJoystick = new W_EMGJoystick("EMG Joystick");
         widgets.add(w_emgJoystick);
 
-        w_spectrogram = new W_Spectrogram(_this);
-        w_spectrogram.setTitle("Spectrogram");
+        w_spectrogram = new W_Spectrogram("Spectrogram");
         widgets.add(w_spectrogram);
 
         if (currentBoard instanceof AnalogCapableBoard){
-            w_pulseSensor = new W_PulseSensor(_this);
-            w_pulseSensor.setTitle("Pulse Sensor");
+            w_pulseSensor = new W_PulseSensor("Pulse Sensor");
             widgets.add(w_pulseSensor);
         }
 
         if (currentBoard instanceof DigitalCapableBoard) {
-            w_digitalRead = new W_DigitalRead(_this);
-            w_digitalRead.setTitle("Digital Read");
+            w_digitalRead = new W_DigitalRead("Digital Read");
             widgets.add(w_digitalRead);
         }
         
         if (currentBoard instanceof AnalogCapableBoard) {
-            w_analogRead = new W_AnalogRead(_this);
-            w_analogRead.setTitle("Analog Read");
+            w_analogRead = new W_AnalogRead("Analog Read");
             widgets.add(w_analogRead);
         }
 
         if (currentBoard instanceof Board) {
-            w_packetLoss = new W_PacketLoss(_this);
-            w_packetLoss.setTitle("Packet Loss");
+            w_packetLoss = new W_PacketLoss("Packet Loss");
             widgets.add(w_packetLoss);
         }
 
-        w_marker = new W_Marker(_this);
-        w_marker.setTitle("Marker");
+        w_marker = new W_Marker("Marker");
         widgets.add(w_marker);
         
         //DEVELOPERS: Here is an example widget with the essentials/structure in place
-        w_template1 = new W_template(_this);
-        w_template1.setTitle("Widget Template 1");
-        widgets.add(w_template1);
+        w_template = new W_template("Widget Template");
+        widgets.add(w_template);
     }
 
 
@@ -362,7 +344,7 @@ class WidgetManager{
         w_cytonImpedance = null;
         w_ganglionImpedance = null;
         w_headPlot = null;
-        w_template1 = null;
+        w_template = null;
         w_emg = null;
         w_pulseSensor = null;
         w_analogRead = null;

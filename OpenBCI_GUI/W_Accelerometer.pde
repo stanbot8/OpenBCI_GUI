@@ -44,12 +44,10 @@ class W_Accelerometer extends Widget {
 
     private AccelerometerCapableBoard accelBoard;
 
-    W_Accelerometer(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_Accelerometer(String _widgetName) {
+        super(_widgetName);
         
         accelBoard = (AccelerometerCapableBoard)currentBoard;
-
-        
 
         //Make dropdowns
         addDropdown("accelerometerVerticalScaleDropdown", "Vert Scale", verticalScale.getEnumStringsAsList(), verticalScale.getIndex());
@@ -62,7 +60,7 @@ class W_Accelerometer extends Widget {
         lastDataSampleValues = new float[NUM_ACCEL_DIMS];
 
         //Create our channel bar and populate our accelerometerBar array
-        accelerometerBar = new AccelerometerBar(_parent, verticalScale.getHighestValue(), accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
+        accelerometerBar = new AccelerometerBar(ourApplet, verticalScale.getHighestValue(), accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(horizontalScale.getValue());
         accelerometerBar.adjustVertScale(verticalScale.getValue());
 
@@ -82,7 +80,7 @@ class W_Accelerometer extends Widget {
     }
 
     void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         if (accelBoard.isAccelerometerActive()) {
             //update the line graph and corresponding gplot points
@@ -109,7 +107,7 @@ class W_Accelerometer extends Widget {
     }
 
     void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         pushStyle();
 
@@ -159,7 +157,7 @@ class W_Accelerometer extends Widget {
         int prevY = y;
         int prevW = w;
         int prevH = h;
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
         setGraphDimensions();
         //resize the accelerometer line graph
         accelerometerBar.screenResized(accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight); //bar x, bar y, bar w, bar h
@@ -168,11 +166,11 @@ class W_Accelerometer extends Widget {
     }
     
     void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
     }
 
     void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
     }
 
     private void createAccelModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
@@ -316,7 +314,7 @@ class AccelerometerBar {
     
     private AccelerometerCapableBoard accelBoard;
 
-    AccelerometerBar(PApplet _parent, float _yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
+    AccelerometerBar(PApplet _parentApplet, float _yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         
         // This widget is only instantiated when the board is accel capable, so we don't need to check
         accelBoard = (AccelerometerCapableBoard)currentBoard;
@@ -326,7 +324,7 @@ class AccelerometerBar {
         w = _w;
         h = _h;
 
-        plot = new GPlot(_parent);
+        plot = new GPlot(_parentApplet);
         plot.setPos(x + 36 + 4, y); //match Accelerometer plot position with Time Series
         plot.setDim(w - 36 - 4, h);
         plot.setMar(0f, 0f, 0f, 0f);

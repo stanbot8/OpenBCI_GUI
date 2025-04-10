@@ -17,8 +17,8 @@ class W_template extends Widget {
     ControlP5 localCP5;
     Button widgetTemplateButton;
 
-    W_template(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_template(String _widgetName) {
+        super(_widgetName);
         
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -38,13 +38,13 @@ class W_template extends Widget {
     }
 
     public void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         //put your code here...
     }
 
     public void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
 
@@ -53,7 +53,7 @@ class W_template extends Widget {
     }
 
     public void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         //Very important to allow users to interact with objects after app resize        
         localCP5.setGraphics(ourApplet, 0, 0);
@@ -64,14 +64,14 @@ class W_template extends Widget {
     }
 
     public void mousePressed(){
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
         //Since GUI v5, these methods should not really be used.
         //Instead, use ControlP5 objects and callbacks. 
         //Example: createWidgetTemplateButton() found below
     }
 
     public void mouseReleased(){
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
         //Since GUI v5, these methods should not really be used.
     }
 

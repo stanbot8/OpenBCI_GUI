@@ -48,12 +48,12 @@ class W_Spectrogram extends Widget {
     private SpectrogramWindowSize windowSize = SpectrogramWindowSize.ONE_MINUTE;
     private FFTLogLin logLin = FFTLogLin.LIN;
 
-    W_Spectrogram(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_Spectrogram(String _widgetName) {
+        super(_widgetName);
 
         //Add channel select dropdown to this widget
-        spectChanSelectTop = new DualExGChannelSelect(pApplet, x, y, w, navH, true);
-        spectChanSelectBot = new DualExGChannelSelect(pApplet, x, y + navH, w, navH, false);
+        spectChanSelectTop = new DualExGChannelSelect(ourApplet, x, y, w, navH, true);
+        spectChanSelectBot = new DualExGChannelSelect(ourApplet, x, y + navH, w, navH, false);
         activateDefaultChannels();
 
         cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
@@ -84,7 +84,7 @@ class W_Spectrogram extends Widget {
     }
 
     void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         //Update channel checkboxes, active channels, and position
         spectChanSelectTop.update(x, y, w);
@@ -131,7 +131,7 @@ class W_Spectrogram extends Widget {
     }
 
     public void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         
@@ -219,10 +219,10 @@ class W_Spectrogram extends Widget {
     }
 
     public void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
-        spectChanSelectTop.screenResized(pApplet);
-        spectChanSelectBot.screenResized(pApplet);  
+        spectChanSelectTop.screenResized(ourApplet);
+        spectChanSelectBot.screenResized(ourApplet);  
         graphX = x + paddingLeft;
         graphY = y + paddingTop;
         graphW = w - paddingRight - paddingLeft;
@@ -230,14 +230,14 @@ class W_Spectrogram extends Widget {
     }
 
     void mousePressed(){
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
 
         spectChanSelectTop.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
         spectChanSelectBot.mousePressed(this.dropdownIsActive);
     }
 
     void mouseReleased(){
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
 
     }
 

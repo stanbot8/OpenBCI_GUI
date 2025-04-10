@@ -64,14 +64,14 @@ class ADS1299SettingsController {
     protected int channelCount;
     protected List<Integer> activeChannels;
 
-    ADS1299SettingsController(PApplet _parent, List<Integer> _activeChannels, int _x, int _y, int _w, int _h, int _channelBarHeight) {
+    ADS1299SettingsController(PApplet _parentApplet, List<Integer> _activeChannels, int _x, int _y, int _w, int _h, int _channelBarHeight) {
         x = _x;
         y = _y;
         w = _w;
         h = _h;
         channelBarHeight = _channelBarHeight;
         
-        _parentApplet = _parent;
+        _parentApplet = _parentApplet;
         hwsCp5 = new ControlP5(_parentApplet);
         hwsCp5.setGraphics(_parentApplet, 0,0);
         hwsCp5.setAutoDraw(false);
