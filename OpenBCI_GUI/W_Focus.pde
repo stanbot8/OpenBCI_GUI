@@ -184,7 +184,7 @@ class W_Focus extends Widget {
     }
 
     private void resizeTable() {
-        int extraPadding = focusChanSelect.isVisible() ? navHeight : 0;
+        int extraPadding = focusChanSelect.isVisible() ? NAV_HEIGHT : 0;
         float upperLeftContainerW = w/2;
         float upperLeftContainerH = h/2;
         //float min = min(upperLeftContainerW, upperLeftContainerH);
@@ -199,9 +199,9 @@ class W_Focus extends Widget {
     }
 
     private void updateAuditoryNeurofeedbackPosition() {
-        int extraPadding = focusChanSelect.isVisible() ? navHeight : 0;
+        int extraPadding = focusChanSelect.isVisible() ? NAV_HEIGHT : 0;
         int subContainerMiddleX = x + w/4;
-        auditoryNeurofeedback.screenResized(subContainerMiddleX, (int)(y + h/2 - navHeight + extraPadding), w/2 - PAD_FIVE*2, navBarHeight/2);
+        auditoryNeurofeedback.screenResized(subContainerMiddleX, (int)(y + h/2 - NAV_HEIGHT + extraPadding), w/2 - PAD_FIVE*2, navBarHeight/2);
     }
 
     private void updateStatusCircle() {
@@ -209,7 +209,7 @@ class W_Focus extends Widget {
         float upperLeftContainerH = h/2;
         float min = min(upperLeftContainerW, upperLeftContainerH);
         xc = x + w/4;
-        yc = y + h/4 - navHeight;
+        yc = y + h/4 - NAV_HEIGHT;
         wc = min * (3f/5);
         hc = wc;
     }
@@ -354,7 +354,7 @@ class W_Focus extends Widget {
     void channelSelectFlexWidgetUI() {
         focusBar.setPlotPositionAndOuterDimensions(focusChanSelect.isVisible());
         int factor = focusChanSelect.isVisible() ? 1 : -1;
-        yc += navHeight * factor;
+        yc += NAV_HEIGHT * factor;
         resizeTable();
         updateAuditoryNeurofeedbackPosition();
     }

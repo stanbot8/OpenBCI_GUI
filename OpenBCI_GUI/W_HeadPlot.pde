@@ -205,7 +205,7 @@ class HeadPlot {
     public void setPositionSize(int _x, int _y, int _w, int _h, int _win_x, int _win_y) {
         float percentMargin = 0.1;
         _x = _x + (int)(float(_w)*percentMargin);
-        _y = _y + (int)(float(_h)*percentMargin)-navHeight/2;
+        _y = _y + (int)(float(_h)*percentMargin)-NAV_HEIGHT/2;
         _w = (int)(float(_w)-(2*(float(_w)*percentMargin)));
         _h = (int)(float(_h)-(2*(float(_h)*percentMargin)));
 

@@ -225,8 +225,8 @@ class Widget {
     private void resizeWidgetSelector() {
         int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
         widgetSelectorHeight = (dropdownsItemsToShow + 1) * (navH - 4);
-        if (wm != null) {
-            int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);
+        if (widgetManager != null) {
+            int maxDropdownHeight = (widgetManager.widgetOptions.size() + 1) * (navH - 4);
             if (widgetSelectorHeight > maxDropdownHeight) widgetSelectorHeight = maxDropdownHeight;
         }
 
@@ -260,7 +260,7 @@ class Widget {
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
             cp5_widget.getController(dropdowns.get(i).id)
-                //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+                //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), NAV_HEIGHT+(y+2)) // float left
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), navH +(y0+2)) //float right
                 //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
                 ;
@@ -359,23 +359,23 @@ class NavBarDropdown{
 void WidgetSelector(int n){
     println("New widget [" + n + "] selected for container...");
     //find out if the widget you selected is already active
-    boolean isSelectedWidgetActive = wm.widgets.get(n).getIsActive();
+    boolean isSelectedWidgetActive = widgetManager.widgets.get(n).getIsActive();
 
     //find out which widget & container you are currently in...
     int theContainer = -1;
-    for(int i = 0; i < wm.widgets.size(); i++){
-        if(wm.widgets.get(i).isMouseHere()){
-            theContainer = wm.widgets.get(i).currentContainer; //keep track of current container (where mouse is...)
+    for(int i = 0; i < widgetManager.widgets.size(); i++){
+        if(widgetManager.widgets.get(i).isMouseHere()){
+            theContainer = widgetManager.widgets.get(i).currentContainer; //keep track of current container (where mouse is...)
             if(isSelectedWidgetActive){ //if the selected widget was already active
-                wm.widgets.get(i).setContainer(wm.widgets.get(n).currentContainer); //just switch the widget locations (ie swap containers)
+                widgetManager.widgets.get(i).setContainer(widgetManager.widgets.get(n).currentContainer); //just switch the widget locations (ie swap containers)
             } else{
-                wm.widgets.get(i).setIsActive(false);   //deactivate the current widget (if it is different than the one selected)
+                widgetManager.widgets.get(i).setIsActive(false);   //deactivate the current widget (if it is different than the one selected)
             }
         }
     }
 
-    wm.widgets.get(n).setIsActive(true);//activate the new widget
-    wm.widgets.get(n).setContainer(theContainer);//map it to the current container
+    widgetManager.widgets.get(n).setIsActive(true);//activate the new widget
+    widgetManager.widgets.get(n).setContainer(theContainer);//map it to the current container
 }
 
 

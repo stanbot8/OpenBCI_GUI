@@ -698,16 +698,16 @@ class LayoutSelector {
         isVisible = !isVisible;
         if (isVisible) {
             //the very convoluted way of locking all controllers of a single controlP5 instance...
-            for (int i = 0; i < wm.widgets.size(); i++) {
-                for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                    wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
+            for (int i = 0; i < widgetManager.widgets.size(); i++) {
+                for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
+                    widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
                 }
             }
         } else {
             //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-            for (int i = 0; i < wm.widgets.size(); i++) {
-                for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                    wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
+            for (int i = 0; i < widgetManager.widgets.size(); i++) {
+                for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
+                    widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
                 }
             }
         }
@@ -728,7 +728,7 @@ class LayoutSelector {
                 public void controlEvent(CallbackEvent theEvent) {
                     output("Layout [" + (layoutNumber) + "] selected.");
                     toggleVisibility(); //shut layoutSelector if something is selected
-                    wm.setNewContainerLayout(layoutNumber); //have WidgetManager update Layout and active widgets
+                    widgetManager.setNewContainerLayout(layoutNumber); //have WidgetManager update Layout and active widgets
                     sessionSettings.currentLayout = layoutNumber; //copy this value to be used when saving Layout setting
                 }
             });
@@ -883,17 +883,17 @@ class ConfigSelector {
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             if (isVisible) {
                 //the very convoluted way of locking all controllers of a single controlP5 instance...
-                for (int i = 0; i < wm.widgets.size(); i++) {
-                    for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                        wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
+                for (int i = 0; i < widgetManager.widgets.size(); i++) {
+                    for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
+                        widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
                     }
                 }
                 clearAllSettingsPressed = false;
             } else {
                 //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-                for (int i = 0; i < wm.widgets.size(); i++) {
-                    for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                        wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
+                for (int i = 0; i < widgetManager.widgets.size(); i++) {
+                    for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
+                        widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
                     }
                 }
             }
@@ -1191,16 +1191,16 @@ class TutorialSelector {
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             if (isVisible) {
                 //the very convoluted way of locking all controllers of a single controlP5 instance...
-                for (int i = 0; i < wm.widgets.size(); i++) {
-                    for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                        wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
+                for (int i = 0; i < widgetManager.widgets.size(); i++) {
+                    for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
+                        widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
                     }
                 }
             } else {
                 //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-                for (int i = 0; i < wm.widgets.size(); i++) {
-                    for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
-                        wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
+                for (int i = 0; i < widgetManager.widgets.size(); i++) {
+                    for (int j = 0; j < widgetManager.widgets.get(i).cp5_widget.getAll().size(); j++) {
+                        widgetManager.widgets.get(i).cp5_widget.getController(widgetManager.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
                     }
                 }
             }

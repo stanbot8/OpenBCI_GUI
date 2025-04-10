@@ -437,15 +437,15 @@ class SessionSettings {
 
         int numActiveWidgets = 0;
         //Save what Widgets are active and respective Container number (see Containers.pde)
-        for (int i = 0; i < wm.widgets.size(); i++) { //increment through all widgets
-            if (wm.widgets.get(i).getIsActive()) { //If a widget is active...
+        for (int i = 0; i < widgetManager.widgets.size(); i++) { //increment through all widgets
+            if (widgetManager.widgets.get(i).getIsActive()) { //If a widget is active...
                 numActiveWidgets++; //increment numActiveWidgets
                 //println("Widget" + i + " is active");
                 // activeWidgets.add(i); //keep track of the active widget
-                int containerCountsave = wm.widgets.get(i).currentContainer;
+                int containerCountsave = widgetManager.widgets.get(i).currentContainer;
                 //println("Widget " + i + " is in Container " + containerCountsave);
                 saveWidgetSettings.setInt("Widget_"+i, containerCountsave);
-            } else if (!wm.widgets.get(i).getIsActive()) { //If a widget is not active...
+            } else if (!widgetManager.widgets.get(i).getIsActive()) { //If a widget is not active...
                 saveWidgetSettings.remove("Widget_"+i); //remove non-active widget from JSON
                 //println("widget"+i+" is not active");
             }
@@ -453,7 +453,7 @@ class SessionSettings {
         println("SessionSettings: " + numActiveWidgets + " active widgets saved!");
         //Print what widgets are in the containers used by current layout for only the number of active widgets
         //for (int i = 0; i < numActiveWidgets; i++) {
-            //int containerCounter = wm.layouts.get(currentLayout).containerInts[i];
+            //int containerCounter = widgetManager.layouts.get(currentLayout).containerInts[i];
             //println("Container " + containerCounter + " is available"); //For debugging
         //}
         saveSettingsJSONData.setJSONObject(kJSONKeyWidget, saveWidgetSettings);
@@ -613,16 +613,16 @@ class SessionSettings {
         //get the  Widget/Container settings
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
         //Apply Layout directly before loading and applying widgets to containers
-        wm.setNewContainerLayout(currentLayout);
+        widgetManager.setNewContainerLayout(currentLayout);
         verbosePrint("LoadGUISettings: Layout " + currentLayout + " Loaded!");
         numLoadedWidgets = loadWidgetSettings.size();
 
 
         //int numActiveWidgets = 0; //reset the counter
-        for (int w = 0; w < wm.widgets.size(); w++) { //increment through all widgets
-            if (wm.widgets.get(w).getIsActive()) { //If a widget is active...
+        for (int w = 0; w < widgetManager.widgets.size(); w++) { //increment through all widgets
+            if (widgetManager.widgets.get(w).getIsActive()) { //If a widget is active...
                 verbosePrint("Deactivating widget [" + w + "]");
-                wm.widgets.get(w).setIsActive(false);
+                widgetManager.widgets.get(w).setIsActive(false);
                 //numActiveWidgets++; //counter the number of de-activated widgets
             }
         }
@@ -638,8 +638,8 @@ class SessionSettings {
                 //Load the container for the current widget[w]
                 int containerToApply = loadWidgetSettings.getInt(loadedWidgetsArray[w]);
 
-                wm.widgets.get(widgetToActivate).setIsActive(true);//activate the new widget
-                wm.widgets.get(widgetToActivate).setContainer(containerToApply);//map it to the container that was loaded!
+                widgetManager.widgets.get(widgetToActivate).setIsActive(true);//activate the new widget
+                widgetManager.widgets.get(widgetToActivate).setContainer(containerToApply);//map it to the container that was loaded!
                 println("LoadGUISettings: Applied Widget " + widgetToActivate + " to Container " + containerToApply);
         }//end case for all widget/container settings
 
@@ -673,7 +673,7 @@ class SessionSettings {
             } else {
                 hpWidgetNumber = 5;
             }
-            if (wm.widgets.get(hpWidgetNumber).getIsActive()) {
+            if (widgetManager.widgets.get(hpWidgetNumber).getIsActive()) {
                 w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
                 println("Headplot is active: Redrawing");
             }

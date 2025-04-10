@@ -50,7 +50,7 @@ class W_fft extends Widget {
 
     void initializeFFTPlot() {
         //setup GPlot for FFT
-        fftPlot = new GPlot(ourApplet, x, y-navHeight, w, h+navHeight);
+        fftPlot = new GPlot(ourApplet, x, y-NAV_HEIGHT, w, h+NAV_HEIGHT);
         fftPlot.setAllFontProperties("Arial", 0, 14);
         fftPlot.getXAxis().setAxisLabelText("Frequency (Hz)");
         fftPlot.getYAxis().setAxisLabelText("Amplitude (uV)");
@@ -142,7 +142,7 @@ class W_fft extends Widget {
 
         //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
         fill(200, 200, 200);
-        rect(x, y - navHeight, w, navHeight); //button bar
+        rect(x, y - NAV_HEIGHT, w, NAV_HEIGHT); //button bar
 
         popStyle();
 

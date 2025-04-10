@@ -80,7 +80,7 @@ class W_template extends Widget {
     //You can find more detailed examples in the Control Panel, where there are many UI objects with varying functionality.
     private void createWidgetTemplateButton() {
         //This is a generalized createButton method that allows us to save code by using a few patterns and method overloading
-        widgetTemplateButton = createButton(localCP5, "widgetTemplateButton", "Design Your Own Widget!", x + w/2, y + h/2, 200, navHeight, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
+        widgetTemplateButton = createButton(localCP5, "widgetTemplateButton", "Design Your Own Widget!", x + w/2, y + h/2, 200, NAV_HEIGHT, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
         //Set the border color explicitely
         widgetTemplateButton.setBorderColor(OBJECT_BORDER_GREY);
         //For this button, only call the callback listener on mouse release

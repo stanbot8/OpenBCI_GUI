@@ -18,7 +18,7 @@ class W_GanglionImpedance extends Widget {
     W_GanglionImpedance(String _widgetName) {
         super(_widgetName);
 
-        createStartStopCheck("startStopCheck", "Start Impedance Check", x + padding, y + padding, 200, navHeight, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
+        createStartStopCheck("startStopCheck", "Start Impedance Check", x + padding, y + padding, 200, NAV_HEIGHT, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     void update(){
