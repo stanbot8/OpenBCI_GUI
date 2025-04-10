@@ -55,7 +55,7 @@ class SessionSettings {
     private long logFileStartTime;
     private long logFileMaxDurationNano = -1;
     //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
-    CColor dropdownColors = new CColor();
+    public CColor dropdownColors = new CColor();
 
     //default configuration settings file location and file name variables
     private String sessionPath = "";
@@ -969,7 +969,7 @@ class SessionSettings {
 
     void saveButtonPressed() {
         if (saveDialogName == null) {
-            File fileToSave = dataFile(settings.getPath("User", eegDataSource, globalChannelCount));
+            File fileToSave = dataFile(sessionSettings.getPath("User", eegDataSource, globalChannelCount));
             FileChooser chooser = new FileChooser(
                     FileChooserMode.SAVE,
                     "saveConfigFile",
@@ -1033,10 +1033,10 @@ void saveConfigFile(File selection) {
         println("SessionSettings: saveConfigFile: Window was closed or the user hit cancel.");
     } else {
         println("SessionSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
-        settings.saveDialogName = selection.getAbsolutePath();
-        settings.save(settings.saveDialogName); //save current settings to JSON file in SavedData
+        sessionSettings.saveDialogName = selection.getAbsolutePath();
+        sessionSettings.save(sessionSettings.saveDialogName); //save current settings to JSON file in SavedData
         outputSuccess("Settings Saved! Using Expert Mode, you can load these settings using 'N' key. Click \"Default\" to revert to factory settings."); //print success message to screen
-        settings.saveDialogName = null; //reset this variable for future use
+        sessionSettings.saveDialogName = null; //reset this variable for future use
     }
 }
 // Select file to load custom settings using dropdown in TopNav.pde
@@ -1046,26 +1046,26 @@ void loadConfigFile(File selection) {
     } else {
         println("SessionSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
         //output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
-        settings.loadDialogName = selection.getAbsolutePath();
+        sessionSettings.loadDialogName = selection.getAbsolutePath();
         try {
-            settings.load(settings.loadDialogName); //load settings from JSON file in /data/
+            sessionSettings.load(sessionSettings.loadDialogName); //load settings from JSON file in /data/
             //Output success message when Loading settings is complete without errors
-            if (settings.chanNumError == false
-                && settings.dataSourceError == false
-                && settings.loadErrorCytonEvent == false) {
+            if (sessionSettings.chanNumError == false
+                && sessionSettings.dataSourceError == false
+                && sessionSettings.loadErrorCytonEvent == false) {
                     outputSuccess("Settings Loaded!");
                 }
         } catch (Exception e) {
             println("SessionSettings: Incompatible settings file or other error");
-            if (settings.chanNumError == true) {
+            if (sessionSettings.chanNumError == true) {
                 outputError("Settings Error:  Channel Number Mismatch Detected");
-            } else if (settings.dataSourceError == true) {
+            } else if (sessionSettings.dataSourceError == true) {
                 outputError("Settings Error: Data Source Mismatch Detected");
             } else {
                 outputError("Error trying to load settings file, possibly from previous GUI. Removing old settings.");
                 if (selection.exists()) selection.delete();
             }
         }
-        settings.loadDialogName = null; //reset this variable for future use
+        sessionSettings.loadDialogName = null; //reset this variable for future use
     }
 }

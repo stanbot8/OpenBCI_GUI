@@ -49,6 +49,8 @@ class W_Accelerometer extends Widget {
         
         accelBoard = (AccelerometerCapableBoard)currentBoard;
 
+        
+
         //Make dropdowns
         addDropdown("accelerometerVerticalScaleDropdown", "Vert Scale", verticalScale.getEnumStringsAsList(), verticalScale.getIndex());
         addDropdown("accelerometerHorizontalScaleDropdown", "Window", horizontalScale.getEnumStringsAsList(), horizontalScale.getIndex());

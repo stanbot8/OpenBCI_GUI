@@ -729,7 +729,7 @@ class LayoutSelector {
                     output("Layout [" + (layoutNumber) + "] selected.");
                     toggleVisibility(); //shut layoutSelector if something is selected
                     wm.setNewContainerLayout(layoutNumber); //have WidgetManager update Layout and active widgets
-                    settings.currentLayout = layoutNumber; //copy this value to be used when saving Layout setting
+                    sessionSettings.currentLayout = layoutNumber; //copy this value to be used when saving Layout setting
                 }
             });
             layoutOptions.add(tempLayoutButton);
@@ -980,7 +980,7 @@ class ConfigSelector {
         saveSessionSettings.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 toggleVisibility();
-                settings.saveButtonPressed();
+                sessionSettings.saveButtonPressed();
             }
         });
         saveSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
@@ -991,7 +991,7 @@ class ConfigSelector {
         loadSessionSettings.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 toggleVisibility();
-                settings.loadButtonPressed();
+                sessionSettings.loadButtonPressed();
             }
         });
         loadSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
@@ -1002,7 +1002,7 @@ class ConfigSelector {
         defaultSessionSettings.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 toggleVisibility();
-                settings.defaultButtonPressed();
+                sessionSettings.defaultButtonPressed();
             }
         });
         defaultSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
@@ -1043,7 +1043,7 @@ class ConfigSelector {
                 //Shorten height of this box
                 h -= margin*4 + b_h*3;
                 //User has selected Are You Sure?->Yes
-                settings.clearAll();
+                sessionSettings.clearAll();
                 guiSettings.resetAllSettings();
                 clearAllSettingsPressed = false;
                 //Stop the system if the user clears all settings

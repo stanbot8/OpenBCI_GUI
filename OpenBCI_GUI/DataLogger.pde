@@ -33,7 +33,7 @@ class DataLogger {
     
     private void saveNewData() {
         //If data is available, save to playback file...
-        if(!settings.isLogFileOpen()) {
+        if(!sessionSettings.isLogFileOpen()) {
             return;
         }
 
@@ -54,21 +54,21 @@ class DataLogger {
     }
 
     public void limitRecordingFileDuration() {
-        if (settings.isLogFileOpen() && outputDataSource == OUTPUT_SOURCE_ODF && settings.maxLogTimeReached()) {
+        if (sessionSettings.isLogFileOpen() && outputDataSource == OUTPUT_SOURCE_ODF && sessionSettings.maxLogTimeReached()) {
             println("DataLogging: Max recording duration reached for OpenBCI data format. Creating a new recording file in the session folder.");
             closeLogFile();
             openNewLogFile(directoryManager.getFileNameDateTime());
-            settings.setLogFileStartTime(System.nanoTime());
+            sessionSettings.setLogFileStartTime(System.nanoTime());
         }
     }
 
     public void onStartStreaming() {
         if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource != DATASOURCE_PLAYBACKFILE) {
             //open data file if it has not already been opened
-            if (!settings.isLogFileOpen()) {
+            if (!sessionSettings.isLogFileOpen()) {
                 openNewLogFile(directoryManager.getFileNameDateTime());
             }
-            settings.setLogFileStartTime(System.nanoTime());
+            sessionSettings.setLogFileStartTime(System.nanoTime());
         }
 
         //Print BrainFlow Streamer Info here after ODF and BDF println
@@ -111,7 +111,7 @@ class DataLogger {
                 // Do nothing...
                 break;
         }
-        settings.setLogFileIsOpen(true);
+        sessionSettings.setLogFileIsOpen(true);
     }
 
     /**
@@ -159,7 +159,7 @@ class DataLogger {
                 // Do nothing...
                 break;
         }
-        settings.setLogFileIsOpen(false);
+        sessionSettings.setLogFileIsOpen(false);
     }
 
     private void closeLogFileBDF() {
@@ -197,10 +197,10 @@ class DataLogger {
     }
 
     public void setBfWriterDefaultFolder() {
-        if (settings.getSessionPath() != "") {
-            settings.setSessionPath(directoryManager.getRecordingsPath() + "OpenBCISession_" + sessionName);
+        if (sessionSettings.getSessionPath() != "") {
+            sessionSettings.setSessionPath(directoryManager.getRecordingsPath() + "OpenBCISession_" + sessionName);
         }
-        fileWriterBF.setBrainFlowStreamerFolderName(sessionName, settings.getSessionPath());
+        fileWriterBF.setBrainFlowStreamerFolderName(sessionName, sessionSettings.getSessionPath());
     }
 
     public String getBfWriterFilePath() {
