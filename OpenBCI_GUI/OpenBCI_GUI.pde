@@ -293,7 +293,7 @@ public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
 DirectoryManager directoryManager;
-SessionSettings settings;
+SessionSettings sessionSettings;
 GuiSettings guiSettings;
 DataProcessing dataProcessing;
 FilterSettings filterSettings;
@@ -428,7 +428,7 @@ void setup() {
     
     // Copy sample data to the Users' Documents folder +  create Recordings folder
     directoryManager.init();
-    settings = new SessionSettings();
+    sessionSettings = new SessionSettings();
     guiSettings = new GuiSettings(directoryManager.getSettingsPath());
     userPlaybackHistoryFile = directoryManager.getSettingsPath()+"UserPlaybackHistory.json";
 
@@ -445,8 +445,8 @@ void delayedSetup() {
     smooth(); //turn this off if it's too slow
 
     surface.setResizable(true);  //updated from frame.setResizable in Processing 2
-    settings.widthOfLastScreen = width; //for screen resizing (Thank's Tao)
-    settings.heightOfLastScreen = height;
+    sessionSettings.widthOfLastScreen = width; //for screen resizing (Thank's Tao)
+    sessionSettings.heightOfLastScreen = height;
 
     setupContainers();
 
@@ -533,8 +533,8 @@ synchronized void draw() {
             dataProcessing.networkingDataAccumulator.compareAndSetNetworkingFrameLocks();
         }
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
-        if (settings.introAnimationInit == 0) {
-            settings.introAnimationInit = millis();
+        if (sessionSettings.introAnimationInit == 0) {
+            sessionSettings.introAnimationInit = millis();
         } else {
             introAnimation();
         }
@@ -750,12 +750,12 @@ void initSystem() {
     //don't save default session settings for StreamingBoard
     if (eegDataSource != DATASOURCE_STREAMING) {
         //Init software settings: create default settings file that is datasource unique
-        settings.init();
+        sessionSettings.init();
         verbosePrint("OpenBCI_GUI: initSystem: Session settings initialized");
     }
 
     if (guiSettings.getAutoLoadSessionSettings()) {
-        settings.autoLoadSessionSettings();
+        sessionSettings.autoLoadSessionSettings();
         verbosePrint("OpenBCI_GUI: initSystem: User default session settings automatically loaded");
     }
 
@@ -970,10 +970,10 @@ void systemUpdate() { // for updating data values and variables
         //updates while in system control panel before START SYSTEM
         controlPanel.update();
 
-        if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
+        if (sessionSettings.widthOfLastScreen != width || sessionSettings.heightOfLastScreen != height) {
             topNav.screenHasBeenResized(width, height);
-            settings.widthOfLastScreen = width;
-            settings.heightOfLastScreen = height;
+            sessionSettings.widthOfLastScreen = width;
+            sessionSettings.heightOfLastScreen = height;
             //println("W = " + width + " || H = " + height);
         }
     }
@@ -982,19 +982,19 @@ void systemUpdate() { // for updating data values and variables
         
         //alternative component listener function (line 177 mouseReleased- 187 frame.addComponentListener) for processing 3,
         //Component listener doesn't seem to work, so staying with this method for now
-        if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
-            settings.screenHasBeenResized = true;
-            settings.timeOfLastScreenResize = millis();
-            settings.widthOfLastScreen = width;
-            settings.heightOfLastScreen = height;
+        if (sessionSettings.widthOfLastScreen != width || sessionSettings.heightOfLastScreen != height) {
+            sessionSettings.screenHasBeenResized = true;
+            sessionSettings.timeOfLastScreenResize = millis();
+            sessionSettings.widthOfLastScreen = width;
+            sessionSettings.heightOfLastScreen = height;
         }
 
         //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
-        if (settings.screenHasBeenResized && settings.timeOfLastScreenResize + 500 > millis()) {
+        if (sessionSettings.screenHasBeenResized && sessionSettings.timeOfLastScreenResize + 500 > millis()) {
             ourApplet = this; //reset PApplet...
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
-            settings.screenHasBeenResized = false;
+            sessionSettings.screenHasBeenResized = false;
         }
 
         if (wm.isWMInitialized) {
@@ -1064,7 +1064,7 @@ void systemInitSession() {
 //Global function to update the number of channels
 void updateGlobalChannelCount(int _channelCount) {
     globalChannelCount = _channelCount;
-    settings.sessionSettingsChannelCount = _channelCount; //used in SoftwareSettings.pde only
+    sessionSettings.sessionSettingsChannelCount = _channelCount; //used in SoftwareSettings.pde only
     fftBuff = new ddf.minim.analysis.FFT[globalChannelCount];  //reinitialize the FFT buffer
     println("OpenBCI_GUI: Channel count set to " + str(globalChannelCount));
 }
@@ -1076,8 +1076,8 @@ void introAnimation() {
     int t1 = 0;
     float transparency = 0;
 
-    if (millis() >= settings.introAnimationInit) {
-        transparency = map(millis() - settings.introAnimationInit, t1, settings.introAnimationDuration, 0, 255);
+    if (millis() >= sessionSettings.introAnimationInit) {
+        transparency = map(millis() - sessionSettings.introAnimationInit, t1, sessionSettings.introAnimationDuration, 0, 255);
         verbosePrint(String.valueOf(transparency));
         tint(255, transparency);
         //draw OpenBCI Logo Front & Center
@@ -1091,7 +1091,7 @@ void introAnimation() {
     }
 
     //Exit intro animation when the duration has expired AND the Control Panel is ready
-    if ((millis() >= settings.introAnimationInit + settings.introAnimationDuration)
+    if ((millis() >= sessionSettings.introAnimationInit + sessionSettings.introAnimationDuration)
         && controlPanel != null) {
         systemMode = SYSTEMMODE_PREINIT;
         controlPanel.open();

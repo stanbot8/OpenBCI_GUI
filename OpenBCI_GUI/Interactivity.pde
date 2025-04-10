@@ -101,14 +101,14 @@ void parseKey(char val) {
         ///////////////////// Save User settings lowercase n
         case 'n':
             println("Interactivity: Save key pressed!");
-            settings.save(settings.getPath("User", eegDataSource, globalChannelCount));
-            outputSuccess("Settings Saved! Using Expert Mode, you can load these settings using 'N' key. Click \"Default\" to revert to factory settings.");
+            sessionSettings.save(sessionSettings.getPath("User", eegDataSource, globalChannelCount));
+            outputSuccess("Settings Saved! Using Expert Mode, you can load these settings using 'N' key. Click \"Default\" to revert to factory sessionSettings.");
             return;
 
         ///////////////////// Load User settings uppercase N
         case 'N':
             println("Interactivity: Load key pressed!");
-            settings.loadKeyPressed();
+            sessionSettings.loadKeyPressed();
             return;
 
         case '?':
