@@ -14,21 +14,20 @@ interface IndexingInterface {
 }
 
 class Widget {
-    protected String widgetName = "Widget"; //default name of the widget
+    protected String widgetTitle = "Widget"; //default name of the widget
 
     protected int x0, y0, w0, h0; //true x,y,w,h of container
     protected int x, y, w, h; //adjusted x,y,w,h of white space `blank rectangle` under the nav...
 
     private int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
+    protected ControlP5 cp5_widget;
+    private ArrayList<NavBarDropdown> dropdowns;
     protected boolean dropdownIsActive = false;
     private boolean previousDropdownIsActive = false;
     private boolean previousTopNavDropdownMenuIsOpen = false;
     private boolean widgetSelectorIsActive = false;
 
-    private ArrayList<NavBarDropdown> dropdowns;
-    protected ControlP5 cp5_widget;
-    protected String widgetTitle = "No Title Set";
     //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
     private final float widgetDropdownScaling = .90;
     private boolean isWidgetActive = false;
@@ -40,8 +39,7 @@ class Widget {
     protected int dropdownWidth = 64;
     private boolean initialResize = false; //used to properly resize the widgetSelector when loading default settings
 
-    Widget(String _title) {
-        widgetTitle = _title;
+    Widget() {
         cp5_widget = new ControlP5(ourApplet);
         cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
         dropdowns = new ArrayList<NavBarDropdown>();

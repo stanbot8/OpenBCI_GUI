@@ -44,8 +44,9 @@ class W_Accelerometer extends Widget {
 
     private AccelerometerCapableBoard accelBoard;
 
-    W_Accelerometer(String widgetName) {
-        super(widgetName);
+    W_Accelerometer() {
+        super();
+        widgetTitle = "Accelerometer";
         
         accelBoard = (AccelerometerCapableBoard)currentBoard;
 

@@ -21,8 +21,9 @@ class W_playback extends Widget {
 
     private boolean menuHasUpdated = false;
 
-    W_playback(String _widgetName) {
-        super(_widgetName);
+    W_playback() {
+        super();
+        widgetTitle = "Playback History";
 
         cp5_playback = new ControlP5(ourApplet);
         cp5_playback.setGraphics(ourApplet, 0,0);

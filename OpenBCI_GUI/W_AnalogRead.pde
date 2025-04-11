@@ -9,7 +9,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 class W_AnalogRead extends Widget {
-
     private float arPadding;
     // values for actual time series chart (rectangle encompassing all analogReadBars)
     private float ar_x, ar_y, ar_h, ar_w;
@@ -28,8 +27,9 @@ class W_AnalogRead extends Widget {
 
     private AnalogCapableBoard analogBoard;
 
-    W_AnalogRead(String _widgetName) {
-        super(_widgetName);
+    W_AnalogRead() {
+        super();
+        widgetTitle = "AnalogRead";
 
         analogBoard = (AnalogCapableBoard)currentBoard;
 

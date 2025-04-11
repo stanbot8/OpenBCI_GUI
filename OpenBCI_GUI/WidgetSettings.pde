@@ -2,10 +2,10 @@ class WidgetSettings {
     // A map to store settings with string keys and enum values
     protected HashMap<String, Enum<?>> settings = new HashMap<String, Enum<?>>();
     // Widget identifier for saving/loading specific widget settings
-    private String widgetName;
+    private String titleString;
 
-    public WidgetSettings(String widgetName) {
-        this.widgetName = widgetName;
+    public WidgetSettings(String titleString) {
+        this.titleString = titleString;
     }
 
     // Store a setting with a key and enum value
@@ -29,7 +29,7 @@ class WidgetSettings {
         try {
             // Create a wrapper JSON object that contains metadata and settings
             JSONObject jsonData = new JSONObject();
-            jsonData.setString("widgetName", widgetName);
+            jsonData.setString("titleString", titleString);
             
             // Create settings JSON object
             JSONObject settingsJson = new JSONObject();
@@ -67,9 +67,9 @@ class WidgetSettings {
             }
 
             // Verify widget name
-            String loadedWidgetName = jsonData.getString("widgetName", "");
-            if (!loadedWidgetName.equals(widgetName)) {
-                println("Warning: Widget name mismatch. Expected: " + widgetName + ", Found: " + loadedWidgetName);
+            String loadedTitleString = jsonData.getString("titleString", "");
+            if (!loadedTitleString.equals(titleString)) {
+                println("Warning: Widget name mismatch. Expected: " + titleString + ", Found: " + loadedTitleString);
                 // Continuing anyway, might be a compatible widget
             }
             

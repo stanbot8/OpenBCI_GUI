@@ -56,8 +56,9 @@ class W_CytonImpedance extends Widget {
     private int thresholdTFWidth = 60; //Hard-code this value since there are deep errors with controlp5.textfield.setSize() and creating new graphics in this class - RW 12/13/2021
     
 
-    W_CytonImpedance(String _widgetName){
-        super(_widgetName);
+    W_CytonImpedance() {
+        super();
+        widgetTitle = "Cyton Signal";
 
         cytonBoard = (BoardCyton) currentBoard;
 

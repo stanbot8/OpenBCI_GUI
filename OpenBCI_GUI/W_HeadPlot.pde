@@ -10,9 +10,7 @@
 import java.util.concurrent.locks.ReentrantLock;
 
 class W_HeadPlot extends Widget {
-    
     private HeadPlot headPlot;
-
     private HeadPlotIntensity headPlotIntensity = HeadPlotIntensity.INTENSITY_1;
     private HeadPlotPolarity headPlotPolarity = HeadPlotPolarity.PLUS_AND_MINUS;
     private HeadPlotContours headPlotContours = HeadPlotContours.ON;
@@ -20,8 +18,9 @@ class W_HeadPlot extends Widget {
 
     private final float DEFAULT_VERTICAL_SCALE_UV = 200f; //this defines the Y-scale on the montage plots...this is the vertical space between traces
 
-    W_HeadPlot(String _widgetName) {
-        super(_widgetName);
+    W_HeadPlot() {
+        super();
+        widgetTitle = "Head Plot";
 
         addDropdown("headPlotIntensityDropdown", "Intensity", headPlotIntensity.getEnumStringsAsList(), headPlotIntensity.getIndex());
         addDropdown("headPlotPolarityDropdown", "Polarity", headPlotPolarity.getEnumStringsAsList(), headPlotPolarity.getIndex());

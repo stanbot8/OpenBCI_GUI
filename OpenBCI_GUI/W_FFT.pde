@@ -13,7 +13,6 @@
 ///////////////////////////////////////////////////
 
 class W_Fft extends Widget {
-
     public ExGChannelSelect fftChanSelect;
     private boolean prevChanSelectIsVisible = false;
 
@@ -28,8 +27,9 @@ class W_Fft extends Widget {
 
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
-    W_Fft(String _widgetName) {
-        super(_widgetName);
+    W_Fft() {
+        super();
+        widgetTitle = "FFT Plot";
 
         fftChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
         fftChanSelect.activateAllButtons();

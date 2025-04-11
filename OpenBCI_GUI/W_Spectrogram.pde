@@ -8,7 +8,6 @@
 //////////////////////////////////////////////////////
 
 class W_Spectrogram extends Widget {
-
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     public ExGChannelSelect spectChanSelectTop;
     public ExGChannelSelect spectChanSelectBot;
@@ -48,8 +47,9 @@ class W_Spectrogram extends Widget {
     private SpectrogramWindowSize windowSize = SpectrogramWindowSize.ONE_MINUTE;
     private FFTLogLin logLin = FFTLogLin.LIN;
 
-    W_Spectrogram(String _widgetName) {
-        super(_widgetName);
+    W_Spectrogram() {
+        super();
+        widgetTitle = "Spectrogram";
 
         //Add channel select dropdown to this widget
         spectChanSelectTop = new DualExGChannelSelect(ourApplet, x, y, w, navH, true);
