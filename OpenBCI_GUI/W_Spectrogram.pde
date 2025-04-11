@@ -427,7 +427,7 @@ class W_Spectrogram extends Widget {
 
     public void clear() {
         // Set all pixels to black (or any other background color you want to clear with)
-        for (int i = 0; i < w_spectrogram.dataImg.pixels.length; i++) {
+        for (int i = 0; i < dataImg.pixels.length; i++) {
             dataImg.pixels[i] = color(0);  // Black background
         }
     }
@@ -455,13 +455,13 @@ class W_Spectrogram extends Widget {
 };
 
 public void spectrogramMaxFrequencyDropdown(int n) {
-    w_spectrogram.setMaxFrequency(n);
+    ((W_Spectrogram) widgetManager.getWidget("W_Spectrogram")).setMaxFrequency(n);
 }
 
 public void spectrogramWindowDropdown(int n) {
-    w_spectrogram.setWindowSize(n);
+    ((W_Spectrogram) widgetManager.getWidget("W_Spectrogram")).setWindowSize(n);
 }
 
 public void spectrogramLogLinDropdown(int n) {
-    w_spectrogram.setLogLin(n);
+    ((W_Spectrogram) widgetManager.getWidget("W_Spectrogram")).setLogLin(n);
 }

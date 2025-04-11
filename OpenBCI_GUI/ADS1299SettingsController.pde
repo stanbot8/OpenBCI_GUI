@@ -750,8 +750,9 @@ void loadHardwareSettings(File selection) {
             if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().loadSettingsValues(selection.getAbsolutePath())) {
                 outputSuccess("Hardware Settings Loaded!");
                 for (int i = 0; i < globalChannelCount; i++) {
-                    w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(i, currentBoard.isEXGChannelActive(i));
-                    w_timeSeries.adsSettingsController.updateHasUnappliedSettings(i);
+                    W_TimeSeries timeSeriesWidget = widgetManager.getTimeSeriesWidget();
+                    timeSeriesWidget.adsSettingsController.updateChanSettingsDropdowns(i, currentBoard.isEXGChannelActive(i));
+                    timeSeriesWidget.adsSettingsController.updateHasUnappliedSettings(i);
                 }
             } else {
                 outputError("Failed to load Hardware Settings.");

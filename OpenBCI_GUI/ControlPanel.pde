@@ -2506,8 +2506,10 @@ class InitBox {
             //creates new data file name so that you don't accidentally overwrite the old one
             controlPanel.dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
-            w_focus.killAuditoryFeedback();
-            w_marker.disposeUdpMarkerReceiver();
+            W_Focus focusWidget = (W_Focus) widgetManager.getWidget("W_Focus");
+            W_Marker markerWidget = (W_Marker) widgetManager.getWidget("W_Marker");
+            focusWidget.killAuditoryFeedback();
+            markerWidget.disposeUdpMarkerReceiver();
             haltSystem();
             widgetManager.setAllWidgetsNull();
         }

@@ -1,21 +1,13 @@
+////////////////////////////////////////////////////////////
+//                                                        //
+//    W_HeadPlot.pde                                      //
+//    Created by: Conor Russomanno, November 2016         //
+//    Based on code written by: Chip Audette, Oct 2013    //
+//    Refactored by: Richard Waltman, April 2025          //
+//                                                        //
+////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////
-//
-//    W_template.pde (ie "Widget Template")
-//
-//    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
-//    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
-//
-//    Created by: Conor Russomanno, November 2016
-//    Based on code written by: Chip Audette, Oct 2013
-//    Refactored by: Richard Waltman, March 2025
-//
-///////////////////////////////////////////////////,
-
-
-// ----- these variable/methods are used for adjusting the intensity factor of the headplot opacity ---------------------------------------------------------------------------------------------------------
-//float default_vertScale_uV = 200.0; 
-//float[] vertScaleFactor = { 0.25f, 0.5f, 1.0f, 2.0f, 5.0f, 50.0f};
+import java.util.concurrent.locks.ReentrantLock;
 
 class W_HeadPlot extends Widget {
     
@@ -64,7 +56,7 @@ class W_HeadPlot extends Widget {
         headPlot.hp_win_x = x;
         headPlot.hp_win_y = y;
 
-        thread("doHardCalculations");
+        headPlot.setPositionSize(x, y, w, h, x, y);
     }
 
     public void mousePressed(){
@@ -102,31 +94,22 @@ class W_HeadPlot extends Widget {
         headPlotSmoothing = HeadPlotSmoothing.values[n];
         headPlot.smoothingFactor = headPlotSmoothing.getValue();
     }
-
-    private void doHardCalculations() {
-        if (!headPlot.threadLock) {
-            headPlot.threadLock = true;
-            headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
-            headPlot.hardCalcsDone = true;
-            headPlot.threadLock = false;
-        }
-    }
 };
 
 public void headPlotIntensityDropdown(int n) {
-    w_headPlot.setIntensity(n);
+    ((W_HeadPlot) widgetManager.getWidget("W_HeadPlot")).setIntensity(n);
 }
 
 public void headPlotPolarityDropdown(int n) {
-    w_headPlot.setPolarity(n);
+    ((W_HeadPlot) widgetManager.getWidget("W_HeadPlot")).setPolarity(n);
 }
 
 public void headPlotContoursDropdown(int n) {
-    w_headPlot.setContours(n);
+    ((W_HeadPlot) widgetManager.getWidget("W_HeadPlot")).setContours(n);
 }
 
 public void headPlotSmoothingDropdown(int n) {
-    w_headPlot.setSmoothing(n);
+    ((W_HeadPlot) widgetManager.getWidget("W_HeadPlot")).setSmoothing(n);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -180,8 +163,8 @@ class HeadPlot {
     public int hp_y = 0;
     public int hp_w = 0;
     public int hp_h = 0;
-    public boolean hardCalcsDone = false;
-    public boolean threadLock = false;
+    private final ReentrantLock lock = new ReentrantLock();
+    private final AtomicBoolean hardCalculationsDone = new AtomicBoolean(false);
 
     HeadPlot(int _x, int _y, int _w, int _h, int _win_x, int _win_y) {
         final int n_elec = globalChannelCount;  //set number of electrodes using the global globalChannelCount variable
@@ -299,11 +282,13 @@ class HeadPlot {
         image_x = int(round(circ_x - 0.5*circ_diam - 0.5*ear_width));
         image_y = nose_y[2];
         headImage = createImage(int(total_width), int(total_height), ARGB);
+        headVoltage = new float[int(total_width)][int(total_height)]; // Initialize headVoltage here
 
         //initialize the image
         for (int Iy=0; Iy < headImage.height; Iy++) {
             for (int Ix = 0; Ix < headImage.width; Ix++) {
                 headImage.set(Ix, Iy, WHITE);
+                headVoltage[Ix][Iy] = 0.0f; // Initialize with default values
             }
         }
 
@@ -970,7 +955,6 @@ class HeadPlot {
                     //it is inside the head.  set the color based on the electrodes
                     headImage.set(Ix, Iy, calcPixelColor(Ix, Iy));
                 } else {  //negative values are outside of the head
-                    //pixel is outside the head.  set to black.
                     headImage.set(Ix, Iy, WHITE);
                 }
             }
@@ -978,6 +962,10 @@ class HeadPlot {
     }
 
     private void convertVoltagesToHeadImage() {
+        if (headImage == null || electrode_color_weightFac == null || headVoltage == null) {
+            println("ERROR: HeadPlot data structures not initialized");
+            return;
+        }
         for (int Iy=0; Iy < headImage.height; Iy++) {
             for (int Ix = 0; Ix < headImage.width; Ix++) {
                 //is this pixel inside the head?
@@ -1176,27 +1164,23 @@ class HeadPlot {
 
     public void update() {
         //do this when new data is available
-        if (!hardCalcsDone) {
-            thread("doHardCalcs");
+        if (!hardCalculationsDone.get()) {
+            setPositionSize(hp_x, hp_y, hp_w, hp_h, hp_win_x, hp_win_y);
+            hardCalculationsDone.set(true);
         }
 
         //update electrode colors
         updateElectrodeColors();
 
-        if (false) {
-            //update the head image
-            if (drawHeadAsContours) updateHeadImage();
-        } else {
-            //update head voltages
-            if (!threadLock && hardCalcsDone) {
-                convertVoltagesToHeadImage();
-            }
+        //update head voltages
+        if (hardCalculationsDone.get() && headVoltage != null) {
+            convertVoltagesToHeadImage();
         }
     }
 
     public void draw() {
 
-        if (!hardCalcsDone) {
+        if (!hardCalculationsDone.get() || headImage == null) {
             return;
         }
 
@@ -1255,4 +1239,17 @@ class HeadPlot {
 
         popStyle();
     } //end of draw method
+
+    private void doHardCalculations() {
+        if (hardCalculationsDone.get()) return;
+
+        lock.lock();
+        try {
+            if (hardCalculationsDone.compareAndSet(false, true)) {
+                setPositionSize(hp_x, hp_y, hp_w, hp_h, hp_win_x, hp_win_y);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 };

@@ -131,16 +131,16 @@ class W_AnalogRead extends Widget {
                     analogBoard.setAnalogActive(true);  
                     analogModeButton.getCaptionLabel().setText("Turn Analog Read Off");	
                     output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
-                    w_pulseSensor.toggleAnalogReadButton(true);
-                    w_accelerometer.accelBoardSetActive(false);
-                    w_digitalRead.toggleDigitalReadButton(false);
+                    ((W_PulseSensor) widgetManager.getWidget("W_Accelerometer")).toggleAnalogReadButton(true);
+                    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).accelBoardSetActive(false);
+                    ((W_DigitalRead) widgetManager.getWidget("W_Accelerometer")).toggleDigitalReadButton(false);
                 } else {
                     analogBoard.setAnalogActive(false);
                     analogModeButton.getCaptionLabel().setText("Turn Analog Read On");	
                     output("Starting to read accelerometer");
-                    w_accelerometer.accelBoardSetActive(true);
-                    w_digitalRead.toggleDigitalReadButton(false);
-                    w_pulseSensor.toggleAnalogReadButton(false);
+                    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).accelBoardSetActive(true);
+                    ((W_DigitalRead) widgetManager.getWidget("W_Accelerometer")).toggleDigitalReadButton(false);
+                    ((W_PulseSensor) widgetManager.getWidget("W_Accelerometer")).toggleAnalogReadButton(false);
                 }
             }
         });
@@ -174,11 +174,11 @@ class W_AnalogRead extends Widget {
 };
 
 public void analogReadVerticalScaleDropdown(int n) {
-    w_analogRead.setVerticalScale(n);
+    ((W_AnalogRead) widgetManager.getWidget("W_AnalogRead")).setVerticalScale(n);
 }
 
 public void analogReadHorizontalScaleDropdown(int n) {
-    w_analogRead.setHorizontalScale(n);
+    ((W_AnalogRead) widgetManager.getWidget("W_AnalogRead")).setHorizontalScale(n);
 }
 
 //========================================================================================================================

@@ -48,7 +48,7 @@ class W_CytonImpedance extends Widget {
     private int prevMasterCheckCounter = -1;
     private int numElectrodesToMasterCheck = 0;
     private int prevMasterCheckMillis = 0; //Used for simple timer
-    public boolean isCheckingImpedanceOnAnything = false; //This is more reliable than waiting to see if the Board is checking impedance
+    private boolean isCheckingImpedanceOnAnything = false; //This is more reliable than waiting to see if the Board is checking impedance
 
     private SignalCheckThresholdUI errorThreshold;
     private SignalCheckThresholdUI warningThreshold;
@@ -297,8 +297,9 @@ class W_CytonImpedance extends Widget {
             cytonImpedanceMasterCheck.setOff();
         } else if (signalCheckMode == CytonSignalCheckMode.IMPEDANCE) {
             //Attempt to close Hardware Settings view. Also, throws a popup if there are unsent changes.
-            if (w_timeSeries.getAdsSettingsVisible()) {
-                w_timeSeries.closeADSSettings();
+            W_TimeSeries timeSeriesWidget = widgetManager.getTimeSeriesWidget();
+            if (timeSeriesWidget.getAdsSettingsVisible()) {
+                timeSeriesWidget.closeADSSettings();
             }
             //Clear the cells and show buttons instead
             for (int i = 1; i < numTableRows; i++) {
@@ -512,8 +513,9 @@ class W_CytonImpedance extends Widget {
                                         && checkingOtherChan_isNpin.equals(e.getIsNPin())) {
                                             //println("TOGGLE OFF", e.getGUIChannelNumber(), e.getIsNPin(), "TOGGLE TO ==", false);
                                             e.overrideTestingButtonSwitch(false);
-                                            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(checkingOtherChan-1, cytonBoard.isEXGChannelActive(checkingOtherChan-1));
-                                            w_timeSeries.adsSettingsController.setHasUnappliedSettings(checkingOtherChan-1, false);
+                                            W_TimeSeries timeSeriesWidget = widgetManager.getTimeSeriesWidget();
+                                            timeSeriesWidget.adsSettingsController.updateChanSettingsDropdowns(checkingOtherChan-1, cytonBoard.isEXGChannelActive(checkingOtherChan-1));
+                                            timeSeriesWidget.adsSettingsController.setHasUnappliedSettings(checkingOtherChan-1, false);
                                     }
                                 }
 
@@ -532,8 +534,9 @@ class W_CytonImpedance extends Widget {
                             cytonImpedanceMasterCheck.setOff();
                         } else {
                             //If successful, update the front end components to reflect the new state
-                            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(checkingChanX, cytonBoard.isEXGChannelActive(checkingChanX));
-                            w_timeSeries.adsSettingsController.setHasUnappliedSettings(checkingChanX, false);
+                            W_TimeSeries timeSeriesWidget = widgetManager.getTimeSeriesWidget();
+                            timeSeriesWidget.adsSettingsController.updateChanSettingsDropdowns(checkingChanX, cytonBoard.isEXGChannelActive(checkingChanX));
+                            timeSeriesWidget.adsSettingsController.setHasUnappliedSettings(checkingChanX, false);
                         }
 
                         boolean shouldBeOn = toggle && response;
@@ -685,7 +688,7 @@ class W_CytonImpedance extends Widget {
 
         // Update ADS1299 settings to default but don't commit. Instead, sent "d" command twice.
         cytonBoard.getADS1299Settings().revertAllChannelsToDefaultValues();
-        w_timeSeries.adsSettingsController.updateAllChanSettingsDropdowns();
+        widgetManager.getTimeSeriesWidget().adsSettingsController.updateAllChanSettingsDropdowns();
 
         timeElapsed = millis() - timeElapsed;
         StringBuilder sb = new StringBuilder("Cyton Impedance Check: Hard reset to default board mode took -- ");
@@ -730,18 +733,22 @@ class W_CytonImpedance extends Widget {
             cytonElectrodeStatus[i].updateYellowThreshold(_d);
         }
     }
+
+    public boolean getIsCheckingImpedanceOnAnything() {
+        return isCheckingImpedanceOnAnything;
+    }
 };
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 //Update: It's not worth the trouble to implement a callback listener in the widget for this specifc kind of dropdown. Keep using this pattern for widget Nav dropdowns. - February 2021 RW
 void CytonImpedance_Mode(int n) {
-    w_cytonImpedance.setSignalCheckMode(n);
+    ((W_CytonImpedance) widgetManager.getWidget("W_CytonImpedance")).setSignalCheckMode(n);
 }
 
 void CytonImpedance_LabelMode(int n) {
-    w_cytonImpedance.setShowAnatomicalName(n);
+    ((W_CytonImpedance) widgetManager.getWidget("W_CytonImpedance")).setShowAnatomicalName(n);
 }
 
 void CytonImpedance_MasterCheckInterval(int n) {
-    w_cytonImpedance.setMasterCheckInterval(n);
+    ((W_CytonImpedance) widgetManager.getWidget("W_CytonImpedance")).setMasterCheckInterval(n);
 }

@@ -416,13 +416,13 @@ class W_Focus extends Widget {
 
 //The following global functions are used by the Focus widget dropdowns. This method is the least amount of code.
 public void focusWindowDropdown(int n) {
-    w_focus.setFocusHorizScale(n);
+    ((W_Focus) widgetManager.getWidget("W_Focus")).setFocusHorizScale(n);
 }
 
 public void focusMetricDropdown(int n) {
-    w_focus.setMetric(n);
+    ((W_Focus) widgetManager.getWidget("W_Focus")).setMetric(n);
 }
 
 public void focusThresholdDropdown(int n) {
-    w_focus.setThreshold(n);
+    ((W_Focus) widgetManager.getWidget("W_Focus")).setThreshold(n);
 }

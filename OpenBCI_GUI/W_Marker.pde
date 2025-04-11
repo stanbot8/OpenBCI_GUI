@@ -595,11 +595,13 @@ public enum MarkerVertScale implements IndexingInterface
 
 //The following global functions are used by the Marker widget dropdowns. This method is the least amount of code.
 public void markerWindowDropdown(int n) {
-    w_marker.setMarkerWindow(n);
+    W_Marker markerWidget = (W_Marker) widgetManager.getWidget("W_Marker");
+    markerWidget.setMarkerWindow(n);
 }
 
 public void markerVertScaleDropdown(int n) {
-    w_marker.setMarkerVertScale(n);
+    W_Marker markerWidget = (W_Marker) widgetManager.getWidget("W_Marker");
+    markerWidget.setMarkerVertScale(n);
 }
 
 //Custom UDP receive handler for receiving markers from external sources
@@ -607,10 +609,6 @@ public void receiveMarkerViaUdp( byte[] data, String ip, int port ) {
     double markerValue = convertByteArrayToDouble(data);
     //String message = Double.toString(markerValue);
     //println( "received: \""+message+"\" from "+ip+" on port "+port );
-    w_marker.insertMarkerFromExternal(markerValue);
-}
-
-public double convertByteArrayToDouble(byte[] array) {
-    ByteBuffer buffer = ByteBuffer.wrap(array);
-    return buffer.getDouble();
+    W_Marker markerWidget = (W_Marker) widgetManager.getWidget("W_Marker");
+    markerWidget.insertMarkerFromExternal(markerValue);
 }

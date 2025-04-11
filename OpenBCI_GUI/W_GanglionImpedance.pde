@@ -1,16 +1,3 @@
-
-////////////////////////////////////////////////////
-//
-//    W_template.pde (ie "Widget Template")
-//
-//    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
-//    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
-//
-//    Created by: Conor Russomanno, November 2016
-//
-///////////////////////////////////////////////////,
-
-
 class W_GanglionImpedance extends Widget {
     Button startStopCheck;
     int padding = 24;

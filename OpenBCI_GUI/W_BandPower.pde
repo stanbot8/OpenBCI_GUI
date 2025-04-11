@@ -268,25 +268,25 @@ class W_BandPower extends Widget {
 };
 
 public void bandPowerAutoCleanDropdown(int n) {
-    w_bandPower.setAutoClean(n);
+    ((W_BandPower) widgetManager.getWidget("W_BandPower")).setAutoClean(n);
 }
 
 public void bandPowerAutoCleanThresholdDropdown(int n) {
-    w_bandPower.setAutoCleanThreshold(n);
+    ((W_BandPower) widgetManager.getWidget("W_BandPower")).setAutoCleanThreshold(n);
 }
 
 public void bandPowerAutoCleanTimerDropdown(int n) {
-    w_bandPower.setAutoCleanTimer(n);
+    ((W_BandPower) widgetManager.getWidget("W_BandPower")).setAutoCleanTimer(n);
 }
 
 public void bandPowerSmoothingDropdown(int n) {
     globalFFTSettings.setSmoothingFactor(FFTSmoothingFactor.values()[n]);
     FFTSmoothingFactor smoothingFactor = globalFFTSettings.getSmoothingFactor();
-    w_fft.setSmoothingDropdownFrontend(smoothingFactor);
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setSmoothingDropdownFrontend(smoothingFactor);
 }
 
 public void bandPowerDataFilteringDropdown(int n) {
     globalFFTSettings.setFilteredEnum(FFTFilteredEnum.values()[n]);
     FFTFilteredEnum filteredEnum = globalFFTSettings.getFilteredEnum();
-    w_fft.setFilteringDropdownFrontend(filteredEnum);
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setFilteringDropdownFrontend(filteredEnum);
 }

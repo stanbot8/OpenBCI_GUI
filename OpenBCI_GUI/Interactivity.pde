@@ -225,7 +225,8 @@ void parseKey(char val) {
     }
 
     // Check for software marker keyboard shortcuts
-    if (w_marker.checkForMarkerKeyPress(val)) {
+    W_Marker markerWidget = (W_Marker) widgetManager.getWidget("W_Marker");
+    if (markerWidget.checkForMarkerKeyPress(val)) {
         return;
     }
 
