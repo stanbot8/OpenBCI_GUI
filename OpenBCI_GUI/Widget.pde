@@ -48,6 +48,10 @@ class Widget {
         mapToCurrentContainer();
     }
 
+    public String getWidgetTitle() {
+        return widgetTitle;
+    }
+
     public boolean getIsActive() {
         return isWidgetActive;
     }
@@ -225,7 +229,7 @@ class Widget {
         int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
         widgetSelectorHeight = (dropdownsItemsToShow + 1) * (navH - 4);
         if (widgetManager != null) {
-            int maxDropdownHeight = (widgetManager.widgetOptions.size() + 1) * (navH - 4);
+            int maxDropdownHeight = (widgetManager.getWidgetCount() + 1) * (navH - 4);
             if (widgetSelectorHeight > maxDropdownHeight) widgetSelectorHeight = maxDropdownHeight;
         }
 

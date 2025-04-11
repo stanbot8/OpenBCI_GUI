@@ -13,7 +13,6 @@
 class WidgetManager {
     //This holds all of the widgets. When creating/adding new widgets, we will add them to this ArrayList (below)
     private ArrayList<Widget> widgets;
-    private ArrayList<String> widgetOptions; //List of Widget Titles, used to populate cp5 widgetSelector dropdown of all widgets
     private int currentContainerLayout; //This is the Layout structure for the main body of the GUI
     private ArrayList<Layout> layouts = new ArrayList<Layout>();  //This holds all of the different layouts ...
 
@@ -21,7 +20,6 @@ class WidgetManager {
 
     WidgetManager() {
         widgets = new ArrayList<Widget>();
-        widgetOptions = new ArrayList<String>();
 
         //DO NOT re-order the functions below
         setupLayouts();
@@ -97,14 +95,17 @@ class WidgetManager {
     }
 
     private void setupWidgetSelectorDropdowns() {
-        // Populate the dropdown options with widget titles
+        // Create a temporary list of widget titles for dropdown setup
+        ArrayList<String> widgetTitles = new ArrayList<String>();
+        
+        // Populate the titles list by calling getWidgetTitle() on each widget
         for (Widget widget : widgets) {
-            widgetOptions.add(widget.widgetTitle);
+            widgetTitles.add(widget.getWidgetTitle());
         }
         
-        // Setup the dropdown for each widget
+        // Setup the dropdown for each widget using the temporary list
         for (Widget widget : widgets) {
-            widget.setupWidgetSelectorDropdown(widgetOptions);
+            widget.setupWidgetSelectorDropdown(widgetTitles);
             widget.setupNavDropdowns();
         }
     }
@@ -309,5 +310,9 @@ class WidgetManager {
 
     public W_TimeSeries getTimeSeriesWidget() {
         return (W_TimeSeries) getWidget("W_TimeSeries");
+    }
+
+    public int getWidgetCount() {
+        return widgets.size();
     }
 };
