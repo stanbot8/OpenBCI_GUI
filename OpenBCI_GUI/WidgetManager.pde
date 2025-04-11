@@ -3,42 +3,20 @@
 //========================================================================================
 /*
     Notes:
-    - In this file all you have to do is MAKE YOUR WIDGET GLOBALLY, and then ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER in the setupWidgets() function below
-    - the order in which they are added will effect the order in which they appear in the GUI and in the WidgetSelector dropdown menu of each widget
-    - use the WidgetTemplate.pde file as a starting point for creating new widgets (also check out W_timeSeries.pde, W_fft.pde, and W_HeadPlot.pde)
+    - The order in which they are added will effect the order in which they appear in the GUI and in the WidgetSelector dropdown menu of each widget
+    - Use the WidgetTemplate.pde file as a starting point for creating new widgets (also check out W_TimeSeries.pde, W_Fft.pde, and W_HeadPlot.pde)
 */
-
-// MAKE YOUR WIDGET GLOBAL HERE
-W_timeSeries w_timeSeries;
-W_fft w_fft;
-W_BandPower w_bandPower;
-W_Accelerometer w_accelerometer;
-W_CytonImpedance w_cytonImpedance;
-W_GanglionImpedance w_ganglionImpedance;
-W_HeadPlot w_headPlot;
-W_template w_template;
-W_emg w_emg;
-W_PulseSensor w_pulseSensor;
-W_AnalogRead w_analogRead;
-W_DigitalRead w_digitalRead;
-W_playback w_playback;
-W_Spectrogram w_spectrogram;
-W_Focus w_focus;
-W_EMGJoystick w_emgJoystick;
-W_Marker w_marker;
-W_PacketLoss w_packetLoss;
 
 //========================================================================================
 //========================================================================================
 //========================================================================================
 
 class WidgetManager{
-
-    //this holds all of the widgets ... when creating/adding new widgets, we will add them to this ArrayList (below)
-    ArrayList<Widget> widgets;
-    ArrayList<String> widgetOptions; //List of Widget Titles, used to populate cp5 widgetSelector dropdown of all widgets
-    int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
-    ArrayList<Layout> layouts = new ArrayList<Layout>();  //this holds all of the different layouts ...
+    //This holds all of the widgets. When creating/adding new widgets, we will add them to this ArrayList (below)
+    private ArrayList<Widget> widgets;
+    private ArrayList<String> widgetOptions; //List of Widget Titles, used to populate cp5 widgetSelector dropdown of all widgets
+    private int currentContainerLayout; //This is the Layout structure for the main body of the GUI
+    private ArrayList<Layout> layouts = new ArrayList<Layout>();  //This holds all of the different layouts ...
 
     private boolean visible = true;
 
@@ -64,88 +42,58 @@ class WidgetManager{
 
     void setupWidgets() {
 
-        w_timeSeries = new W_timeSeries("Time Series");
-        widgets.add(w_timeSeries);
+        widgets.add(new W_TimeSeries("Time Series"));
 
-        w_fft = new W_fft("FFT Plot");
-        widgets.add(w_fft);
+        widgets.add(new W_Fft("FFT Plot"));
 
-        boolean showAccelerometerWidget = currentBoard instanceof AccelerometerCapableBoard;
-        if (showAccelerometerWidget) {
-            w_accelerometer = new W_Accelerometer("Accelerometer");
-            widgets.add(w_accelerometer);
+        if (currentBoard instanceof AccelerometerCapableBoard) {
+            widgets.add(new W_Accelerometer("Accelerometer"));
         }
 
         if (currentBoard instanceof BoardCyton) {
-            w_cytonImpedance = new W_CytonImpedance("Cyton Signal");
-            widgets.add(w_cytonImpedance);
+            widgets.add(new W_CytonImpedance("Cyton Signal"));
         }
 
-        if (currentBoard instanceof DataSourcePlayback && w_playback == null) {
-            w_playback = new W_playback("Playback History");
-            widgets.add(w_playback);
+        if (currentBoard instanceof DataSourcePlayback) {
+            widgets.add(new W_playback("Playback History"));
         }
 
-        //only instantiate this widget if you are using a Ganglion board for live streaming
         if(globalChannelCount == 4 && currentBoard instanceof BoardGanglion){
-            //If using Ganglion, this is Widget_3
-            w_ganglionImpedance = new W_GanglionImpedance("Ganglion Signal");
-            widgets.add(w_ganglionImpedance);
+            widgets.add(new W_GanglionImpedance("Ganglion Signal"));
         }
 
-        w_focus = new W_Focus("Focus");
-        widgets.add(w_focus);
+        widgets.add(new W_Focus("Focus"));
 
-        w_bandPower = new W_BandPower("Band Power");
-        widgets.add(w_bandPower);
+        widgets.add(new W_BandPower("Band Power"));
 
-        w_headPlot = new W_HeadPlot("Head Plot");
-        widgets.add(w_headPlot);
+        widgets.add(new W_HeadPlot("Head Plot"));
 
-        w_emg = new W_emg("EMG");
-        widgets.add(w_emg);
+        widgets.add(new W_Emg("EMG"));
     
-        w_emgJoystick = new W_EMGJoystick("EMG Joystick");
-        widgets.add(w_emgJoystick);
+        widgets.add(new W_EmgJoystick("EMG Joystick"));
 
-        w_spectrogram = new W_Spectrogram("Spectrogram");
-        widgets.add(w_spectrogram);
+        widgets.add(new W_Spectrogram("Spectrogram"));
 
         if (currentBoard instanceof AnalogCapableBoard){
-            w_pulseSensor = new W_PulseSensor("Pulse Sensor");
-            widgets.add(w_pulseSensor);
+            widgets.add(new W_PulseSensor("Pulse Sensor"));
         }
 
         if (currentBoard instanceof DigitalCapableBoard) {
-            w_digitalRead = new W_DigitalRead("Digital Read");
-            widgets.add(w_digitalRead);
+            widgets.add(new W_DigitalRead("Digital Read"));
         }
         
         if (currentBoard instanceof AnalogCapableBoard) {
-            w_analogRead = new W_AnalogRead("Analog Read");
-            widgets.add(w_analogRead);
+            widgets.add(new W_AnalogRead("Analog Read"));
         }
 
         if (currentBoard instanceof Board) {
-            w_packetLoss = new W_PacketLoss("Packet Loss");
-            widgets.add(w_packetLoss);
+            widgets.add(new W_PacketLoss("Packet Loss"));
         }
 
-        w_marker = new W_Marker("Marker");
-        widgets.add(w_marker);
+        widgets.add(new W_Marker("Marker"));
         
         //DEVELOPERS: Here is an example widget with the essentials/structure in place
-        w_template = new W_template("Widget Template");
-        widgets.add(w_template);
-    }
-
-
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean _visible) {
-        visible = _visible;
+        widgets.add(new W_Template("Widget Template"));
     }
 
     void setupWidgetSelectorDropdowns(){
@@ -162,29 +110,25 @@ class WidgetManager{
         }
     }
 
-    void update(){
-        if(visible){
-            for(int i = 0; i < widgets.size(); i++){
-                if(widgets.get(i).getIsActive()){
-                    widgets.get(i).update();
-                    //if the widgets are not mapped to containers correctly, remap them..
-                    // if(widgets.get(i).x != container[widgets.get(i).currentContainer].x || widgets.get(i).y != container[widgets.get(i).currentContainer].y || widgets.get(i).w != container[widgets.get(i).currentContainer].w || widgets.get(i).h != container[widgets.get(i).currentContainer].h){
-                    if(widgets.get(i).x0 != (int)container[widgets.get(i).currentContainer].x || widgets.get(i).y0 != (int)container[widgets.get(i).currentContainer].y || widgets.get(i).w0 != (int)container[widgets.get(i).currentContainer].w || widgets.get(i).h0 != (int)container[widgets.get(i).currentContainer].h){
-                        screenResized();
-                        println("WidgetManager.pde: Remapping widgets to container layout...");
-                    }
+    void update() {
+        for(int i = 0; i < widgets.size(); i++){
+            if(widgets.get(i).getIsActive()){
+                widgets.get(i).update();
+                //if the widgets are not mapped to containers correctly, remap them..
+                // if(widgets.get(i).x != container[widgets.get(i).currentContainer].x || widgets.get(i).y != container[widgets.get(i).currentContainer].y || widgets.get(i).w != container[widgets.get(i).currentContainer].w || widgets.get(i).h != container[widgets.get(i).currentContainer].h){
+                if(widgets.get(i).x0 != (int)container[widgets.get(i).currentContainer].x || widgets.get(i).y0 != (int)container[widgets.get(i).currentContainer].y || widgets.get(i).w0 != (int)container[widgets.get(i).currentContainer].w || widgets.get(i).h0 != (int)container[widgets.get(i).currentContainer].h){
+                    screenResized();
+                    println("WidgetManager.pde: Remapping widgets to container layout...");
                 }
             }
         }
     }
 
     void draw(){
-        if(visible){
-            for(int i = 0; i < widgets.size(); i++){
-                if(widgets.get(i).getIsActive()){
-                    widgets.get(i).draw();
-                    widgets.get(i).drawDropdowns();
-                }
+        for(int i = 0; i < widgets.size(); i++){
+            if(widgets.get(i).getIsActive()){
+                widgets.get(i).draw();
+                widgets.get(i).drawDropdowns();
             }
         }
     }
@@ -326,25 +270,6 @@ class WidgetManager{
 
     public void setAllWidgetsNull() {
         widgets.clear();
-        w_timeSeries = null;
-        w_fft = null;
-        w_bandPower = null;
-        w_accelerometer = null;
-        w_cytonImpedance = null;
-        w_ganglionImpedance = null;
-        w_headPlot = null;
-        w_template = null;
-        w_emg = null;
-        w_pulseSensor = null;
-        w_analogRead = null;
-        w_digitalRead = null;
-        w_playback = null;
-        w_spectrogram = null;
-        w_packetLoss = null;
-        w_focus = null;
-        w_emgJoystick = null;
-        w_marker = null;
-
         println("Widget Manager: All widgets set to null.");
     }
 
@@ -358,30 +283,27 @@ class WidgetManager{
             }
         }
     }
-};
 
-//the Layout class is an orgnanizational tool ... a layout consists of a combination of containers ... refer to Container.pde
-class Layout{
-
-    Container[] myContainers;
-    int[] containerInts;
-
-    Layout(int[] _myContainers){ //when creating a new layout, you pass in the integer #s of the containers you want as part of the layout ... so if I pass in the array {5}, my layout is 1 container that takes up the whole GUI body
-        //constructor stuff
-        myContainers = new Container[_myContainers.length]; //make the myContainers array equal to the size of the incoming array of ints
-        containerInts = new int[_myContainers.length];
-        for(int i = 0; i < _myContainers.length; i++){
-            myContainers[i] = container[_myContainers[i]];
-            containerInts[i] = _myContainers[i];
+    public Widget getWidget(String className) {
+        for (int i = 0; i < widgets.size(); i++) {
+            Widget widget = widgets.get(i);
+            // Get the class name of the widget
+            String widgetClassName = widget.getClass().getSimpleName();
+            // Check if it matches the requested class name
+            if (widgetClassName.equals(className)) {
+                return widget;
+            }
         }
+        // Return null if no widget of the specified class is found
+        return null;
     }
 
-    Container getContainer(int _numContainer){
-        if(_numContainer < myContainers.length){
-            return myContainers[_numContainer];
-        } else{
-            println("Widget Manager: Tried to return a non-existant container...");
-            return myContainers[myContainers.length-1];
-        }
+    public boolean getWidgetExists(String className) {
+        Widget widget = getWidget(className);
+        return widget != null;
+    }
+
+    public W_TimeSeries getTimeSeriesWidget() {
+        return (W_TimeSeries) getWidget("W_TimeSeries");
     }
 };

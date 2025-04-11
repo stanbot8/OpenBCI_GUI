@@ -321,12 +321,12 @@ class DataProcessing {
         //                       -RW #1094                         //
         /////////////////////////////////////////////////////////////
         emgSettings.values.process(dataProcessingFilteredBuffer);
-        w_focus.updateFocusWidgetData();
-        w_bandPower.updateBandPowerWidgetData();
-        w_emgJoystick.updateEmgJoystickWidgetData();
+        ((W_Focus) widgetManager.getWidget("W_Focus")).updateFocusWidgetData();
+        ((W_BandPower) widgetManager.getWidget("W_BandPower")).updateBandPowerWidgetData();
+        ((W_EmgJoystick) widgetManager.getWidget("W_EmgJoystick")).updateEmgJoystickWidgetData();
         if (currentBoard instanceof BoardCyton) {
-            if (w_pulseSensor != null) {
-                w_pulseSensor.updatePulseSensorWidgetData();
+            if (widgetManager.getWidgetExists("W_PulseSensor")) {
+                ((W_PulseSensor) widgetManager.getWidget("W_PulseSensor")).updatePulseSensorWidgetData();
             }
         }
 
@@ -381,7 +381,7 @@ class DataProcessing {
 
     private void clearCalculatedMetricWidgets() {
         println("Clearing calculated metric widgets");
-        w_spectrogram.clear();
-        w_focus.clear();
+        ((W_Spectrogram) widgetManager.getWidget("W_Spectrogram")).clear();
+        ((W_Focus) widgetManager.getWidget("W_Focus")).clear();
     }
 }

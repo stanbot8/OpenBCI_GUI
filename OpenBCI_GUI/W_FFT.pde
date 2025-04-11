@@ -12,7 +12,7 @@
 //
 ///////////////////////////////////////////////////
 
-class W_fft extends Widget {
+class W_Fft extends Widget {
 
     public ExGChannelSelect fftChanSelect;
     private boolean prevChanSelectIsVisible = false;
@@ -28,7 +28,7 @@ class W_fft extends Widget {
 
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
-    W_fft(String _widgetName) {
+    W_Fft(String _widgetName) {
         super(_widgetName);
 
         fftChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
@@ -212,25 +212,25 @@ class W_fft extends Widget {
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 public void fftMaxFrequencyDropdown(int n) {
-    w_fft.setMaxFrequency(n);
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setMaxFrequency(n);
 }
 
 public void fftVerticalScaleDropdown(int n) {
-    w_fft.setVerticalScale(n);
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setVerticalScale(n);
 }
 
 public void fftLogLinDropdown(int n) {
-    w_fft.setLogLin(n);
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setLogLin(n);
 }
 
 public void fftSmoothingDropdown(int n) {
     globalFFTSettings.setSmoothingFactor(FFTSmoothingFactor.values()[n]);
     FFTSmoothingFactor smoothingFactor = globalFFTSettings.getSmoothingFactor();
-    w_bandPower.setSmoothingDropdownFrontend(smoothingFactor);
+    ((W_BandPower) widgetManager.getWidget("W_BandPower")).setSmoothingDropdownFrontend(smoothingFactor);
 }
 
 public void fftFilteringDropdown(int n) {
     globalFFTSettings.setFilteredEnum(FFTFilteredEnum.values()[n]);
     FFTFilteredEnum filteredEnum = globalFFTSettings.getFilteredEnum();
-    w_bandPower.setFilteringDropdownFrontend(filteredEnum);
+    ((W_BandPower) widgetManager.getWidget("W_BandPower")).setFilteringDropdownFrontend(filteredEnum);
 }

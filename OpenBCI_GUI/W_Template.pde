@@ -1,7 +1,7 @@
 
 ////////////////////////////////////////////////////
 //
-//    W_template.pde (ie "Widget Template")
+//    W_Template.pde (ie "Widget Template")
 //
 //    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
 //    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
@@ -10,14 +10,14 @@
 //
 ///////////////////////////////////////////////////,
 
-class W_template extends Widget {
+class W_Template extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
     ControlP5 localCP5;
     Button widgetTemplateButton;
 
-    W_template(String _widgetName) {
+    W_Template(String _widgetName) {
         super(_widgetName);
         
         //This is the protocol for setting up dropdowns.

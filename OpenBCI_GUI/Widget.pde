@@ -14,6 +14,7 @@ interface IndexingInterface {
 }
 
 class Widget {
+    protected String widgetName = "Widget"; //default name of the widget
 
     protected int x0, y0, w0, h0; //true x,y,w,h of container
     protected int x, y, w, h; //adjusted x,y,w,h of white space `blank rectangle` under the nav...

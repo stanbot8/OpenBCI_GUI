@@ -13,7 +13,7 @@
 //  TODO: Add dynamic threshold functionality
 ////////////////////////////////////////////////////////////////////////////////
 
-class W_emg extends Widget {
+class W_Emg extends Widget {
     private ControlP5 emgCp5;
     private Button emgSettingsButton;
     private final int EMG_SETTINGS_BUTTON_WIDTH = 125;
@@ -21,7 +21,7 @@ class W_emg extends Widget {
 
     public ExGChannelSelect emgChannelSelect;
 
-    W_emg (String _widgetName) {
+    W_Emg (String _widgetName) {
         super(_widgetName);
 
         cp5ElementsToCheck = new ArrayList<controlP5.Controller>();

@@ -563,10 +563,10 @@ class TopNav {
     public void dataStreamTogglePressed() {
 
         //Exit method if doing Cyton impedance check. Avoids a BrainFlow error.
-        if (currentBoard instanceof BoardCyton && w_cytonImpedance != null) {
+        if (currentBoard instanceof BoardCyton && widgetManager.getWidgetExists("W_CytonImpedance")) {
             Integer checkingImpOnChan = ((ImpedanceSettingsBoard)currentBoard).isCheckingImpedanceOnChannel();
-            //println("isCheckingImpedanceOnAnythingEZCHECK==",w_cytonImpedance.isCheckingImpedanceOnAnything);
-            if (checkingImpOnChan != null || w_cytonImpedance.cytonMasterImpedanceCheckIsActive() || w_cytonImpedance.isCheckingImpedanceOnAnything) {
+            W_CytonImpedance cytonImpedanceWidget = (W_CytonImpedance) widgetManager.getWidget("W_CytonImpedance");
+            if (checkingImpOnChan != null || cytonImpedanceWidget.cytonMasterImpedanceCheckIsActive() || cytonImpedanceWidget.getIsCheckingImpedanceOnAnything()) {
                 PopupMessage msg = new PopupMessage("Busy Checking Impedance", "Please turn off impedance check to begin recording the data stream.");
                 println("OpenBCI_GUI::Cyton: Please turn off impedance check to begin recording the data stream.");
                 return;

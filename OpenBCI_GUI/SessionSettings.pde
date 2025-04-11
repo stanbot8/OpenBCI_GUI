@@ -262,6 +262,8 @@ class SessionSettings {
 
         //Make a new JSON Object for Time Series Settings
         JSONObject saveTSSettings = new JSONObject();
+        //FIX ME
+        /*
         saveTSSettings.setInt("Time Series Vert Scale", w_timeSeries.getVerticalScale().getIndex());
         saveTSSettings.setInt("Time Series Horiz Scale", w_timeSeries.getHorizontalScale().getIndex());
         saveTSSettings.setInt("Time Series Label Mode", w_timeSeries.getLabelMode().getIndex());
@@ -273,6 +275,7 @@ class SessionSettings {
             saveActiveChanTS.setInt(i, activeChannel);
         }
         saveTSSettings.setJSONArray("activeChannels", saveActiveChanTS);
+        */
         saveSettingsJSONData.setJSONObject(kJSONKeyTimeSeries, saveTSSettings);
 
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
@@ -332,8 +335,8 @@ class SessionSettings {
         saveSettingsJSONData.setJSONObject(kJSONKeyNetworking, saveNetworkingSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Headplot settings
-        if (w_headPlot != null) {
-            JSONObject saveHeadplotSettings = new JSONObject();
+        //if (w_headPlot != null) {
+        JSONObject saveHeadplotSettings = new JSONObject();
 
             //FIX ME
             /*
@@ -347,8 +350,8 @@ class SessionSettings {
             saveHeadplotSettings.setInt("HP_smoothing", hpSmoothingSave);
             //Set the Headplot JSON Object
             */
-            saveSettingsJSONData.setJSONObject(kJSONKeyHeadplot, saveHeadplotSettings);
-        }
+        saveSettingsJSONData.setJSONObject(kJSONKeyHeadplot, saveHeadplotSettings);
+        //}
 
         ///////////////////////////////////////////////Setup new JSON object to save Band Power settings
         JSONObject saveBPSettings = new JSONObject();
@@ -368,11 +371,13 @@ class SessionSettings {
         saveBPSettings.setInt("bpAutoCleanTimer", w_bandPower.getAutoCleanTimer().getIndex());
         */
         saveSettingsJSONData.setJSONObject(kJSONKeyBandPower, saveBPSettings);
-
+        
         ///////////////////////////////////////////////Setup new JSON object to save Spectrogram settings
         JSONObject saveSpectrogramSettings = new JSONObject();
         //Save data from the Active channel checkBoxes - Top
-        JSONArray saveActiveChanSpectTop = new JSONArray();
+        //JSONArray saveActiveChanSpectTop = new JSONArray();
+        /*
+        //FIX ME
         int numActiveSpectChanTop = w_spectrogram.spectChanSelectTop.getActiveChannels().size();
         for (int i = 0; i < numActiveSpectChanTop; i++) {
             int activeChannel = w_spectrogram.spectChanSelectTop.getActiveChannels().get(i);
@@ -386,7 +391,8 @@ class SessionSettings {
             int activeChannel = w_spectrogram.spectChanSelectBot.getActiveChannels().get(i);
             saveActiveChanSpectBot.setInt(i, activeChannel);
         }
-        saveSpectrogramSettings.setJSONArray("activeChannelsBot", saveActiveChanSpectBot);
+        */
+        //saveSpectrogramSettings.setJSONArray("activeChannelsBot", saveActiveChanSpectBot);
         //Save Spectrogram_Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the spectrogram widget
         //FIX ME
         /*
@@ -401,14 +407,19 @@ class SessionSettings {
 
         //Save data from the Active channel checkBoxes
         JSONArray saveActiveChanEMG = new JSONArray();
+        //FIX ME
+        /*
         int numActiveEMGChan = w_emg.emgChannelSelect.getActiveChannels().size();
         for (int i = 0; i < numActiveEMGChan; i++) {
             int activeChannel = w_emg.emgChannelSelect.getActiveChannels().get(i);
             saveActiveChanEMG.setInt(i, activeChannel);
         }
+        */
         saveEMGSettings.setJSONArray("activeChannels", saveActiveChanEMG);
         saveSettingsJSONData.setJSONObject(kJSONKeyEmg, saveEMGSettings);
 
+        /*
+        //FIX ME
         ///////////////////////////////////////////////Setup new JSON object to save EMG Joystick Settings
         JSONObject saveEmgJoystickSettings = new JSONObject();
         saveEmgJoystickSettings.setInt("smoothing", w_emgJoystick.joystickSmoothing.getIndex());
@@ -431,6 +442,7 @@ class SessionSettings {
         saveFocusSettings.setInt("focusThreshold", w_focus.getFocusThreshold().getIndex());
         saveFocusSettings.setInt("focusWindow", w_focus.getFocusWindow().getIndex());
         saveSettingsJSONData.setJSONObject(kJSONKeyFocus, saveFocusSettings);
+        */
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
         JSONObject saveWidgetSettings = new JSONObject();
@@ -535,7 +547,7 @@ class SessionSettings {
         loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
 
         //get the  Headplot settings
-        if (w_headPlot != null) {
+        //if (w_headPlot != null) {
             //FIX ME
             /*
             JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject(kJSONKeyHeadplot);
@@ -544,7 +556,7 @@ class SessionSettings {
             hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
             hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
             */
-        }
+        //}
 
         //Get Band Power widget settings
         //FIX ME
@@ -663,7 +675,7 @@ class SessionSettings {
         //Apply Time Series Settings Last!!!
         loadApplyTimeSeriesSettings();
 
-        if (w_headPlot != null) {
+        //if (w_headPlot != null) {
             //FIX ME
             /*
             //Force headplot to redraw if it is active
@@ -678,7 +690,7 @@ class SessionSettings {
                 println("Headplot is active: Redrawing");
             }
             */
-        }
+        //}
     } //end of loadGUISettings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -785,6 +797,9 @@ class SessionSettings {
         */
         //FIX ME
         //w_spectrogram.cp5_widget.getController("SpectrogramLogLin").getCaptionLabel().setText(fftLogLinArray[spectLogLinLoad]);
+        
+        /*
+        //FIX ME
         try {
             //apply channel checkbox settings
             w_spectrogram.spectChanSelectTop.deactivateAllButtons();
@@ -803,7 +818,7 @@ class SessionSettings {
             println("Settings: Exception caught applying spectrogram settings channel bar " + e);
         }
         println("Settings: Spectrogram Active Channels: TOP - " + loadSpectActiveChanTop + " || BOT - " + loadSpectActiveChanBot);
-
+        */
         ///////////Apply Networking Settings
         String nwSettingsString = loadNetworkingSettings.toString();
         dataProcessing.networkingSettings.loadJson(nwSettingsString);
@@ -811,16 +826,21 @@ class SessionSettings {
         ////////////////////////////Apply EMG widget settings
         try {
             //apply channel checkbox settings
+            //FIX ME
+            /*
             w_emg.emgChannelSelect.deactivateAllButtons();;
             for (int i = 0; i < loadEmgActiveChannels.size(); i++) {
                 w_emg.emgChannelSelect.setToggleState(loadEmgActiveChannels.get(i), true);
             }
+            */
         } catch (Exception e) {
             println("Settings: Exception caught applying EMG widget settings " + e);
         }
         verbosePrint("Settings: EMG Widget Active Channels: " + loadEmgActiveChannels);
 
         ////////////////////////////Apply EMG Joystick settings
+        //FIX ME
+        /*
         w_emgJoystick.setJoystickSmoothing(loadEmgJoystickSmoothing);
         w_emgJoystick.cp5_widget.getController("emgJoystickSmoothingDropdown").getCaptionLabel()
                 .setText(EmgJoystickSmoothing.getEnumStringsAsList().get(loadEmgJoystickSmoothing));
@@ -831,7 +851,10 @@ class SessionSettings {
         } catch (Exception e) {
             println("Settings: Exception caught applying EMG Joystick settings " + e);
         }
-
+        */
+        
+        //FIX ME
+        /*
         ////////////////////////////Apply Marker Widget settings
         w_marker.setMarkerWindow(loadMarkerWindow);
         w_marker.cp5_widget.getController("markerWindowDropdown").getCaptionLabel().setText(w_marker.getMarkerWindow().getString());
@@ -845,7 +868,7 @@ class SessionSettings {
         w_focus.cp5_widget.getController("focusThresholdDropdown").getCaptionLabel().setText(w_focus.getFocusThreshold().getString());
         w_focus.setFocusHorizScale(loadFocusWindow);
         w_focus.cp5_widget.getController("focusWindowDropdown").getCaptionLabel().setText(w_focus.getFocusWindow().getString());
-
+        */
         ////////////////////////////////////////////////////////////
         //    Apply more loaded widget settings above this line   //
 
@@ -855,6 +878,8 @@ class SessionSettings {
 
         JSONObject loadTimeSeriesSettings = loadSettingsJSONData.getJSONObject(kJSONKeyTimeSeries);
         ////////Apply Time Series widget settings
+        //FIX ME
+        /*
         w_timeSeries.setVerticalScale(loadTimeSeriesSettings.getInt("Time Series Vert Scale"));
         w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(w_timeSeries.getVerticalScale().getString()); //changes front-end
         
@@ -874,7 +899,7 @@ class SessionSettings {
             println("Settings: Exception caught applying time series settings " + e);
         }
         verbosePrint("Settings: Time Series Active Channels: " + loadBPActiveChans);
-            
+        */
     } //end loadApplyTimeSeriesSettings
 
     /**

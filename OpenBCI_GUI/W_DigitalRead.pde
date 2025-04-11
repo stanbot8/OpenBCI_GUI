@@ -146,16 +146,16 @@ class W_DigitalRead extends Widget {
                     digitalBoard.setDigitalActive(true);
                     digitalModeButton.getCaptionLabel().setText("Turn Digital Read Off");	
                     output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
-                    w_accelerometer.accelBoardSetActive(false);
-                    w_analogRead.toggleAnalogReadButton(false);
-                    w_pulseSensor.toggleAnalogReadButton(false);
+                    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).accelBoardSetActive(false);
+                    ((W_AnalogRead) widgetManager.getWidget("W_AnalogRead")).toggleAnalogReadButton(false);
+                    ((W_PulseSensor) widgetManager.getWidget("W_Accelerometer")).toggleAnalogReadButton(false);
                 } else {
                     digitalBoard.setDigitalActive(false);
                     digitalModeButton.getCaptionLabel().setText("Turn Digital Read On");
                     output("Starting to read accelerometer");
-                    w_accelerometer.accelBoardSetActive(true);
-                    w_analogRead.toggleAnalogReadButton(false);
-                    w_pulseSensor.toggleAnalogReadButton(false);
+                    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).accelBoardSetActive(true);
+                    ((W_AnalogRead) widgetManager.getWidget("W_AnalogRead")).toggleAnalogReadButton(false);
+                    ((W_PulseSensor) widgetManager.getWidget("W_Accelerometer")).toggleAnalogReadButton(false);
                 }
             }
         });

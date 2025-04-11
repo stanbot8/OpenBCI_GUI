@@ -44,8 +44,8 @@ class W_Accelerometer extends Widget {
 
     private AccelerometerCapableBoard accelBoard;
 
-    W_Accelerometer(String _widgetName) {
-        super(_widgetName);
+    W_Accelerometer(String widgetName) {
+        super(widgetName);
         
         accelBoard = (AccelerometerCapableBoard)currentBoard;
 
@@ -183,11 +183,11 @@ class W_Accelerometer extends Widget {
                     output("Starting to read accelerometer");
                     accelModeButton.getCaptionLabel().setText("Turn Accel. Off");
                     if (currentBoard instanceof DigitalCapableBoard) {
-                        w_digitalRead.toggleDigitalReadButton(false);
+                        ((W_DigitalRead) widgetManager.getWidget("W_DigitalRead")).toggleDigitalReadButton(false);
                     }
                     if (currentBoard instanceof AnalogCapableBoard) {
-                        w_pulseSensor.toggleAnalogReadButton(false);
-                        w_analogRead.toggleAnalogReadButton(false);
+                        ((W_PulseSensor) widgetManager.getWidget("W_PulseSensor")).toggleAnalogReadButton(false);
+                        ((W_AnalogRead) widgetManager.getWidget("W_AnalogRead")).toggleAnalogReadButton(false);
                     }
                     ///Hide button when set On for Cyton board only. This is a special case for Cyton board Aux mode behavior. See BoardCyton.pde for more info.
                     if ((currentBoard instanceof BoardCyton)) {
@@ -276,11 +276,11 @@ class W_Accelerometer extends Widget {
 };
 
 public void accelerometerVerticalScaleDropdown(int n) {
-    w_accelerometer.setVerticalScale(n);
+    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).setVerticalScale(n);
 }
 
 public void accelerometerHorizontalScaleDropdown(int n) {
-    w_accelerometer.setHorizontalScale(n);
+    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).setHorizontalScale(n);
 }
 
 //========================================================================================================================

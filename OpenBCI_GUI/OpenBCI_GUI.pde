@@ -861,8 +861,9 @@ void startRunning() {
         output("Data stream started.");
         // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
         // close hardware settings if user starts streaming
-        if (w_timeSeries.getAdsSettingsVisible()) {
-            w_timeSeries.closeADSSettings();
+        W_TimeSeries timeSeriesWidget = widgetManager.getTimeSeriesWidget();
+        if (timeSeriesWidget.getAdsSettingsVisible()) {
+            timeSeriesWidget.closeADSSettings();
         }
         try {
             streamTimeElapsed.reset();
@@ -918,8 +919,8 @@ void haltSystem() {
         }
     }
 
-    if (w_focus != null) {
-        w_focus.endSession();
+    if (widgetManager.getWidgetExists("W_Focus")) {
+        ((W_Focus) widgetManager.getWidget("W_Focus")).endSession();
     }
 
     stopRunning();

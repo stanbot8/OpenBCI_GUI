@@ -11,7 +11,7 @@
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-class W_timeSeries extends Widget {
+class W_TimeSeries extends Widget {
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
     private int numChannelBars;
@@ -51,7 +51,7 @@ class W_timeSeries extends Widget {
 
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
-    W_timeSeries(String _widgetName) {
+    W_TimeSeries(String _widgetName) {
         super(_widgetName);
 
         tscp5 = new ControlP5(ourApplet);
@@ -361,15 +361,15 @@ class W_timeSeries extends Widget {
 
 //These functions are activated when an item from the corresponding dropdown is selected
 void timeSeriesVerticalScaleDropdown(int n) {
-    w_timeSeries.setVerticalScale(n);
+    widgetManager.getTimeSeriesWidget().setVerticalScale(n);
 }
 
 void timeSeriesHorizontalScaleDropdown(int n) {
-    w_timeSeries.setHorizontalScale(n);
+    widgetManager.getTimeSeriesWidget().setHorizontalScale(n);
 }
 
 void LabelMode_TS(int n) {
-    w_timeSeries.setLabelMode(n);
+    widgetManager.getTimeSeriesWidget().setLabelMode(n);
 }
 
 //========================================================================================================================
@@ -609,7 +609,7 @@ class ChannelBar {
             pushStyle();
             stroke(OPENBCI_DARKBLUE);
             strokeWeight(1);
-            int separator_y = y + h + int(w_timeSeries.INTER_CHANNEL_BAR_SPACE/2);
+            int separator_y = y + h + int(widgetManager.getTimeSeriesWidget().INTER_CHANNEL_BAR_SPACE / 2);
             line(x, separator_y, x + w, separator_y);
             popStyle();
         }
@@ -717,8 +717,8 @@ class ChannelBar {
     }
 
     private boolean isBottomChannel() {
-        int numActiveChannels = w_timeSeries.tsChanSelect.getActiveChannels().size();
-        boolean isLastChannel = channelIndex ==  w_timeSeries.tsChanSelect.getActiveChannels().get(numActiveChannels - 1);
+        int numActiveChannels = widgetManager.getTimeSeriesWidget().tsChanSelect.getActiveChannels().size();
+        boolean isLastChannel = channelIndex ==  widgetManager.getTimeSeriesWidget().tsChanSelect.getActiveChannels().get(numActiveChannels - 1);
         return isLastChannel;
     }
 
@@ -737,9 +737,10 @@ class ChannelBar {
                 println("[" + channelString + "] onOff released - " + (newState ? "On" : "Off"));
                 currentBoard.setEXGChannelActive(channelIndex, newState);
                 if (currentBoard instanceof ADS1299SettingsBoard) {
-                    w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex));
+                    W_TimeSeries timeSeriesWidget = widgetManager.getTimeSeriesWidget();
+                    timeSeriesWidget.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex));
                     boolean hasUnappliedChanges = currentBoard.isEXGChannelActive(channelIndex) != newState;
-                    w_timeSeries.adsSettingsController.setHasUnappliedSettings(channelIndex, hasUnappliedChanges);
+                    timeSeriesWidget.adsSettingsController.setHasUnappliedSettings(channelIndex, hasUnappliedChanges);
                 }
             }
         });
