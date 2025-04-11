@@ -37,8 +37,9 @@ class W_PacketLoss extends Widget {
 
     private CalculationWindowSize tableWindowSize = CalculationWindowSize.SECONDS10;
 
-    W_PacketLoss(String _widgetName) {
-        super(_widgetName);
+    W_PacketLoss() {
+        super();
+        widgetTitle = "Packet Loss";
 
         dataGrid = new Grid(5/*numRows*/, 4/*numCols*/, CELL_HEIGHT);
         packetLossTracker = ((Board)currentBoard).getPacketLossTracker();

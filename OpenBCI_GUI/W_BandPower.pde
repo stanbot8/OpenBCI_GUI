@@ -15,7 +15,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class W_BandPower extends Widget {
-
     // indexes
     private final int DELTA = 0; // 1-4 Hz
     private final int THETA = 1; // 4-8 Hz
@@ -40,8 +39,9 @@ class W_BandPower extends Widget {
     int[] autoCleanTimers;
     boolean[] previousThresholdCrossed;
 
-    W_BandPower(String _widgetName) {
-        super(_widgetName);
+    W_BandPower() {
+        super();
+        widgetTitle = "Band Power";
 
         autoCleanTimers = new int[currentBoard.getNumEXGChannels()];
         previousThresholdCrossed = new boolean[currentBoard.getNumEXGChannels()];

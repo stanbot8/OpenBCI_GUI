@@ -1,9 +1,11 @@
 class W_GanglionImpedance extends Widget {
+
     Button startStopCheck;
     int padding = 24;
 
-    W_GanglionImpedance(String _widgetName) {
-        super(_widgetName);
+    W_GanglionImpedance() {
+        super();
+        widgetTitle = "Ganglion Signal";
 
         createStartStopCheck("startStopCheck", "Start Impedance Check", x + padding, y + padding, 200, NAV_HEIGHT, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
     }

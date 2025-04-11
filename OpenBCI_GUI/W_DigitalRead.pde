@@ -22,8 +22,9 @@ class W_DigitalRead extends Widget {
 
     private DigitalCapableBoard digitalBoard;
 
-    W_DigitalRead(String _widgetName) {
-        super(_widgetName);
+    W_DigitalRead() {
+        super();
+        widgetTitle = "Digital Read";
 
         digitalBoard = (DigitalCapableBoard)currentBoard;
 

@@ -9,7 +9,6 @@
 //////////////////////////////////////////////////////
 
 class W_Marker extends Widget {
-
     private ControlP5 localCP5;
     private List<controlP5.Controller> cp5ElementsToCheckForOverlap;
 
@@ -45,8 +44,9 @@ class W_Marker extends Widget {
     private MarkerVertScale markerVertScale = MarkerVertScale.EIGHT;
     private MarkerWindow markerWindow = MarkerWindow.FIVE;
 
-    W_Marker(String _widgetName) {
-        super(_widgetName);
+    W_Marker() {
+        super();
+        widgetTitle = "Marker";
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
         localCP5 = new ControlP5(ourApplet);

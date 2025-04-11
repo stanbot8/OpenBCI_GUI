@@ -12,8 +12,6 @@
 import org.apache.commons.lang3.math.NumberUtils;
 
 class W_TimeSeries extends Widget {
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
-    //put your custom variables here...
     private int numChannelBars;
     private float xF, yF, wF, hF;
     private float ts_padding;
@@ -51,8 +49,9 @@ class W_TimeSeries extends Widget {
 
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
-    W_TimeSeries(String _widgetName) {
-        super(_widgetName);
+    W_TimeSeries() {
+        super();
+        widgetTitle = "Time Series";
 
         tscp5 = new ControlP5(ourApplet);
         tscp5.setGraphics(ourApplet, 0, 0);

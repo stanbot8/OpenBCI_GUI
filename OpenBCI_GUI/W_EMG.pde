@@ -21,8 +21,9 @@ class W_Emg extends Widget {
 
     public ExGChannelSelect emgChannelSelect;
 
-    W_Emg (String _widgetName) {
-        super(_widgetName);
+    W_Emg () {
+        super();
+        widgetTitle = "EMG";
 
         cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 

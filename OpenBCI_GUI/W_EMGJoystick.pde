@@ -10,7 +10,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class W_EmgJoystick extends Widget {
-
     private ControlP5 emgCp5;
     private Button emgSettingsButton;
     private List<controlP5.Controller> cp5ElementsToCheck;
@@ -71,8 +70,9 @@ class W_EmgJoystick extends Widget {
     private PImage yPositiveInputLabelImage = loadImage("EMG_Joystick/UP_100x100.png");
     private PImage yNegativeInputLabelImage = loadImage("EMG_Joystick/DOWN_100x100.png");
 
-    W_EmgJoystick(String _widgetName) {
-        super(_widgetName);
+    W_EmgJoystick() {
+        super();
+        widgetTitle = "EMG Joystick";
 
         emgCp5 = new ControlP5(ourApplet);
         emgCp5.setGraphics(ourApplet, 0,0);

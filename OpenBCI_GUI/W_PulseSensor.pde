@@ -9,7 +9,6 @@
 ////////////////////////////////////////////////////
 
 class W_PulseSensor extends Widget {
-
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
     private color graphStroke = #d2d2d2;
@@ -62,8 +61,9 @@ class W_PulseSensor extends Widget {
 
     private AnalogCapableBoard analogBoard;
 
-    W_PulseSensor(String _widgetName) {
-        super(_widgetName);
+    W_PulseSensor() {
+        super();
+        widgetTitle = "Pulse Sensor";
 
         analogBoard = (AnalogCapableBoard)currentBoard;
 

@@ -22,7 +22,6 @@ import brainflow.LogLevels;
 import brainflow.MLModel;
 
 class W_Focus extends Widget {
-
     private ExGChannelSelect focusChanSelect;
     private boolean prevChanSelectIsVisible = false;
     private AuditoryNeurofeedback auditoryNeurofeedback;
@@ -64,8 +63,9 @@ class W_Focus extends Widget {
 
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
-    W_Focus(String _widgetName) {
-        super(_widgetName);
+    W_Focus() {
+        super();
+        widgetTitle = "Focus";
 
          //Add channel select dropdown to this widget
         focusChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
