@@ -35,11 +35,12 @@ class WidgetManager {
             currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
             sessionSettings.currentLayout = 4;
         }
-
-        setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
+        
+        //Set and fill layout with widgets in order of widget index
+        setNewContainerLayout(currentContainerLayout);
     }
 
-    void setupWidgets() {
+    private void setupWidgets() {
 
         widgets.add(new W_TimeSeries());
 
@@ -95,174 +96,181 @@ class WidgetManager {
         widgets.add(new W_Template());
     }
 
-    void setupWidgetSelectorDropdowns() {
-        //create the widgetSelector dropdown of each widget
-        //println("widgets.size() = " + widgets.size());
-        //create list of WidgetTitles.. we will use this to populate the dropdown (widget selector) of each widget
-        for (int i = 0; i < widgets.size(); i++) {
-            widgetOptions.add(widgets.get(i).widgetTitle);
+    private void setupWidgetSelectorDropdowns() {
+        // Populate the dropdown options with widget titles
+        for (Widget widget : widgets) {
+            widgetOptions.add(widget.widgetTitle);
         }
-        //println("widgetOptions.size() = " + widgetOptions.size());
-        for (int i = 0; i <widgetOptions.size(); i++) {
-            widgets.get(i).setupWidgetSelectorDropdown(widgetOptions);
-            widgets.get(i).setupNavDropdowns();
+        
+        // Setup the dropdown for each widget
+        for (Widget widget : widgets) {
+            widget.setupWidgetSelectorDropdown(widgetOptions);
+            widget.setupNavDropdowns();
         }
     }
 
-    void update() {
-        for (int i = 0; i < widgets.size(); i++) {
-            if (widgets.get(i).getIsActive()) {
-                widgets.get(i).update();
-                //if the widgets are not mapped to containers correctly, remap them..
-                // if (widgets.get(i).x != container[widgets.get(i).currentContainer].x || widgets.get(i).y != container[widgets.get(i).currentContainer].y || widgets.get(i).w != container[widgets.get(i).currentContainer].w || widgets.get(i).h != container[widgets.get(i).currentContainer].h) {
-                if (widgets.get(i).x0 != (int)container[widgets.get(i).currentContainer].x || widgets.get(i).y0 != (int)container[widgets.get(i).currentContainer].y || widgets.get(i).w0 != (int)container[widgets.get(i).currentContainer].w || widgets.get(i).h0 != (int)container[widgets.get(i).currentContainer].h) {
-                    screenResized();
-                    println("WidgetManager.pde: Remapping widgets to container layout...");
-                }
+    public void update() {
+        for (Widget currentWidget : widgets) {
+            if (!currentWidget.getIsActive()) {
+                continue;
+            }
+            
+            currentWidget.update();
+            
+            // Check if widget position or dimensions have changed relative to its container
+            boolean positionChanged = currentWidget.x0 != (int)container[currentWidget.currentContainer].x;
+            boolean yPositionChanged = currentWidget.y0 != (int)container[currentWidget.currentContainer].y;
+            boolean widthChanged = currentWidget.w0 != (int)container[currentWidget.currentContainer].w;
+            boolean heightChanged = currentWidget.h0 != (int)container[currentWidget.currentContainer].h;
+            
+            if (positionChanged || yPositionChanged || widthChanged || heightChanged) {
+                screenResized();
+                println("WidgetManager.pde: Remapping widgets to container layout...");
             }
         }
     }
 
-    void draw() {
-        for (int i = 0; i < widgets.size(); i++) {
-            if (widgets.get(i).getIsActive()) {
-                widgets.get(i).draw();
-                widgets.get(i).drawDropdowns();
+    public void draw() {
+        for (Widget widget : widgets) {
+            if (widget.getIsActive()) {
+                widget.draw();
+                widget.drawDropdowns();
             }
         }
     }
 
-    void screenResized() {
-        for (int i = 0; i < widgets.size(); i++) {
-            widgets.get(i).screenResized();
+    public void screenResized() {
+        for (Widget widget : widgets) {
+            widget.screenResized();
         }
     }
 
-    void mousePressed() {
-        for (int i = 0; i < widgets.size(); i++) {
-            if (widgets.get(i).getIsActive()) {
-                widgets.get(i).mousePressed();
-            }
-
-        }
-    }
-
-    void mouseReleased() {
-        for (int i = 0; i < widgets.size(); i++) {
-            if (widgets.get(i).getIsActive()) {
-                widgets.get(i).mouseReleased();
+    public void mousePressed() {
+        for (Widget widget : widgets) {
+            if (widget.getIsActive()) {
+                widget.mousePressed();
             }
         }
     }
 
-    void mouseDragged() {
-        for (int i = 0; i < widgets.size(); i++) {
-            if (widgets.get(i).getIsActive()) {
-                widgets.get(i).mouseDragged();
+    public void mouseReleased() {
+        for (Widget widget : widgets) {
+            if (widget.getIsActive()) {
+                widget.mouseReleased();
             }
         }
     }
 
-    void setupLayouts() {
-        //refer to [PUT_LINK_HERE] for layouts/numbers image
-        //note that the order you create/add these layouts matters... if you reorganize these, the LayoutSelector will be out of order
-        layouts.add(new Layout(new int[]{5})); //layout 1
-        layouts.add(new Layout(new int[]{1,3,7,9})); //layout 2
-        layouts.add(new Layout(new int[]{4,6})); //layout 3
-        layouts.add(new Layout(new int[]{2,8})); //etc.
-        layouts.add(new Layout(new int[]{4,3,9}));
-        layouts.add(new Layout(new int[]{1,7,6}));
-        layouts.add(new Layout(new int[]{1,3,8}));
-        layouts.add(new Layout(new int[]{2,7,9}));
-        layouts.add(new Layout(new int[]{4,11,12,13,14}));
-        layouts.add(new Layout(new int[]{4,15,16,17,18}));
-        layouts.add(new Layout(new int[]{1,7,11,12,13,14}));
-        layouts.add(new Layout(new int[]{1,7,15,16,17,18}));
+    public void mouseDragged() {
+        for (Widget widget : widgets) {
+            if (widget.getIsActive()) {
+                widget.mouseDragged();
+            }
+        }
     }
 
-    void printLayouts() {
+    private void setupLayouts() {
+        // Reference for layouts: [PUT_LINK_HERE] for layouts/numbers image
+        // Note: Order matters for the LayoutSelector UI
+        layouts.add(new Layout(new int[]{5}));                  // layout 1: Single container
+        layouts.add(new Layout(new int[]{1,3,7,9}));            // layout 2: Four equal containers
+        layouts.add(new Layout(new int[]{4,6}));                // layout 3: Left/right split
+        layouts.add(new Layout(new int[]{2,8}));                // layout 4: Top/bottom split
+        layouts.add(new Layout(new int[]{4,3,9}));              // layout 5
+        layouts.add(new Layout(new int[]{1,7,6}));              // layout 6
+        layouts.add(new Layout(new int[]{1,3,8}));              // layout 7
+        layouts.add(new Layout(new int[]{2,7,9}));              // layout 8
+        layouts.add(new Layout(new int[]{4,11,12,13,14}));      // layout 9
+        layouts.add(new Layout(new int[]{4,15,16,17,18}));      // layout 10
+        layouts.add(new Layout(new int[]{1,7,11,12,13,14}));    // layout 11
+        layouts.add(new Layout(new int[]{1,7,15,16,17,18}));    // layout 12
+        
+        if (isVerbose) {
+            printLayouts();
+        }
+    }
+
+    private void printLayouts() {
         for (int i = 0; i < layouts.size(); i++) {
             println("Widget Manager:printLayouts: " + layouts.get(i));
-            String layoutString = "";
+            StringBuilder layoutString = new StringBuilder();
+            
             for (int j = 0; j < layouts.get(i).myContainers.length; j++) {
-                // println("Widget Manager:layoutContainers: " + layouts.get(i).myContainers[j]);
-                layoutString += layouts.get(i).myContainers[j].x + ", ";
-                layoutString += layouts.get(i).myContainers[j].y + ", ";
-                layoutString += layouts.get(i).myContainers[j].w + ", ";
-                layoutString += layouts.get(i).myContainers[j].h;
+                layoutString.append(layouts.get(i).myContainers[j].x).append(", ");
+                layoutString.append(layouts.get(i).myContainers[j].y).append(", ");
+                layoutString.append(layouts.get(i).myContainers[j].w).append(", ");
+                layoutString.append(layouts.get(i).myContainers[j].h);
+                
+                if (j < layouts.get(i).myContainers.length - 1) {
+                    layoutString.append(" | ");
+                }
             }
-            println("Widget Manager:printLayouts: " + layoutString);
+            println("Widget Manager:printLayouts: " + layoutString.toString());
         }
     }
 
-    void setNewContainerLayout(int _newLayout) {
-
-        //find out how many active widgets we need...
+    public void setNewContainerLayout(int _newLayout) {
+        // Determine how many widgets are needed for the new layout
         int numActiveWidgetsNeeded = layouts.get(_newLayout).myContainers.length;
-        //calculate the number of current active widgets & keep track of which widgets are active
+        
+        // Count currently active widgets
         int numActiveWidgets = 0;
-        // ArrayList<int> activeWidgets = new ArrayList<int>();
-        for (int i = 0; i < widgets.size(); i++) {
-            if (widgets.get(i).getIsActive()) {
-                numActiveWidgets++; //increment numActiveWidgets
-                // activeWidgets.add(i); //keep track of the active widget
+        for (Widget widget : widgets) {
+            if (widget.getIsActive()) {
+                numActiveWidgets++;
             }
         }
 
-        if (numActiveWidgets > numActiveWidgetsNeeded) { //if there are more active widgets than needed
-            //shut some down
+        if (numActiveWidgets > numActiveWidgetsNeeded) {
+            // Need to deactivate some widgets
             int numToShutDown = numActiveWidgets - numActiveWidgetsNeeded;
             int counter = 0;
             println("Widget Manager: Powering " + numToShutDown + " widgets down, and remapping.");
-            for (int i = widgets.size()-1; i >= 0; i--) {
-                if (widgets.get(i).getIsActive() && counter < numToShutDown) {
+            
+            // Deactivate widgets starting from the end
+            for (int i = widgets.size()-1; i >= 0 && counter < numToShutDown; i--) {
+                if (widgets.get(i).getIsActive()) {
                     verbosePrint("Widget Manager: Deactivating widget [" + i + "]");
                     widgets.get(i).setIsActive(false);
                     counter++;
                 }
             }
 
-            //and map active widgets
-            counter = 0;
-            for (int i = 0; i < widgets.size(); i++) {
-                if (widgets.get(i).getIsActive()) {
-                    widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
-                    counter++;
-                }
-            }
+            // Map active widgets to containers
+            mapActiveWidgetsToContainers(_newLayout);
 
-        } else if (numActiveWidgetsNeeded > numActiveWidgets) { //if there are less active widgets than needed
-            //power some up
+        } else if (numActiveWidgetsNeeded > numActiveWidgets) {
+            // Need to activate more widgets
             int numToPowerUp = numActiveWidgetsNeeded - numActiveWidgets;
             int counter = 0;
             verbosePrint("Widget Manager: Powering " + numToPowerUp + " widgets up, and remapping.");
-            for (int i = 0; i < widgets.size(); i++) {
-                if (!widgets.get(i).getIsActive() && counter < numToPowerUp) {
+            
+            // Activate widgets from the beginning
+            for (int i = 0; i < widgets.size() && counter < numToPowerUp; i++) {
+                if (!widgets.get(i).getIsActive()) {
                     verbosePrint("Widget Manager: Activating widget [" + i + "]");
                     widgets.get(i).setIsActive(true);
                     counter++;
                 }
             }
 
-            //and map active widgets
-            counter = 0;
-            for (int i = 0; i < widgets.size(); i++) {
-                if (widgets.get(i).getIsActive()) {
-                    widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
-                    // widgets.get(i).screenResized(); // do this to make sure the container is updated
-                    counter++;
-                }
-            }
+            // Map active widgets to containers
+            mapActiveWidgetsToContainers(_newLayout);
 
-        } else{ //if there are the same amount
-            //simply remap active widgets
+        } else {
+            // Same number of active widgets as needed, just remap
             verbosePrint("Widget Manager: Remapping widgets.");
-            int counter = 0;
-            for (int i = 0; i < widgets.size(); i++) {
-                if (widgets.get(i).getIsActive()) {
-                    widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
-                    counter++;
-                }
+            mapActiveWidgetsToContainers(_newLayout);
+        }
+    }
+
+    // Helper method to map active widgets to containers
+    private void mapActiveWidgetsToContainers(int layoutIndex) {
+        int counter = 0;
+        for (Widget widget : widgets) {
+            if (widget.getIsActive()) {
+                widget.setContainer(layouts.get(layoutIndex).containerInts[counter]);
+                counter++;
             }
         }
     }
@@ -275,31 +283,28 @@ class WidgetManager {
     // Useful in places like TopNav which overlap widget dropdowns
     public void lockCp5ObjectsInAllWidgets(boolean lock) {
         for (int i = 0; i < widgets.size(); i++) {
-            for (int j = 0; j < widgets.get(i).cp5_widget.getAll().size(); j++) {
-                ControlP5 cp5Instance = widgets.get(i).cp5_widget;
-                String widgetAddress = cp5Instance.getAll().get(j).getAddress();
-                cp5Instance.getController(widgetAddress).setLock(lock);
+            ControlP5 cp5Instance = widgets.get(i).cp5_widget;
+            List controllerList = cp5Instance.getAll();
+            
+            for (int j = 0; j < controllerList.size(); j++) {
+                controlP5.Controller controller = (controlP5.Controller)controllerList.get(j);
+                controller.setLock(lock);
             }
         }
     }
 
     public Widget getWidget(String className) {
-        for (int i = 0; i < widgets.size(); i++) {
-            Widget widget = widgets.get(i);
-            // Get the class name of the widget
+        for (Widget widget : widgets) {
             String widgetClassName = widget.getClass().getSimpleName();
-            // Check if it matches the requested class name
             if (widgetClassName.equals(className)) {
                 return widget;
             }
         }
-        // Return null if no widget of the specified class is found
         return null;
     }
 
     public boolean getWidgetExists(String className) {
-        Widget widget = getWidget(className);
-        return widget != null;
+        return getWidget(className) != null;
     }
 
     public W_TimeSeries getTimeSeriesWidget() {
