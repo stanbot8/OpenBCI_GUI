@@ -12,7 +12,6 @@ public enum EmgJoystickSmoothing implements IndexingInterface
     private int index;
     private String name;
     private float value;
-    private static EmgJoystickSmoothing[] vals = values();
  
     EmgJoystickSmoothing(int index, String name, float value) {
         this.index = index;
@@ -20,10 +19,12 @@ public enum EmgJoystickSmoothing implements IndexingInterface
         this.value = value;
     }
 
+    @Override
     public int getIndex() {
         return index;
     }
     
+    @Override
     public String getString() {
         return name;
     }
@@ -31,17 +32,9 @@ public enum EmgJoystickSmoothing implements IndexingInterface
     public float getValue() {
         return value;
     }
-
-    private static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
 }
 
-public class EMGJoystickInput {
+public class EMGJoystickInput implements IndexingInterface{
     private int index;
     private String name;
     private int value;
@@ -52,10 +45,12 @@ public class EMGJoystickInput {
         this.value = value;
     }
 
+    @Override
     public int getIndex() {
         return index;
     }
 
+    @Override
     public String getString() {
         return name;
     }
@@ -99,13 +94,5 @@ public class EMGJoystickInputs {
             return;
         }
         INPUTS[inputNumber] = VALUES[channel];
-    }
-
-    public List<String> getValueStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (EMGJoystickInput val : VALUES) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
     }
 }

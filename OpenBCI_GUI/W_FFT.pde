@@ -36,13 +36,19 @@ class W_Fft extends Widget {
         
         cp5ElementsToCheck.addAll(fftChanSelect.getCp5ElementsForOverlapCheck());
 
-        addDropdown("fftMaxFrequencyDropdown", "Max Hz", maxFrequency.getEnumStringsAsList(), maxFrequency.getIndex());
-        addDropdown("fftVerticalScaleDropdown", "Max uV", verticalScale.getEnumStringsAsList(), verticalScale.getIndex());
-        addDropdown("fftLogLinDropdown", "Log/Lin", logLin.getEnumStringsAsList(), logLin.getIndex());
+        List<String> maxFrequencyList = EnumHelper.getEnumStrings(FFTMaxFrequency.class);
+        List<String> verticalScaleList = EnumHelper.getEnumStrings(FFTVerticalScale.class);
+        List<String> logLinList = EnumHelper.getEnumStrings(FFTLogLin.class);
+        List<String> smoothingList = EnumHelper.getEnumStrings(FFTSmoothingFactor.class);
+        List<String> filteredEnumList = EnumHelper.getEnumStrings(FFTFilteredEnum.class);
+
+        addDropdown("fftMaxFrequencyDropdown", "Max Hz", maxFrequencyList, maxFrequency.getIndex());
+        addDropdown("fftVerticalScaleDropdown", "Max uV", verticalScaleList, verticalScale.getIndex());
+        addDropdown("fftLogLinDropdown", "Log/Lin", logLinList, logLin.getIndex());
         FFTSmoothingFactor smoothingFactor = globalFFTSettings.getSmoothingFactor();
         FFTFilteredEnum filteredEnum = globalFFTSettings.getFilteredEnum();
-        addDropdown("fftSmoothingDropdown", "Smooth", smoothingFactor.getEnumStringsAsList(), smoothingFactor.getIndex());
-        addDropdown("fftFilteringDropdown", "Filters?", filteredEnum.getEnumStringsAsList(), filteredEnum.getIndex());
+        addDropdown("fftSmoothingDropdown", "Smooth", smoothingList, smoothingFactor.getIndex());
+        addDropdown("fftFilteringDropdown", "Filters?", filteredEnumList, filteredEnum.getIndex());
 
         fftGplotPoints = new GPointsArray[globalChannelCount];
         initializeFFTPlot();
@@ -177,17 +183,17 @@ class W_Fft extends Widget {
     }
 
     public void setMaxFrequency(int n) {
-        maxFrequency = FFTMaxFrequency.values[n];
+        maxFrequency = maxFrequency.values()[n];
         fftPlot.setXLim(0.1, maxFrequency.getValue());
     }
 
     public void setVerticalScale(int n) {
-        verticalScale = FFTVerticalScale.values[n];
+        verticalScale = verticalScale.values()[n];
         fftPlot.setYLim(0.1, verticalScale.getValue());
     }
 
     public void setLogLin(int n) {
-        logLin = FFTLogLin.values[n];
+        logLin = logLin.values()[n];
         setPlotLogScale();
     }
 

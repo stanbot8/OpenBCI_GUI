@@ -84,11 +84,14 @@ class W_Focus extends Widget {
         // initialize graphics parameters
         onColorChange();
         
-        //This is the protocol for setting up dropdowns.
+        List<String> metricList = EnumHelper.getEnumStrings(FocusMetric.class);
+        List<String> thresholdList = EnumHelper.getEnumStrings(FocusThreshold.class);
+        List<String> xLimitList = EnumHelper.getEnumStrings(FocusXLim.class);
+
         dropdownWidth = 60; //Override the default dropdown width for this widget
-        addDropdown("focusMetricDropdown", "Metric", focusMetric.getEnumStringsAsList(), focusMetric.getIndex());
-        addDropdown("focusThresholdDropdown", "Threshold", focusThreshold.getEnumStringsAsList(), focusThreshold.getIndex());
-        addDropdown("focusWindowDropdown", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
+        addDropdown("focusMetricDropdown", "Metric", metricList, focusMetric.getIndex());
+        addDropdown("focusThresholdDropdown", "Threshold", thresholdList, focusThreshold.getIndex());
+        addDropdown("focusWindowDropdown", "Window", xLimitList, xLimit.getIndex());
 
         //Create data table
         dataGrid = new Grid(NUM_TABLE_ROWS, NUM_TABLE_COLUMNS, cellHeight);

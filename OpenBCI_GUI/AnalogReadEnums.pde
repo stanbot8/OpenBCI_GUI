@@ -11,7 +11,6 @@ public enum AnalogReadVerticalScale implements IndexingInterface
     private int index;
     private int value;
     private String label;
-    private static AnalogReadVerticalScale[] values = AnalogReadVerticalScale.values();
     
     AnalogReadVerticalScale(int _index, int _value, String _label) {
         this.index = _index;
@@ -32,14 +31,6 @@ public enum AnalogReadVerticalScale implements IndexingInterface
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum AnalogReadHorizontalScale implements IndexingInterface
@@ -53,7 +44,6 @@ public enum AnalogReadHorizontalScale implements IndexingInterface
     private int index;
     private int value;
     private String label;
-    private static AnalogReadHorizontalScale[] values = AnalogReadHorizontalScale.values();
     
     AnalogReadHorizontalScale(int _index, int _value, String _label) {
         this.index = _index;
@@ -73,13 +63,5 @@ public enum AnalogReadHorizontalScale implements IndexingInterface
     @Override
     public int getIndex() {
         return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
     }
 }

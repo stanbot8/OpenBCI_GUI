@@ -96,7 +96,9 @@ class W_EmgJoystick extends Widget {
             plotChannelLabels[i] = Integer.toString(emgJoystickInputs.getInput(i).getIndex() + 1);
         }
 
-        addDropdown("emgJoystickSmoothingDropdown", "Smoothing", joystickSmoothing.getEnumStringsAsList(), joystickSmoothing.getIndex());
+        List<String> joystickSmoothingList = EnumHelper.getEnumStrings(EmgJoystickSmoothing.class);
+
+        addDropdown("emgJoystickSmoothingDropdown", "Smoothing", joystickSmoothingList, joystickSmoothing.getIndex());
 
         createInputDropdowns();
     }

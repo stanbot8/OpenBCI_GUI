@@ -1,16 +1,13 @@
-public enum TimeSeriesXLim implements IndexingInterface
+public enum TemplateDropdown1 implements IndexingInterface
 {
-    ONE (0, 1, "1 sec"),
-    THREE (1, 3, "3 sec"),
-    FIVE (2, 5, "5 sec"),
-    TEN (3, 10, "10 sec"),
-    TWENTY (4, 20, "20 sec");
-
+    ITEM_A (0, 0, "Item A"),
+    ITEM_B (1, 1, "Item B");
+    
     private int index;
     private int value;
     private String label;
-
-    TimeSeriesXLim(int _index, int _value, String _label) {
+    
+    TemplateDropdown1(int _index, int _value, String _label) {
         this.index = _index;
         this.value = _value;
         this.label = _label;
@@ -31,23 +28,17 @@ public enum TimeSeriesXLim implements IndexingInterface
     }
 }
 
-public enum TimeSeriesYLim implements IndexingInterface
+public enum TemplateDropdown2 implements IndexingInterface
 {
-    AUTO (0, 0, "Auto"),
-    UV_10(1, 10, "10 uV"),
-    UV_25(2, 25, "25 uV"),
-    UV_50 (3, 50, "50 uV"),
-    UV_100 (4, 100, "100 uV"),
-    UV_200 (5, 200, "200 uV"),
-    UV_400 (6, 400, "400 uV"),
-    UV_1000 (7, 1000, "1000 uV"),
-    UV_10000 (8, 10000, "10000 uV");
-
+    ITEM_C (0, 0, "Item C"),
+    ITEM_D (1, 1, "Item D"),
+    ITEM_E (2, 2, "Item E");
+    
     private int index;
     private int value;
     private String label;
-
-    TimeSeriesYLim(int _index, int _value, String _label) {
+    
+    TemplateDropdown2(int _index, int _value, String _label) {
         this.index = _index;
         this.value = _value;
         this.label = _label;
@@ -68,17 +59,18 @@ public enum TimeSeriesYLim implements IndexingInterface
     }
 }
 
-public enum TimeSeriesLabelMode implements IndexingInterface
+public enum TemplateDropdown3 implements IndexingInterface
 {
-    OFF (0, 0, "Off"),
-    MINIMAL (1, 1, "Minimal"),
-    ON (2, 2, "On");
-
+    ITEM_F (0, 0, "Item F"),
+    ITEM_G (1, 1, "Item G"),
+    ITEM_H (2, 2, "Item H"),
+    ITEM_I (3, 3, "Item I");
+    
     private int index;
     private int value;
     private String label;
-
-    TimeSeriesLabelMode(int _index, int _value, String _label) {
+    
+    TemplateDropdown3(int _index, int _value, String _label) {
         this.index = _index;
         this.value = _value;
         this.label = _label;

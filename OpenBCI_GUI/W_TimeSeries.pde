@@ -76,10 +76,14 @@ class W_TimeSeries extends Widget {
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
         numChannelBars = globalChannelCount; //set number of channel bars = to current globalChannelCount of system (4, 8, or 16)
 
+        List<String> verticalScaleList = EnumHelper.getEnumStrings(TimeSeriesYLim.class);
+        List<String> horizontalScaleList = EnumHelper.getEnumStrings(TimeSeriesXLim.class);
+        List<String> labelModeList = EnumHelper.getEnumStrings(TimeSeriesLabelMode.class);
+
         //This is a newer protocol for setting up dropdowns.
-        addDropdown("timeSeriesVerticalScaleDropdown", "Vert Scale", yLimit.getEnumStringsAsList(), yLimit.getIndex());
-        addDropdown("timeSeriesHorizontalScaleDropdown", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
-        addDropdown("timeSeriesLabelModeDropdown", "Labels", labelMode.getEnumStringsAsList(), labelMode.getIndex());
+        addDropdown("timeSeriesVerticalScaleDropdown", "Vert Scale", verticalScaleList, yLimit.getIndex());
+        addDropdown("timeSeriesHorizontalScaleDropdown", "Window", horizontalScaleList, xLimit.getIndex());
+        addDropdown("timeSeriesLabelModeDropdown", "Labels", labelModeList, labelMode.getIndex());
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
         if((currentBoard instanceof FileBoard) && hasScrollbar) {

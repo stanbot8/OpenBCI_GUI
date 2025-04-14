@@ -8,7 +8,6 @@ public enum AccelerometerVerticalScale implements IndexingInterface
     private int index;
     private int value;
     private String label;
-    private static AccelerometerVerticalScale[] values = AccelerometerVerticalScale.values();
     
     AccelerometerVerticalScale(int _index, int _value, String _label) {
         this.index = _index;
@@ -30,17 +29,9 @@ public enum AccelerometerVerticalScale implements IndexingInterface
         return index;
     }
 
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
-
     public int getHighestValue() {
         int highestValue = 0;
-        for (AccelerometerVerticalScale scale : values) {
+        for (AccelerometerVerticalScale scale : values()) {
             if (scale.getValue() > highestValue) {
                 highestValue = scale.getValue();
             }
@@ -60,7 +51,6 @@ public enum AccelerometerHorizontalScale implements IndexingInterface
     private int index;
     private int value;
     private String label;
-    private static AccelerometerHorizontalScale[] values = AccelerometerHorizontalScale.values();
     
     AccelerometerHorizontalScale(int _index, int _value, String _label) {
         this.index = _index;
@@ -82,17 +72,9 @@ public enum AccelerometerHorizontalScale implements IndexingInterface
         return index;
     }
 
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
-
     public int getHighestValue() {
         int highestValue = 0;
-        for (AccelerometerHorizontalScale scale : values) {
+        for (AccelerometerHorizontalScale scale : values()) {
             if (scale.getValue() > highestValue) {
                 highestValue = scale.getValue();
             }

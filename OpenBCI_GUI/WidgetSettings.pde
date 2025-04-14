@@ -1,166 +1,224 @@
-class WidgetSettings { 
-    // A map to store settings with string keys and enum values
-    protected HashMap<String, Enum<?>> settings = new HashMap<String, Enum<?>>();
-    // Widget identifier for saving/loading specific widget settings
-    private String titleString;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-    public WidgetSettings(String titleString) {
-        this.titleString = titleString;
+//Used for Widget Dropdown Enums
+interface IndexingInterface {
+    public int getIndex();
+    public String getString();
+}
+
+/**
+ * Helper class for working with IndexingInterface enums
+ */
+public static class EnumHelper {
+    /**
+     * Generic method to get enum strings as a list
+     */
+    public static <T extends IndexingInterface> List<String> getListAsStrings(T[] values) {
+        List<String> enumStrings = new ArrayList<>();
+        for (T enumValue : values) {
+            enumStrings.add(enumValue.getString());
+        }
+        return enumStrings;
+    }
+    
+    /**
+     * Get list of strings for an enum class that implements IndexingInterface
+     */
+    public static <T extends Enum<T> & IndexingInterface> List<String> getEnumStrings(Class<T> enumClass) {
+        return getListAsStrings(enumClass.getEnumConstants());
+    }
+}
+
+/**
+ * Simple storage for widget settings that converts to/from JSON
+ */
+class WidgetSettings {
+    private String widgetName;
+    private HashMap<String, Enum<?>> settings;
+    private HashMap<String, Enum<?>> defaults;
+
+    public WidgetSettings(String widgetName) {
+        this.widgetName = widgetName;
+        this.settings = new HashMap<String, Enum<?>>();
+        this.defaults = new HashMap<String, Enum<?>>();
     }
 
-    // Store a setting with a key and enum value
-    public <T extends Enum<?>> void setSetting(String key, T value) {
-        settings.put(key, value);
+    /**
+     * Store a setting using enum class as key
+     */
+    public <T extends Enum<?>> void set(Class<T> enumClass, T value) {
+        settings.put(enumClass.getName(), value);
     }
 
-    // Retrieve a setting by key, with optional default value
-    public <T extends Enum<?>> T getSetting(String key, T defaultValue) {
-        if (settings.containsKey(key) && settings.get(key).getClass() == defaultValue.getClass()) {
-            return (T) settings.get(key);
+    /**
+     * Store a setting using the enum class and index
+     * Useful for setting values from UI components like dropdowns
+     * 
+     * @param enumClass The enum class to look up values
+     * @param index The index of the enum constant to set
+     * @return true if successful, false if the index is out of bounds
+     */
+    public <T extends Enum<?>> boolean setByIndex(Class<T> enumClass, int index) {
+        T[] enumConstants = enumClass.getEnumConstants();
+        
+        // Check if index is valid
+        if (index >= 0 && index < enumConstants.length) {
+            // Get the enum value at the specified index
+            T value = enumConstants[index];
+            // Set it using the regular set method
+            set(enumClass, value);
+            return true;
+        }
+        
+        // Index was out of bounds
+        println("Warning: Invalid index " + index + " for enum " + enumClass.getName());
+        return false;
+    }
+
+    /**
+     * Get a setting using enum class as key
+     */
+    public <T extends Enum<?>> T get(Class<T> enumClass, T defaultValue) {
+        String key = enumClass.getName();
+        if (settings.containsKey(key)) {
+            Object value = settings.get(key);
+            if (value != null && enumClass.isInstance(value)) {
+                return enumClass.cast(value);
+            }
         }
         return defaultValue;
     }
 
     /**
-     * Converts settings to a JSON string
-     * @return JSON string representation of the settings
+     * Get a setting using enum class as key (returns null if not found)
      */
-    public String getJSON() {
-        try {
-            // Create a wrapper JSON object that contains metadata and settings
-            JSONObject jsonData = new JSONObject();
-            jsonData.setString("titleString", titleString);
-            
-            // Create settings JSON object
-            JSONObject settingsJson = new JSONObject();
-            
-            // Add each setting to the JSON object with its class and value for proper deserialization
-            for (Map.Entry<String, Enum<?>> entry : settings.entrySet()) {
-                JSONObject enumValue = new JSONObject();
-                Enum<?> value = entry.getValue();
-                enumValue.setString("enumClass", value.getClass().getName());
-                enumValue.setString("enumValue", value.name());
-                settingsJson.setJSONObject(entry.getKey(), enumValue);
+    public <T extends Enum<?>> T get(Class<T> enumClass) {
+        String key = enumClass.getName();
+        if (settings.containsKey(key)) {
+            Object value = settings.get(key);
+            if (value != null && enumClass.isInstance(value)) {
+                return enumClass.cast(value);
             }
-            
-            jsonData.setJSONObject("settings", settingsJson);
-            return jsonData.toString();
-        } catch (Exception e) {
-            println("Error converting settings to JSON: " + e.getMessage());
-            e.printStackTrace();
-            return "{}";
         }
+        return null;
     }
 
     /**
-     * Loads settings from a JSON string
-     * @param jsonString JSON string to load settings from
-     * @return true if successful, false otherwise
+     * Save current settings as defaults
      */
-    public boolean loadJSON(String jsonString) {
-        try {
-            // Parse the JSON string
-            JSONObject jsonData = parseJSONObject(jsonString);
-            if (jsonData == null) {
-                println("Invalid JSON string");
-                return false;
-            }
-
-            // Verify widget name
-            String loadedTitleString = jsonData.getString("titleString", "");
-            if (!loadedTitleString.equals(titleString)) {
-                println("Warning: Widget name mismatch. Expected: " + titleString + ", Found: " + loadedTitleString);
-                // Continuing anyway, might be a compatible widget
-            }
-            
-            // Clear existing settings
-            settings.clear();
-            
-            // Load settings
-            JSONObject settingsJson = jsonData.getJSONObject("settings");
-            if (settingsJson == null) {
-                println("No settings found in JSON");
-                return false;
-            }
-            
-            // Loop through each setting in the JSON
-            for (Object key : settingsJson.keys()) {
-                String settingKey = (String)key;
-                JSONObject enumData = settingsJson.getJSONObject(settingKey);
-                
-                String enumClassName = enumData.getString("enumClass", "");
-                String enumValueName = enumData.getString("enumValue", "");
-                
-                // Skip if missing required data
-                if (enumClassName.isEmpty() || enumValueName.isEmpty()) {
-                    continue;
-                }
-                
-                try {
-                    // Load the enum class
-                    Class<?> enumClass = Class.forName(enumClassName);
-                    if (!enumClass.isEnum()) {
-                        println("Class " + enumClassName + " is not an enum");
-                        continue;
-                    }
-                    
-                    // Get the enum value
-                    @SuppressWarnings("unchecked")
-                    Enum<?> enumValue = Enum.valueOf((Class<Enum>)enumClass, enumValueName);
-                    settings.put(settingKey, enumValue);
-                } catch (ClassNotFoundException e) {
-                    println("Enum class not found: " + enumClassName);
-                } catch (IllegalArgumentException e) {
-                    println("Enum value not found: " + enumValueName);
-                } catch (Exception e) {
-                    println("Error loading enum: " + e.getMessage());
-                }
-            }
-            
-            return true;
-        } catch (Exception e) {
-            println("Error loading settings from JSON: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
+    public void saveDefaults() {
+        defaults = new HashMap<String, Enum<?>>(settings);
     }
 
-    // Apply settings to UI components
-    public void applySettingsToCp5(ControlP5 cp5) {
-        // This is a default implementation
-        // Widget-specific classes should override this method
+    /**
+     * Restore to default settings
+     */
+    public void restoreDefaults() {
+        settings = new HashMap<String, Enum<?>>(defaults);
     }
-}
 
-// Example extension of WidgetSettings for a specific widget
-class ExampleWidgetSettings extends WidgetSettings {
-    public ExampleWidgetSettings() {
-        super("ExampleWidget");
-    }
-    
-    // Override to implement specific UI binding
-    @Override
-    public void applySettingsToCp5(ControlP5 cp5) {
-        // Example: Apply dropdown settings
+    /**
+     * Convert settings to JSON string
+     */
+    public String toJSON() {
+        JSONObject json = new JSONObject();
+        json.setString("widget", widgetName);
+        
+        JSONArray items = new JSONArray();
+        int i = 0;
+        
         for (String key : settings.keySet()) {
             Enum<?> value = settings.get(key);
+            JSONObject item = new JSONObject();
+            item.setString("class", key);
+            item.setString("value", value.name());
+            items.setJSONObject(i++, item);
+        }
+        
+        json.setJSONArray("settings", items);
+        return json.toString();
+    }
+
+    /**
+     * Load settings from JSON string
+     */
+    public boolean fromJSON(String jsonString) {
+        try {
+            JSONObject json = parseJSONObject(jsonString);
+            if (json == null) return false;
             
-            if (value instanceof IndexingInterface) {
-                IndexingInterface enumValue = (IndexingInterface)value;
-                ScrollableList dropdown = (ScrollableList)cp5.getController(key);
-                if (dropdown != null) {
-                    dropdown.setValue(enumValue.getIndex());
-                }
+            String loadedWidget = json.getString("widget", "");
+            if (!loadedWidget.equals(widgetName)) {
+                println("Warning: Widget mismatch. Expected: " + widgetName + ", Found: " + loadedWidget);
             }
             
-            // Handle other control types as needed
-            // Toggle, RadioButton, Slider, etc.
+            JSONArray items = json.getJSONArray("settings");
+            if (items != null) {
+                for (int i = 0; i < items.size(); i++) {
+                    JSONObject item = items.getJSONObject(i);
+                    String className = item.getString("class");
+                    String valueName = item.getString("value");
+                    
+                    try {
+                        Class<?> enumClass = Class.forName(className);
+                        if (enumClass.isEnum()) {
+                            @SuppressWarnings("unchecked")
+                            Enum<?> enumValue = Enum.valueOf((Class<Enum>)enumClass, valueName);
+                            settings.put(className, enumValue);
+                        }
+                    } catch (Exception e) {
+                        println("Error loading setting: " + e.getMessage());
+                    }
+                }
+                return true;
+            }
+        } catch (Exception e) {
+            println("Error parsing JSON: " + e.getMessage());
         }
-    }
-    
-    // Additional methods specific to this widget
-    public void setupDefaultSettings() {
-        // Set default values for this widget
-        // Example: setSetting("mode", SomeEnum.DEFAULT_MODE);
+        return false;
     }
 }
+
+/**
+ * Example usage
+ */
+ /*
+class ExampleWidgetSettings extends WidgetSettings {
+    enum Mode { NORMAL, EXPERT, DEBUG }
+    enum Filter { NONE, LOW_PASS, HIGH_PASS, BAND_PASS }
+    
+    public ExampleWidgetSettings() {
+        super("Example");
+        
+        // Set defaults
+        set(Mode.class, Mode.NORMAL);
+        set(Filter.class, Filter.NONE);
+        saveDefaults();
+    }
+    
+    public void applyToUI() {
+        Mode mode = get(Mode.class, Mode.NORMAL);
+        Filter filter = get(Filter.class, Filter.NONE);
+        
+        // Apply to UI controls
+        println("Mode: " + mode + ", Filter: " + filter);
+    }
+    
+    public void exampleUsage() {
+        // Set some values
+        set(Mode.class, Mode.EXPERT);
+        set(Filter.class, Filter.BAND_PASS);
+        
+        // Convert to JSON 
+        String json = toJSON();
+        println("Settings JSON: " + json);
+        
+        // Restore defaults 
+        restoreDefaults();
+        
+        // Load from JSON
+        fromJSON(json);
+    }
+}
+*/

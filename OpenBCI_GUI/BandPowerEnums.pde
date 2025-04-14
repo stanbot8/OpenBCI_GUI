@@ -6,7 +6,6 @@ public enum BPAutoClean implements IndexingInterface
 
     private int index;
     private String label;
-    private static BPAutoClean[] vals = values();
 
     BPAutoClean(int _index, String _label) {
         this.index = _index;
@@ -21,14 +20,6 @@ public enum BPAutoClean implements IndexingInterface
     @Override
     public int getIndex() {
         return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
     }
 }
 
@@ -45,7 +36,6 @@ public enum BPAutoCleanThreshold implements IndexingInterface
     private int index;
     private float value;
     private String label;
-    private static BPAutoCleanThreshold[] vals = values();
 
     BPAutoCleanThreshold(int _index, float _value, String _label) {
         this.index = _index;
@@ -66,14 +56,6 @@ public enum BPAutoCleanThreshold implements IndexingInterface
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum BPAutoCleanTimer implements IndexingInterface
@@ -89,7 +71,6 @@ public enum BPAutoCleanTimer implements IndexingInterface
     private int index;
     private float value;
     private String label;
-    private static BPAutoCleanTimer[] vals = values();
 
     BPAutoCleanTimer(int _index, float _value, String _label) {
         this.index = _index;
@@ -109,13 +90,5 @@ public enum BPAutoCleanTimer implements IndexingInterface
     @Override
     public int getIndex() {
         return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
     }
 }

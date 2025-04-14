@@ -70,12 +70,13 @@ class W_Spectrogram extends Widget {
         //Fetch/calculate the time strings for the horizontal axis ticks
         horizontalAxisLabelStrings = fetchTimeStrings();
 
-        //This is the protocol for setting up dropdowns.
-        //Note that these 3 dropdowns correspond to the 3 global functions below
-        //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("spectrogramMaxFrequencyDropdown", "Max Hz", maxFrequency.getEnumStringsAsList(), maxFrequency.getIndex());
-        addDropdown("spectrogramSampleRateDropdown", "Window", windowSize.getEnumStringsAsList(), windowSize.getIndex());
-        addDropdown("spectrogramLogLinDropdown", "Log/Lin", logLin.getEnumStringsAsList(), logLin.getIndex());
+        List<String> maxFrequencyList = EnumHelper.getEnumStrings(SpectrogramMaxFrequency.class);
+        List<String> windowSizeList = EnumHelper.getEnumStrings(SpectrogramWindowSize.class);
+        List<String> logLinList = EnumHelper.getEnumStrings(FFTLogLin.class);
+
+        addDropdown("spectrogramMaxFrequencyDropdown", "Max Hz", maxFrequencyList, maxFrequency.getIndex());
+        addDropdown("spectrogramWindowDropdown", "Window", windowSizeList, windowSize.getIndex());
+        addDropdown("spectrogramLogLinDropdown", "Log/Lin", logLinList, logLin.getIndex());
 
         //Resize the height of the data image using default 
         dataImageH = maxFrequency.getAxisLabels()[0] * 2;

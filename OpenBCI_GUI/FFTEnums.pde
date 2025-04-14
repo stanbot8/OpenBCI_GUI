@@ -40,10 +40,9 @@ public enum FFTSmoothingFactor implements IndexingInterface {
     SMOOTH_99 (6, 0.99f, "0.99"),
     SMOOTH_999 (7, 0.999f, "0.999");
 
-    private final int index;
+    private int index;
     private final float value;
-    private final String label;
-    private static final FFTSmoothingFactor[] values = values();
+    private String label;
 
     FFTSmoothingFactor(int index, float value, String label) {
         this.index = index;
@@ -64,14 +63,6 @@ public enum FFTSmoothingFactor implements IndexingInterface {
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
 }
 
 // Used by FFT Widget and Band Power Widget
@@ -79,9 +70,8 @@ public enum FFTFilteredEnum implements IndexingInterface {
     FILTERED (0, "Filtered"),
     UNFILTERED (1, "Unfilt.");
 
-    private final int index;
-    private final String label;
-    private static final FFTFilteredEnum[] values = values();
+    private int index;
+    private String label;
 
     FFTFilteredEnum(int index, String label) {
         this.index = index;
@@ -97,14 +87,6 @@ public enum FFTFilteredEnum implements IndexingInterface {
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum FFTMaxFrequency implements IndexingInterface {
@@ -117,10 +99,9 @@ public enum FFTMaxFrequency implements IndexingInterface {
     MAX_500 (6, 500, "500 Hz"),
     MAX_800 (7, 800, "800 Hz");
 
-    private final int index;
+    private int index;
     private final int value;
-    private final String label;
-    private static final FFTMaxFrequency[] values = values();
+    private String label;
 
     FFTMaxFrequency(int index, int value, String label) {
         this.index = index;
@@ -142,14 +123,6 @@ public enum FFTMaxFrequency implements IndexingInterface {
         return index;
     }
 
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
-
     public int getHighestFrequency() {
         return MAX_800.getValue();
     }
@@ -161,10 +134,9 @@ public enum FFTVerticalScale implements IndexingInterface {
     SCALE_100 (2, 100, "100 uV"),
     SCALE_1000 (3, 1000, "1000 uV");
 
-    private final int index;
+    private int index;
     private final int value;
-    private final String label;
-    private static final FFTVerticalScale[] values = values();
+    private String label;
 
     FFTVerticalScale(int index, int value, String label) {
         this.index = index;
@@ -185,23 +157,14 @@ public enum FFTVerticalScale implements IndexingInterface {
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum FFTLogLin implements IndexingInterface {
     LOG (0, "Log"),
     LIN (1, "Linear");
 
-    private final int index;
-    private final String label;
-    private static final FFTLogLin[] values = values();
+    private int index;
+    private String label;
 
     FFTLogLin(int index, String label) {
         this.index = index;
@@ -216,13 +179,5 @@ public enum FFTLogLin implements IndexingInterface {
     @Override
     public int getIndex() {
         return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
     }
 }
