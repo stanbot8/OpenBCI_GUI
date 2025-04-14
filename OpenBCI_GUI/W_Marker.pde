@@ -55,8 +55,11 @@ class W_Marker extends Widget {
 
         createMarkerButtons();
 
-        addDropdown("markerVertScaleDropdown", "Vert Scale", markerVertScale.getEnumStringsAsList(), markerVertScale.getIndex());
-        addDropdown("markerWindowDropdown", "Window", markerWindow.getEnumStringsAsList(), markerWindow.getIndex());
+        List<String> verticalScaleList = EnumHelper.getEnumStrings(MarkerVertScale.class);
+        List<String> windowList = EnumHelper.getEnumStrings(MarkerWindow.class);
+
+        addDropdown("markerVertScaleDropdown", "Vert Scale", verticalScaleList, markerVertScale.getIndex());
+        addDropdown("markerWindowDropdown", "Window", windowList, markerWindow.getIndex());
         
         updateGraphDims();
         markerBar = new MarkerBar(ourApplet, MAX_NUMBER_OF_MARKER_BUTTONS, markerWindow.getValue(), markerVertScale.getValue(), graphX, graphY, graphW, graphH);
@@ -519,7 +522,6 @@ public enum MarkerWindow implements IndexingInterface
     private int index;
     private int value;
     private String label;
-    private static MarkerWindow[] vals = values();
 
     MarkerWindow(int _index, int _value, String _label) {
         this.index = _index;
@@ -540,14 +542,6 @@ public enum MarkerWindow implements IndexingInterface
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum MarkerVertScale implements IndexingInterface
@@ -562,7 +556,6 @@ public enum MarkerVertScale implements IndexingInterface
     private int index;
     private int value;
     private String label;
-    private static MarkerVertScale[] vals = values();
 
     MarkerVertScale(int _index, int _value, String _label) {
         this.index = _index;
@@ -582,14 +575,6 @@ public enum MarkerVertScale implements IndexingInterface
     @Override
     public int getIndex() {
         return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
     }
 }
 

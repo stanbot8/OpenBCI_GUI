@@ -6,11 +6,10 @@ public enum SpectrogramMaxFrequency implements IndexingInterface {
     MAX_120 (4, 120, "120 Hz", new int[]{120, 90, 60, 30, 0, 30, 60, 90, 120}),
     MAX_250 (5, 250, "250 Hz", new int[]{250, 188, 125, 63, 0, 63, 125, 188, 250});
 
-    private final int index;
+    private int index;
     private final int value;
-    private final String label;
+    private String label;
     private final int[] axisLabels;
-    private static final SpectrogramMaxFrequency[] values = values();
 
     SpectrogramMaxFrequency(int index, int value, String label, int[] axisLabels) {
         this.index = index;
@@ -36,14 +35,6 @@ public enum SpectrogramMaxFrequency implements IndexingInterface {
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum SpectrogramWindowSize implements IndexingInterface {
@@ -53,9 +44,9 @@ public enum SpectrogramWindowSize implements IndexingInterface {
     SIX_MINUTES (3, 6f, "6 Min.", new float[]{6, 5, 4, 3, 2, 1, 0}, 200),
     THIRTY_MINUTES (4, 30f, "30 Min.", new float[]{30, 25, 20, 15, 10, 5, 0}, 1000);
 
-    private final int index;
+    private int index;
     private final float value;
-    private final String label;
+    private String label;
     private final float[] axisLabels;
     private final int scrollSpeed;
 
@@ -87,13 +78,5 @@ public enum SpectrogramWindowSize implements IndexingInterface {
     @Override
     public int getIndex() {
         return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values()) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
     }
 }

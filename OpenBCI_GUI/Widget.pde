@@ -7,12 +7,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//Used for Widget Dropdown Enums
-interface IndexingInterface {
-    public int getIndex();
-    public String getString();
-}
-
 class Widget {
     protected String widgetTitle = "Widget"; //default name of the widget
 
@@ -312,6 +306,33 @@ class Widget {
         }
     }
 }; //end of base Widget class
+
+abstract class WidgetWithSettings extends Widget {
+    // This class is used to add settings to a widget. It is a subclass of the Widget class.
+    // It is used to add settings to the widget and to save and load the settings from a file.
+
+    protected WidgetSettings widgetSettings;
+
+    WidgetWithSettings() {
+        super();
+        initWidgetSettings();
+    }
+    
+    public void setWidgetSettings(WidgetSettings _widgetSettings) {
+        //FIX ME - DO I NEED THIS?
+        widgetSettings = _widgetSettings;
+    }
+
+    public WidgetSettings getWidgetSettings() {
+        // FIX ME - DO I NEED THIS?
+        return widgetSettings;
+    }
+
+    protected void initWidgetSettings() {
+        widgetSettings = new WidgetSettings(getWidgetTitle());
+    }
+    protected abstract void applySettings();
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //

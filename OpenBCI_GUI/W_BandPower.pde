@@ -51,18 +51,22 @@ class W_BandPower extends Widget {
         bpChanSelect.activateAllButtons();
 
         cp5ElementsToCheck.addAll(bpChanSelect.getCp5ElementsForOverlapCheck());
+
+        List<String> autoCleanList = EnumHelper.getEnumStrings(BPAutoClean.class);
+        List<String> autoCleanThresholdList = EnumHelper.getEnumStrings(BPAutoCleanThreshold.class);
+        List<String> autoCleanTimerList = EnumHelper.getEnumStrings(BPAutoCleanTimer.class);
+        List<String> smoothingFactorList = EnumHelper.getEnumStrings(FFTSmoothingFactor.class);
+        List<String> filteredEnumList = EnumHelper.getEnumStrings(FFTFilteredEnum.class);
         
         //Add settings dropdowns
-        //Note: This is the correct way to create a dropdown using an enum -RW
-        addDropdown("bandPowerAutoCleanDropdown", "AutoClean", autoClean.getEnumStringsAsList(), autoClean.getIndex());
-        addDropdown("bandPowerAutoCleanThresholdDropdown", "Threshold", autoCleanThreshold.getEnumStringsAsList(), autoCleanThreshold.getIndex());
-        addDropdown("bandPowerAutoCleanTimerDropdown", "Timer", autoCleanTimer.getEnumStringsAsList(), autoCleanTimer.getIndex());
-        //Note: This is a legacy way to create a dropdown which is sloppy and disorganized -RW
+        addDropdown("bandPowerAutoCleanDropdown", "AutoClean", autoCleanList, autoClean.getIndex());
+        addDropdown("bandPowerAutoCleanThresholdDropdown", "Threshold", autoCleanThresholdList, autoCleanThreshold.getIndex());
+        addDropdown("bandPowerAutoCleanTimerDropdown", "Timer", autoCleanTimerList, autoCleanTimer.getIndex());
         //These two dropdowns also have to mirror the settings in the FFT widget
         FFTSmoothingFactor smoothingFactor = globalFFTSettings.getSmoothingFactor();
         FFTFilteredEnum filteredEnum = globalFFTSettings.getFilteredEnum();
-        addDropdown("bandPowerSmoothingDropdown", "Smooth", smoothingFactor.getEnumStringsAsList(), smoothingFactor.getIndex());
-        addDropdown("bandPowerDataFilteringDropdown", "Filtered?", filteredEnum.getEnumStringsAsList(), filteredEnum.getIndex());
+        addDropdown("bandPowerSmoothingDropdown", "Smooth", smoothingFactorList, smoothingFactor.getIndex());
+        addDropdown("bandPowerDataFilteringDropdown", "Filtered?", filteredEnumList, filteredEnum.getIndex());
 
         // Setup for the BandPower plot
         bp_plot = new GPlot(ourApplet, x, y-NAV_HEIGHT, w, h+NAV_HEIGHT);

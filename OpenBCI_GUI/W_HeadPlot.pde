@@ -22,10 +22,15 @@ class W_HeadPlot extends Widget {
         super();
         widgetTitle = "Head Plot";
 
-        addDropdown("headPlotIntensityDropdown", "Intensity", headPlotIntensity.getEnumStringsAsList(), headPlotIntensity.getIndex());
-        addDropdown("headPlotPolarityDropdown", "Polarity", headPlotPolarity.getEnumStringsAsList(), headPlotPolarity.getIndex());
-        addDropdown("headPlotContoursDropdown", "Contours", headPlotContours.getEnumStringsAsList(), headPlotContours.getIndex());
-        addDropdown("headPlotSmoothingDropdown", "Smooth", headPlotSmoothing.getEnumStringsAsList(), headPlotSmoothing.getIndex());
+        List<String> headPlotIntensityList = EnumHelper.getEnumStrings(HeadPlotIntensity.class);
+        List<String> headPlotPolarityList = EnumHelper.getEnumStrings(HeadPlotPolarity.class);
+        List<String> headPlotContoursList = EnumHelper.getEnumStrings(HeadPlotContours.class);
+        List<String> headPlotSmoothingList = EnumHelper.getEnumStrings(HeadPlotSmoothing.class);
+
+        addDropdown("headPlotIntensityDropdown", "Intensity", headPlotIntensityList, headPlotIntensity.getIndex());
+        addDropdown("headPlotPolarityDropdown", "Polarity", headPlotPolarityList, headPlotPolarity.getIndex());
+        addDropdown("headPlotContoursDropdown", "Contours", headPlotContoursList, headPlotContours.getIndex());
+        addDropdown("headPlotSmoothingDropdown", "Smooth", headPlotSmoothingList, headPlotSmoothing.getIndex());
 
         updateHeadPlot();
     }
@@ -74,23 +79,23 @@ class W_HeadPlot extends Widget {
     }
 
     public void setIntensity(int n) {
-        headPlotIntensity = HeadPlotIntensity.values[n];
+        headPlotIntensity = headPlotIntensity.values()[n];
         float maxIntensityUv = DEFAULT_VERTICAL_SCALE_UV * headPlotIntensity.getValue();
         headPlot.setMaxIntensity_uV(maxIntensityUv);
     }
 
     public void setPolarity(int n) {
-        headPlotPolarity = HeadPlotPolarity.values[n];
+        headPlotPolarity = headPlotPolarity.values()[n];
         headPlot.use_polarity = headPlotPolarity == HeadPlotPolarity.PLUS_AND_MINUS;
     }
 
     public void setContours(int n) {
-        headPlotContours = HeadPlotContours.values[n];
+        headPlotContours = headPlotContours.values()[n];
         headPlot.drawHeadAsContours = headPlotContours == HeadPlotContours.ON;
     }
 
     public void setSmoothing(int n) {
-        headPlotSmoothing = HeadPlotSmoothing.values[n];
+        headPlotSmoothing = headPlotSmoothing.values()[n];
         headPlot.smoothingFactor = headPlotSmoothing.getValue();
     }
 };

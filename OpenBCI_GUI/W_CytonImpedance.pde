@@ -70,10 +70,14 @@ class W_CytonImpedance extends Widget {
         threshold_ui_cp5.setGraphics(ourApplet, 0,0);
         threshold_ui_cp5.setAutoDraw(false);
 
-        addDropdown("CytonImpedance_MasterCheckInterval", "Interval", masterCheckInterval.getEnumStringsAsList(), masterCheckInterval.getIndex());
+        List<String> intervalList = EnumHelper.getEnumStrings(CytonImpedanceInterval.class);
+        List<String> labelList = EnumHelper.getEnumStrings(CytonImpedanceLabels.class);
+        List<String> modeList = EnumHelper.getEnumStrings(CytonSignalCheckMode.class);
+
+        addDropdown("CytonImpedance_MasterCheckInterval", "Interval", intervalList, masterCheckInterval.getIndex());
         dropdownWidth = 85; //Override the widget header dropdown width to fit "impedance" mode
-        addDropdown("CytonImpedance_LabelMode", "Labels", labelMode.getEnumStringsAsList(), labelMode.getIndex());
-        addDropdown("CytonImpedance_Mode", "Mode", signalCheckMode.getEnumStringsAsList(), signalCheckMode.getIndex());
+        addDropdown("CytonImpedance_LabelMode", "Labels", labelList, labelMode.getIndex());
+        addDropdown("CytonImpedance_Mode", "Mode", modeList, signalCheckMode.getIndex());
 
         footerHeight = navH/2;
         

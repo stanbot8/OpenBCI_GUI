@@ -33,8 +33,8 @@ class W_AnalogRead extends Widget {
 
         analogBoard = (AnalogCapableBoard)currentBoard;
 
-        addDropdown("analogReadVerticalScaleDropdown", "Vert Scale", verticalScale.getEnumStringsAsList(), verticalScale.getIndex());
-        addDropdown("analogReadHorizontalScaleDropdown", "Window", horizontalScale.getEnumStringsAsList(), horizontalScale.getIndex());
+        addDropdown("analogReadVerticalScaleDropdown", "Vert Scale", EnumHelper.getEnumStrings(AnalogReadVerticalScale.class), verticalScale.getIndex());
+        addDropdown("analogReadHorizontalScaleDropdown", "Window", EnumHelper.getEnumStrings(AnalogReadHorizontalScale.class), horizontalScale.getIndex());
 
         plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
         arPadding = 10.0;
@@ -159,14 +159,14 @@ class W_AnalogRead extends Widget {
     }
 
     public void setVerticalScale(int n) {
-        verticalScale = AnalogReadVerticalScale.values[n];
+        verticalScale = verticalScale.values()[n];
         for(int i = 0; i < analogReadBars.length; i++) {
             analogReadBars[i].adjustVertScale(verticalScale.getValue());
         }
     }
 
     public void setHorizontalScale(int n) {
-        horizontalScale = AnalogReadHorizontalScale.values[n];
+        horizontalScale = horizontalScale.values()[n];
         for(int i = 0; i < analogReadBars.length; i++) {
             analogReadBars[i].adjustTimeAxis(horizontalScale.getValue());
         }

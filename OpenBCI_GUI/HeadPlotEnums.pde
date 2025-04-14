@@ -7,10 +7,9 @@ public enum HeadPlotIntensity implements IndexingInterface {
     INTENSITY_2 (4, 2.0f, "2x"),
     INTENSITY_4 (5, 4.0f, "4x");
 
-    private final int index;
+    private int index;
     private final float value;
-    private final String label;
-    private static final HeadPlotIntensity[] values = values();
+    private String label;
 
     HeadPlotIntensity(int index, float value, String label) {
         this.index = index;
@@ -31,23 +30,14 @@ public enum HeadPlotIntensity implements IndexingInterface {
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum HeadPlotPolarity implements IndexingInterface {
     PLUS_AND_MINUS (0, "+/-"),
     PLUS (1, "+");
 
-    private final int index;
-    private final String label;
-    private static final HeadPlotPolarity[] values = values();
+    private int index;
+    private String label;
 
     HeadPlotPolarity(int index, String label) {
         this.index = index;
@@ -63,23 +53,14 @@ public enum HeadPlotPolarity implements IndexingInterface {
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum HeadPlotContours implements IndexingInterface {
     ON (0, "ON"),
     OFF (1, "OFF");
 
-    private final int index;
-    private final String label;
-    private static final HeadPlotContours[] values = values();
+    private int index;
+    private String label;
 
     HeadPlotContours(int index, String label) {
         this.index = index;
@@ -95,14 +76,6 @@ public enum HeadPlotContours implements IndexingInterface {
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum HeadPlotSmoothing implements IndexingInterface {
@@ -115,10 +88,9 @@ public enum HeadPlotSmoothing implements IndexingInterface {
     SMOOTH_99 (6, 0.99f, "0.99"),
     SMOOTH_999 (7, 0.999f, "0.999");
 
-    private final int index;
+    private int index;
     private final float value;
-    private final String label;
-    private static final HeadPlotSmoothing[] values = values();
+    private String label;
 
     HeadPlotSmoothing(int index, float value, String label) {
         this.index = index;
@@ -138,13 +110,5 @@ public enum HeadPlotSmoothing implements IndexingInterface {
     @Override
     public int getIndex() {
         return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<>();
-        for (IndexingInterface enumValue : values) {
-            enumStrings.add(enumValue.getString());
-        }
-        return enumStrings;
     }
 }
