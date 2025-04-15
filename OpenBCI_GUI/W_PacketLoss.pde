@@ -64,7 +64,7 @@ class W_PacketLoss extends Widget {
         tableDropdown = cp5_widget.addScrollableList("TableTimeWindow")
             .setDrawOutline(false)
             .setOpen(false)
-            .setColor(sessionSettings.dropdownColors)
+            .setColor(dropdownColorsGlobal)
             .setOutlineColor(OBJECT_BORDER_GREY)
             .setBarHeight(CELL_HEIGHT) //height of top/primary bar
             .setItemHeight(CELL_HEIGHT) //height of all item/dropdown bars

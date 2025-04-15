@@ -48,6 +48,7 @@ public class DataWriterBF {
     }
 
     public void setBrainFlowStreamerFolderName(String _folderName, String _folderPath) {
+        //FIX ME ?
         //sessionSettings.setSessionPath(directoryManager.getRecordingsPath() + "OpenBCISession_" + _sessionName + File.separator);
         folderName = _folderName;
         folderPath = _folderPath;

@@ -315,4 +315,43 @@ class WidgetManager {
     public int getWidgetCount() {
         return widgets.size();
     }
+
+    public String getWidgetSettingsAsJson() {
+        StringBuilder allWidgetSettings = new StringBuilder();
+        allWidgetSettings.append("{");
+        for (Widget widget : widgets) {
+            if (!(widget instanceof WidgetWithSettings)) {
+                continue;
+            }
+            println("Found widget with settings: " + widget.getWidgetTitle());
+            WidgetSettings widgetSettings = ((WidgetWithSettings) widget).getWidgetSettings();
+            String json = widgetSettings.toJSON();
+            allWidgetSettings.append("\"").append(widget.getWidgetTitle()).append("\": ");
+            allWidgetSettings.append(json).append(", ");
+        }
+        allWidgetSettings.append("}");
+        return allWidgetSettings.toString();
+    }
+
+    public void loadWidgetSettingsFromJson(String widgetSettingsJson) {
+        JSONObject json = parseJSONObject(widgetSettingsJson);
+        if (json == null) {
+            println("WidgetManager:loadWidgetSettingsFromJson: Failed to parse JSON string.");
+            return;
+        }
+        
+        for (Widget widget : widgets) {
+            if (!(widget instanceof WidgetWithSettings)) {
+                continue;
+            }
+            
+            String widgetTitle = widget.getWidgetTitle();
+            if (json.hasKey(widgetTitle)) {
+                String settingsJson = json.getString(widgetTitle, "");
+                ((WidgetWithSettings) widget).getWidgetSettings().fromJSON(settingsJson);
+            } else {
+                println("WidgetManager:loadWidgetSettingsFromJson: No settings found for " + widgetTitle);
+            }
+        }
+    }
 };

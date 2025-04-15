@@ -121,6 +121,7 @@ String sdData_fname = "N/A"; //only used if loading input data from a sd file
 DataSource currentBoard = new BoardNull();
 
 DataLogger dataLogger = new DataLogger();
+OdfFileDuration odfFileDuration = OdfFileDuration.SIXTY_MINUTES;
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial(); //This is messy, half-deprecated code. See comments in InterfaceSerial.pde - Nov. 2020
@@ -256,6 +257,8 @@ final color SIGNAL_CHECK_YELLOW = color(221, 178, 13); //Same color as yellow ch
 final color SIGNAL_CHECK_YELLOW_LOWALPHA = color(221, 178, 13, 150);
 final color SIGNAL_CHECK_RED = BOLD_RED;
 final color SIGNAL_CHECK_RED_LOWALPHA = color(224, 56, 45, 150);
+public CColor dropdownColorsGlobal = new CColor();
+        
 
 //Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
 //Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
@@ -378,6 +381,13 @@ void setup() {
     p_5 = createFont("fonts/OpenSans-Regular.ttf", 5);
 
     openbciLogoCog = loadImage("obci-logo-blu-cog.png");
+
+    dropdownColorsGlobal.setActive((int)BUTTON_PRESSED); //bg color of box when pressed
+    dropdownColorsGlobal.setForeground((int)BUTTON_HOVER); //when hovering over any box (primary or dropdown)
+    dropdownColorsGlobal.setBackground((int)color(255)); //bg color of boxes (including primary)
+    dropdownColorsGlobal.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
+    // dropdownColorsGlobal.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
+    dropdownColorsGlobal.setValueLabel((int)color(100)); //color of text in all dropdown boxes
 
     // check if the current directory is writable
     File dummy = new File(sketchPath());
@@ -1063,7 +1073,6 @@ void systemInitSession() {
 //Global function to update the number of channels
 void updateGlobalChannelCount(int _channelCount) {
     globalChannelCount = _channelCount;
-    sessionSettings.sessionSettingsChannelCount = _channelCount; //used in SoftwareSettings.pde only
     fftBuff = new ddf.minim.analysis.FFT[globalChannelCount];  //reinitialize the FFT buffer
     println("OpenBCI_GUI: Channel count set to " + str(globalChannelCount));
 }
@@ -1076,7 +1085,7 @@ void introAnimation() {
     float transparency = 0;
 
     if (millis() >= sessionSettings.introAnimationInit) {
-        transparency = map(millis() - sessionSettings.introAnimationInit, t1, sessionSettings.introAnimationDuration, 0, 255);
+        transparency = map(millis() - sessionSettings.introAnimationInit, t1, sessionSettings.INTRO_ANIMATION_DURATION, 0, 255);
         verbosePrint(String.valueOf(transparency));
         tint(255, transparency);
         //draw OpenBCI Logo Front & Center
@@ -1090,7 +1099,7 @@ void introAnimation() {
     }
 
     //Exit intro animation when the duration has expired AND the Control Panel is ready
-    if ((millis() >= sessionSettings.introAnimationInit + sessionSettings.introAnimationDuration)
+    if ((millis() >= sessionSettings.introAnimationInit + sessionSettings.INTRO_ANIMATION_DURATION)
         && controlPanel != null) {
         systemMode = SYSTEMMODE_PREINIT;
         controlPanel.open();
