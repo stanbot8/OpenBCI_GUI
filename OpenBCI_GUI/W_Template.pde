@@ -162,3 +162,18 @@ class W_Template extends WidgetWithSettings {
         println("Item " + (n+1) + " selected from Dropdown 3");
     }
 };
+
+
+public void widgetTemplateDropdown1(int n) {
+    // This is the callback function for the first dropdown. It will be called when the user selects an item from the dropdown.
+    // The parameter "n" is the index of the selected item.
+    ((W_Template) widgetManager.getWidget("W_Template")).setDropdown1(n);
+}
+
+public void widgetTemplateDropdown2(int n) {
+    ((W_Template) widgetManager.getWidget("W_Template")).setDropdown2(n);
+}
+
+public void widgetTemplateDropdown3(int n) {
+    ((W_Template) widgetManager.getWidget("W_Template")).setDropdown3(n);
+}

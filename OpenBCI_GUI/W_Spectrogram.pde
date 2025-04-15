@@ -466,3 +466,69 @@ public void spectrogramWindowDropdown(int n) {
 public void spectrogramLogLinDropdown(int n) {
     ((W_Spectrogram) widgetManager.getWidget("W_Spectrogram")).setLogLin(n);
 }
+
+
+//Save data from the Active channel checkBoxes - Top
+//JSONArray saveActiveChanSpectTop = new JSONArray();
+/*
+//FIX ME
+int numActiveSpectChanTop = w_spectrogram.spectChanSelectTop.getActiveChannels().size();
+for (int i = 0; i < numActiveSpectChanTop; i++) {
+    int activeChannel = w_spectrogram.spectChanSelectTop.getActiveChannels().get(i);
+    saveActiveChanSpectTop.setInt(i, activeChannel);
+}
+saveSpectrogramSettings.setJSONArray("activeChannelsTop", saveActiveChanSpectTop);
+//Save data from the Active channel checkBoxes - Bottom
+JSONArray saveActiveChanSpectBot = new JSONArray();
+int numActiveSpectChanBot = w_spectrogram.spectChanSelectBot.getActiveChannels().size();
+for (int i = 0; i < numActiveSpectChanBot; i++) {
+    int activeChannel = w_spectrogram.spectChanSelectBot.getActiveChannels().get(i);
+    saveActiveChanSpectBot.setInt(i, activeChannel);
+}
+*/
+//saveSpectrogramSettings.setJSONArray("activeChannelsBot", saveActiveChanSpectBot);
+//Save Spectrogram_Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the spectrogram widget
+//FIX ME
+/*
+saveSpectrogramSettings.setInt("Spectrogram_Max Freq", spectMaxFrqSave);
+saveSpectrogramSettings.setInt("Spectrogram_Sample Rate", spectSampleRateSave);
+saveSpectrogramSettings.setInt("Spectrogram_LogLin", spectLogLinSave);
+*/
+
+//Get Band Power widget settings
+        //FIX ME
+        /*
+        loadBPActiveChans.clear();
+        JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
+        JSONArray loadBPChan = loadBPSettings.getJSONArray("activeChannels");
+        for (int i = 0; i < loadBPChan.size(); i++) {
+            loadBPActiveChans.add(loadBPChan.getInt(i));
+        }
+        loadBPAutoClean = loadBPSettings.getInt("bpAutoClean");
+        loadBPAutoCleanThreshold = loadBPSettings.getInt("bpAutoCleanThreshold");
+        loadBPAutoCleanTimer = loadBPSettings.getInt("bpAutoCleanTimer");
+        //println("Settings: band power active chans loaded = " + loadBPActiveChans );
+        */
+
+        /*
+        try {
+            //Get Spectrogram widget settings
+            loadSpectActiveChanTop.clear();
+            loadSpectActiveChanBot.clear();
+            JSONObject loadSpectSettings = loadSettingsJSONData.getJSONObject(kJSONKeySpectrogram);
+            JSONArray loadSpectChanTop = loadSpectSettings.getJSONArray("activeChannelsTop");
+            for (int i = 0; i < loadSpectChanTop.size(); i++) {
+                loadSpectActiveChanTop.add(loadSpectChanTop.getInt(i));
+            }
+            JSONArray loadSpectChanBot = loadSpectSettings.getJSONArray("activeChannelsBot");
+            for (int i = 0; i < loadSpectChanBot.size(); i++) {
+                loadSpectActiveChanBot.add(loadSpectChanBot.getInt(i));
+            }
+            spectMaxFrqLoad = loadSpectSettings.getInt("Spectrogram_Max Freq");
+            spectSampleRateLoad = loadSpectSettings.getInt("Spectrogram_Sample Rate");
+            spectLogLinLoad = loadSpectSettings.getInt("Spectrogram_LogLin");
+            //println(loadSpectActiveChanTop, loadSpectActiveChanBot);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+*/

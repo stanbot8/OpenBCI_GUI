@@ -81,12 +81,12 @@ class Widget {
     }
 
     public void setupWidgetSelectorDropdown(ArrayList<String> _widgetOptions){
-        cp5_widget.setColor(sessionSettings.dropdownColors);
+        cp5_widget.setColor(dropdownColorsGlobal);
         ScrollableList scrollList = cp5_widget.addScrollableList("WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             // .setFont(h2)
             .setOpen(false)
-            .setColor(sessionSettings.dropdownColors)
+            .setColor(dropdownColorsGlobal)
             .setOutlineColor(OBJECT_BORDER_GREY)
             //.setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
             //.setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
@@ -116,7 +116,7 @@ class Widget {
     }
 
     public void setupNavDropdowns(){
-        cp5_widget.setColor(sessionSettings.dropdownColors);
+        cp5_widget.setColor(dropdownColorsGlobal);
         // println("Setting up dropdowns...");
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
@@ -125,7 +125,7 @@ class Widget {
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
                 .setFont(h5)
                 .setOpen(false)
-                .setColor(sessionSettings.dropdownColors)
+                .setColor(dropdownColorsGlobal)
                 .setOutlineColor(OBJECT_BORDER_GREY)
                 .setSize(dropdownWidth, (dropdowns.get(i).items.size()+1)*(navH-4) )// + maxFreqList.size())
                 .setBarHeight(navH-4)
@@ -324,13 +324,13 @@ abstract class WidgetWithSettings extends Widget {
     }
 
     public WidgetSettings getWidgetSettings() {
-        // FIX ME - DO I NEED THIS?
         return widgetSettings;
     }
 
     protected void initWidgetSettings() {
         widgetSettings = new WidgetSettings(getWidgetTitle());
     }
+    
     protected abstract void applySettings();
 }
 
