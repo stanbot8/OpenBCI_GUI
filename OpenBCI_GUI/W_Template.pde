@@ -40,7 +40,6 @@ class W_Template extends WidgetWithSettings {
         localCP5.setAutoDraw(false);
 
         createWidgetTemplateButton();
-       
     }
 
     @Override
@@ -48,34 +47,25 @@ class W_Template extends WidgetWithSettings {
         super.initWidgetSettings();
         // Widget Settings are used to store the state of the widget.
         // This is where you can set the default values for your dropdowns and other settings.
-        widgetSettings.set(TemplateDropdown1.class, TemplateDropdown1.ITEM_A);
-        widgetSettings.set(TemplateDropdown2.class, TemplateDropdown2.ITEM_C);
-        widgetSettings.set(TemplateDropdown3.class, TemplateDropdown3.ITEM_F);
-        widgetSettings.saveDefaults();
-
-        // Get the list of Strings for the dropdowns. These are the options that will be displayed in the dropdowns.
-        List<String> dropdown1List = EnumHelper.getEnumStrings(TemplateDropdown1.class);
-        List<String> dropdown2List = EnumHelper.getEnumStrings(TemplateDropdown2.class);
-        List<String> dropdown3List = EnumHelper.getEnumStrings(TemplateDropdown3.class);
-
-        // Get the current settings for the dropdowns. This is where you can retrieve the values that were just set.
-        int dropdown1Index = widgetSettings.get(TemplateDropdown1.class).getIndex();
-        int dropdown2Index = widgetSettings.get(TemplateDropdown2.class).getIndex();
-        int dropdown3Index = widgetSettings.get(TemplateDropdown3.class).getIndex();
+        widgetSettings.set(TemplateDropdown1.class, TemplateDropdown1.ITEM_A)
+                    .set(TemplateDropdown2.class, TemplateDropdown2.ITEM_C)
+                    .set(TemplateDropdown3.class, TemplateDropdown3.ITEM_F)
+                    .saveDefaults();
         
         // This is the protocol for setting up dropdowns.
         // Note that these 3 dropdowns correspond to the 3 global functions below.
         // You just need to make sure the "id" (the 1st String) has the same name as the corresponding function.
-        addDropdown("widgetTemplateDropdown1", "Drop 1", dropdown1List, dropdown1Index);
-        addDropdown("widgetTemplateDropdown2", "Drop 2", dropdown2List, dropdown2Index);
-        addDropdown("widgetTemplateDropdown3", "Drop 3", dropdown3List, dropdown3Index);
+        // Arguments: Class, String id, String label
+        initDropdown(TemplateDropdown1.class, "widgetTemplateDropdown1", "Drop 1");
+        initDropdown(TemplateDropdown2.class, "widgetTemplateDropdown2", "Drop 2");
+        initDropdown(TemplateDropdown3.class, "widgetTemplateDropdown3", "Drop 3");
     }
 
     @Override
     protected void applySettings() {
-        //FIX ME
-        println("!!!!!!!!!!!!!!!!!!!!!!!!!Applying settings for " + widgetTitle);
-        //widgetSettings.applySettings();
+        updateDropdownLabel(TemplateDropdown1.class, "widgetTemplateDropdown1");
+        updateDropdownLabel(TemplateDropdown2.class, "widgetTemplateDropdown2");
+        updateDropdownLabel(TemplateDropdown3.class, "widgetTemplateDropdown3");
     }
 
     public void update(){

@@ -345,13 +345,21 @@ class WidgetManager {
                 continue;
             }
             
+            WidgetWithSettings widgetWithSettings = (WidgetWithSettings) widget;
             String widgetTitle = widget.getWidgetTitle();
-            if (json.hasKey(widgetTitle)) {
-                String settingsJson = json.getString(widgetTitle, "");
-                ((WidgetWithSettings) widget).getWidgetSettings().fromJSON(settingsJson);
-            } else {
+            if (!json.hasKey(widgetTitle)) {
                 println("WidgetManager:loadWidgetSettingsFromJson: No settings found for " + widgetTitle);
+                continue;
             }
+
+            String settingsJson = json.getString(widgetTitle, "");
+            WidgetSettings widgetSettings = widgetWithSettings.getWidgetSettings();
+            boolean success = widgetSettings.loadFromJSON(settingsJson);
+            if (!success) {
+                println("WidgetManager:loadWidgetSettingsFromJson: Failed to load settings for " + widgetTitle);
+                continue;
+            }
+            widgetWithSettings.applySettings();
         }
     }
 };

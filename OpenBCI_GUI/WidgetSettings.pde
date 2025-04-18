@@ -17,9 +17,11 @@ class WidgetSettings {
 
     /**
      * Store a setting using enum class as key
+     * @return this WidgetSettings instance for method chaining
      */
-    public <T extends Enum<?>> void set(Class<T> enumClass, T value) {
+    public <T extends Enum<?>> WidgetSettings set(Class<T> enumClass, T value) {
         settings.put(enumClass.getName(), value);
+        return this;
     }
 
     /**
@@ -28,9 +30,9 @@ class WidgetSettings {
      * 
      * @param enumClass The enum class to look up values
      * @param index The index of the enum constant to set
-     * @return true if successful, false if the index is out of bounds
+     * @return this WidgetSettings instance for method chaining
      */
-    public <T extends Enum<?>> boolean setByIndex(Class<T> enumClass, int index) {
+    public <T extends Enum<?>> WidgetSettings setByIndex(Class<T> enumClass, int index) {
         T[] enumConstants = enumClass.getEnumConstants();
         
         // Check if index is valid
@@ -39,12 +41,12 @@ class WidgetSettings {
             T value = enumConstants[index];
             // Set it using the regular set method
             set(enumClass, value);
-            return true;
+        } else {
+            // Index was out of bounds
+            println("Warning: Invalid index " + index + " for enum " + enumClass.getName());
         }
         
-        // Index was out of bounds
-        println("Warning: Invalid index " + index + " for enum " + enumClass.getName());
-        return false;
+        return this;
     }
 
     /**
@@ -77,16 +79,20 @@ class WidgetSettings {
 
     /**
      * Save current settings as defaults
+     * @return this WidgetSettings instance for method chaining
      */
-    public void saveDefaults() {
+    public WidgetSettings saveDefaults() {
         defaults = new HashMap<String, Enum<?>>(settings);
+        return this;
     }
 
     /**
      * Restore to default settings
+     * @return this WidgetSettings instance for method chaining
      */
-    public void restoreDefaults() {
+    public WidgetSettings restoreDefaults() {
         settings = new HashMap<String, Enum<?>>(defaults);
+        return this;
     }
 
     /**
@@ -112,9 +118,11 @@ class WidgetSettings {
     }
 
     /**
-     * Load settings from JSON string
-     */
-    public boolean fromJSON(String jsonString) {
+    * Attempts to load settings from a JSON string
+    * @param jsonString The JSON string containing settings
+    * @return true if settings were loaded successfully, false otherwise
+    */
+    public boolean loadFromJSON(String jsonString) {
         try {
             JSONObject json = parseJSONObject(jsonString);
             if (json == null) return false;

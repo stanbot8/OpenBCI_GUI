@@ -319,8 +319,8 @@ abstract class WidgetWithSettings extends Widget {
     }
     
     public void setWidgetSettings(WidgetSettings _widgetSettings) {
-        //FIX ME - DO I NEED THIS?
         widgetSettings = _widgetSettings;
+        applySettings();
     }
 
     public WidgetSettings getWidgetSettings() {
@@ -329,6 +329,17 @@ abstract class WidgetWithSettings extends Widget {
 
     protected void initWidgetSettings() {
         widgetSettings = new WidgetSettings(getWidgetTitle());
+    }
+
+    protected <T extends Enum<T> & IndexingInterface> void initDropdown(Class<T> enumClass, String id, String label) {
+        List<String> options = EnumHelper.getEnumStrings(enumClass);
+        int currentIndex = widgetSettings.get(enumClass).getIndex();
+        addDropdown(id, label, options, currentIndex);
+    }
+
+    protected <T extends Enum<T> & IndexingInterface> void updateDropdownLabel(Class<T> enumClass, String controllerId) {
+        String value = widgetSettings.get(enumClass).getString();
+        cp5_widget.getController(controllerId).getCaptionLabel().setText(value);
     }
     
     protected abstract void applySettings();
