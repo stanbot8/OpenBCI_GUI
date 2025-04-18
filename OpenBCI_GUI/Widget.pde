@@ -308,41 +308,135 @@ class Widget {
 }; //end of base Widget class
 
 abstract class WidgetWithSettings extends Widget {
-    // This class is used to add settings to a widget. It is a subclass of the Widget class.
-    // It is used to add settings to the widget and to save and load the settings from a file.
-
     protected WidgetSettings widgetSettings;
-
+    
     WidgetWithSettings() {
         super();
+        // Create settings with the widget's title
+        widgetSettings = new WidgetSettings(getWidgetTitle());
+        // Initialize settings with default values
         initWidgetSettings();
     }
     
-    public void setWidgetSettings(WidgetSettings _widgetSettings) {
-        widgetSettings = _widgetSettings;
-        applySettings();
+    /**
+     * Initialize widget settings with default values
+     * Override this method in widget subclasses to set custom defaults
+     */
+    protected void initWidgetSettings() {
+        // Default implementation is empty
+        // Child classes should override this to add their specific settings
     }
 
-    public WidgetSettings getWidgetSettings() {
+    /**
+     * Apply current settings to the widget UI
+     * Override this method in subclasses to update UI elements based on settings
+     */
+    protected abstract void applySettings();
+    
+    /**
+     * Get the settings object for this widget
+     * @return WidgetSettings object for this widget
+     */
+    public WidgetSettings getSettings() {
         return widgetSettings;
     }
-
-    protected void initWidgetSettings() {
-        widgetSettings = new WidgetSettings(getWidgetTitle());
+    
+    /**
+     * Convert widget settings to JSON string
+     * @return JSON representation of settings
+     */
+    public String settingsToJSON() {
+        // If the widget has a channel selector, save its current state
+        updateChannelSettings();
+        return widgetSettings.toJSON();
     }
-
+    
+    /**
+     * Load settings from JSON string
+     * @param jsonString JSON string containing settings
+     * @return true if settings were loaded successfully, false otherwise
+     */
+    public boolean loadSettingsFromJSON(String jsonString) {
+        boolean success = widgetSettings.loadFromJSON(jsonString);
+        if (success) {
+            applySettings();
+        }
+        return success;
+    }
+    
+    /**
+     * Helper method to initialize a dropdown with values from an enum
+     * @param enumClass Enum class to get values from
+     * @param id ID for the dropdown controller
+     * @param label Label to display above the dropdown
+     */
     protected <T extends Enum<T> & IndexingInterface> void initDropdown(Class<T> enumClass, String id, String label) {
+        T currentValue = widgetSettings.get(enumClass);
+        int currentIndex = currentValue != null ? currentValue.getIndex() : 0;
         List<String> options = EnumHelper.getEnumStrings(enumClass);
-        int currentIndex = widgetSettings.get(enumClass).getIndex();
         addDropdown(id, label, options, currentIndex);
     }
 
+    /**
+     * Helper method to update a dropdown label with current setting value
+     * @param enumClass Enum class to get the current value from
+     * @param controllerId ID of the controller to update
+     */
     protected <T extends Enum<T> & IndexingInterface> void updateDropdownLabel(Class<T> enumClass, String controllerId) {
-        String value = widgetSettings.get(enumClass).getString();
-        cp5_widget.getController(controllerId).getCaptionLabel().setText(value);
+        T currentValue = widgetSettings.get(enumClass);
+        if (currentValue != null) {
+            String value = currentValue.getString();
+            cp5_widget.getController(controllerId).getCaptionLabel().setText(value);
+        }
     }
-    
-    protected abstract void applySettings();
+
+    /**
+     * Save active channel selection to widget settings
+     * @param channels List of selected channel indices
+     */
+    protected void saveActiveChannels(List<Integer> channels) {
+        widgetSettings.setActiveChannels(channels);
+        println(widgetTitle + ": Saved " + channels.size() + " active channels");
+    }
+
+    /**
+     * Apply saved active channel selection to a channel select component
+     * @param channelSelect The channel select component to update
+     * @return true if channels were loaded and applied, false otherwise
+     */
+    protected boolean applyActiveChannels(ExGChannelSelect channelSelect) {
+        List<Integer> savedChannels = widgetSettings.getActiveChannels();
+        if (!savedChannels.isEmpty()) {
+            channelSelect.updateChannelSelection(savedChannels);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the list of active channels from settings
+     * @return List of active channel indices, or empty list if none are saved
+     */
+    protected List<Integer> getActiveChannels() {
+        return widgetSettings.getActiveChannels();
+    }
+
+    /**
+     * Check if active channels are defined in settings
+     * @return true if active channels are defined, false otherwise
+     */
+    protected boolean hasActiveChannels() {
+        return widgetSettings.hasActiveChannels();
+    }
+
+    /**
+     * Update channel settings from any channel selectors before saving
+     * Each widget class should override this if it has channel selectors
+     */
+    protected void updateChannelSettings() {
+        // Default implementation does nothing
+        // Override in widgets that have channel selectors
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

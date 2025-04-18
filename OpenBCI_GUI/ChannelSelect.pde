@@ -232,6 +232,17 @@ class ExGChannelSelect extends ChannelSelect {
         return activeChannels;
     }
 
+    public void updateChannelSelection(List<Integer> channels) {
+        // First deactivate all channels
+        deactivateAllButtons();
+        
+        // Then activate only the selected channels
+        for (Integer channel : channels) {
+            if (channel >= 0 && channel < channelButtons.size()) {
+                setToggleState(channel, true);  // Changed from toggleButton
+            }
+        }
+    }
 }
 
 class DualChannelSelector {

@@ -319,16 +319,33 @@ class WidgetManager {
     public String getWidgetSettingsAsJson() {
         StringBuilder allWidgetSettings = new StringBuilder();
         allWidgetSettings.append("{");
+        boolean firstWidget = true;
+        
         for (Widget widget : widgets) {
             if (!(widget instanceof WidgetWithSettings)) {
                 continue;
             }
-            println("Found widget with settings: " + widget.getWidgetTitle());
-            WidgetSettings widgetSettings = ((WidgetWithSettings) widget).getWidgetSettings();
+            
+            WidgetWithSettings widgetWithSettings = (WidgetWithSettings) widget;
+            
+            // Call updateChannelSettings to ensure channel selections are saved
+            widgetWithSettings.updateChannelSettings();
+            
+            String widgetTitle = widget.getWidgetTitle();
+            WidgetSettings widgetSettings = widgetWithSettings.getSettings();
             String json = widgetSettings.toJSON();
-            allWidgetSettings.append("\"").append(widget.getWidgetTitle()).append("\": ");
-            allWidgetSettings.append(json).append(", ");
+            
+            // Only add comma if not the first widget
+            if (!firstWidget) {
+                allWidgetSettings.append(", ");
+            } else {
+                firstWidget = false;
+            }
+            
+            allWidgetSettings.append("\"").append(widgetTitle).append("\": ");
+            allWidgetSettings.append(json);
         }
+        
         allWidgetSettings.append("}");
         return allWidgetSettings.toString();
     }
@@ -353,7 +370,7 @@ class WidgetManager {
             }
 
             String settingsJson = json.getString(widgetTitle, "");
-            WidgetSettings widgetSettings = widgetWithSettings.getWidgetSettings();
+            WidgetSettings widgetSettings = widgetWithSettings.getSettings();
             boolean success = widgetSettings.loadFromJSON(settingsJson);
             if (!success) {
                 println("WidgetManager:loadWidgetSettingsFromJson: Failed to load settings for " + widgetTitle);
