@@ -9,39 +9,39 @@
 //////////////////////////////////////////////////////
 
 class W_Spectrogram extends WidgetWithSettings {
-    public ExGChannelSelect spectChanSelectTop;
-    public ExGChannelSelect spectChanSelectBot;
+    private ExGChannelSelect spectChanSelectTop;
+    private ExGChannelSelect spectChanSelectBot;
     private boolean chanSelectWasOpen = false;
-    List<controlP5.Controller> cp5ElementsToCheck;
+    private List<controlP5.Controller> cp5ElementsToCheck;
 
-    int xPos = 0;
-    int hueLimit = 160;
+    private int xPos = 0;
+    private int hueLimit = 160;
 
-    PImage dataImg;
-    int dataImageW = 1800;
-    int dataImageH = 200;
-    int prevW = 0;
-    int prevH = 0;
-    float scaledWidth;
-    float scaledHeight;
-    int graphX = 0;
-    int graphY = 0;
-    int graphW = 0;
-    int graphH = 0;
-    int midLineY = 0;
+    private PImage dataImg;
+    private int dataImageW = 1800;
+    private int dataImageH = 200;
+    private int prevW = 0;
+    private int prevH = 0;
+    private float scaledWidth;
+    private float scaledHeight;
+    private int graphX = 0;
+    private int graphY = 0;
+    private int graphW = 0;
+    private int graphH = 0;
+    private int midLineY = 0;
 
     private int lastShift = 0;
     private int scrollSpeed = 25; // == 40Hz
     private boolean wasRunning = false;
 
-    int paddingLeft = 54;
-    int paddingRight = 26;   
-    int paddingTop = 8;
-    int paddingBottom = 50;
-    StringList horizontalAxisLabelStrings;
+    private int paddingLeft = 54;
+    private int paddingRight = 26;   
+    private int paddingTop = 8;
+    private int paddingBottom = 50;
+    private StringList horizontalAxisLabelStrings;
 
-    float[] topFFTAvg;
-    float[] botFFTAvg;
+    private float[] topFFTAvg;
+    private float[] botFFTAvg;
 
     W_Spectrogram() {
         super();
@@ -76,17 +76,7 @@ class W_Spectrogram extends WidgetWithSettings {
         initDropdown(SpectrogramWindowSize.class, "spectrogramWindowDropdown", "Window");
         initDropdown(FFTLogLin.class, "spectrogramLogLinDropdown", "Log/Lin");
 
-        spectChanSelectTop = new DualExGChannelSelect(ourApplet, x, y, w, navH, true);
-        spectChanSelectBot = new DualExGChannelSelect(ourApplet, x, y + navH, w, navH, false);
-        activateDefaultChannels();
-        
-        // Save both channel selections with unique identifiers
-        saveNamedChannels("top", spectChanSelectTop.getActiveChannels());
-        saveNamedChannels("bottom", spectChanSelectBot.getActiveChannels());
-
-        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
-        cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
-        cp5ElementsToCheck.addAll(spectChanSelectBot.getCp5ElementsForOverlapCheck());
+        initializeUI();
     }
 
     @Override
@@ -96,7 +86,10 @@ class W_Spectrogram extends WidgetWithSettings {
         updateDropdownLabel(FFTLogLin.class, "spectrogramLogLinDropdown");
         applyMaxFrequency();
         applyWindowSize();
-        
+        applyChannelSettings();
+    }
+
+    private void applyChannelSettings() {
         // Apply saved channel selections if available
         if (hasNamedChannels("top")) {
             applyNamedChannels("top", spectChanSelectTop);
@@ -110,46 +103,22 @@ class W_Spectrogram extends WidgetWithSettings {
     @Override
     protected void updateChannelSettings() {
         // Save current channel selections before saving settings
+        saveChannelSettings();
+    }
+
+    private void saveChannelSettings() {
         saveNamedChannels("top", spectChanSelectTop.getActiveChannels());
         saveNamedChannels("bottom", spectChanSelectBot.getActiveChannels());
     }
 
-    void update(){
+    @Override
+    public void update(){
         super.update();
 
         //Update channel checkboxes, active channels, and position
-        spectChanSelectTop.update(x, y, w);
-        int chanSelectBotYOffset;
-        chanSelectBotYOffset = navH;
-        spectChanSelectBot.update(x, y + chanSelectBotYOffset, w);
+        updateUIState();
         
-        //Let the top channel select open the bottom one also so we can open both with 1 button
-        if (chanSelectWasOpen != spectChanSelectTop.isVisible()) {
-            spectChanSelectBot.setIsVisible(spectChanSelectTop.isVisible());
-            chanSelectWasOpen = spectChanSelectTop.isVisible();
-        }
-
-        //Allow spectrogram to flex size and position depending on if the channel select is open
-        flexSpectrogramSizeAndPosition();
-
-        if (spectChanSelectTop.isVisible()) {
-            lockElementsOnOverlapCheck(cp5ElementsToCheck);
-        }
-        
-        if (currentBoard.isStreaming()) {
-            //Make sure we are always draw new pixels on the right
-            xPos = dataImg.width - 1;
-            //Fetch/calculate the time strings for the horizontal axis ticks
-            horizontalAxisLabelStrings.clear();
-            horizontalAxisLabelStrings = fetchTimeStrings();
-        }
-        
-        //State change check
-        if (currentBoard.isStreaming() && !wasRunning) {
-            onStartRunning();
-        } else if (!currentBoard.isStreaming() && wasRunning) {
-            onStopRunning();
-        }
+        checkBoardStreamingState();
     }
 
     private void onStartRunning() {
@@ -161,97 +130,109 @@ class W_Spectrogram extends WidgetWithSettings {
         wasRunning = false;
     }
 
-    public void draw(){
+    @Override
+    public void draw() {
         super.draw();
-
-        //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         
-        //Scale the dataImage to fit in inside the widget
         float scaleW = float(graphW) / dataImageW;
         float scaleH = float(graphH) / dataImageH;
 
-        pushStyle();
-        fill(0);
-        rect(x, y, w, h); //draw a black background for the widget
-        popStyle();
-
-        //draw the spectrogram if the widget is open, and update pixels if board is streaming data
+        // Draw black background
+        drawBackground();
+        
+        // Update spectrogram data if streaming
         if (currentBoard.isStreaming()) {
-            pushStyle();
-
-            dataImg.loadPixels();
-
-            FFTLogLin logLin = widgetSettings.get(FFTLogLin.class);
-
-            //Shift all pixels to the left! (every scrollspeed ms)
-            if(millis() - lastShift > scrollSpeed) {
-                for (int r = 0; r < dataImg.height; r++) {
-                    if (r != 0) {
-                        arrayCopy(dataImg.pixels, dataImg.width * r, dataImg.pixels, dataImg.width * r - 1, dataImg.width);
-                    } else {
-                        //When there would be an ArrayOutOfBoundsException, account for it!
-                        arrayCopy(dataImg.pixels, dataImg.width * (r + 1), dataImg.pixels, r * dataImg.width, dataImg.width);
-                    }
-                }
-
-                lastShift += scrollSpeed;
-            }
-            //for (int i = 0; i < fftLin_L.specSize() - 80; i++) {
-            for (int i = 0; i <= dataImg.height/2; i++) {
-                //LEFT SPECTROGRAM ON TOP
-                float hueValue = hueLimit - map((fftAvgs(spectChanSelectTop.getActiveChannels(), i)*32), 0, 256, 0, hueLimit);
-                if (logLin == FFTLogLin.LOG) {
-                    hueValue = map(log10(hueValue), 0, 2, 0, hueLimit);
-                }
-                // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
-                colorMode(HSB, 256, 100, 100);
-                // color for stroke is specified as hue, saturation, brightness.
-                stroke(int(hueValue), 100, 80);
-                // plot a point using the specified stroke
-                //point(xPos, i);
-                int loc = xPos + ((dataImg.height/2 - i) * dataImg.width);
-                if (loc >= dataImg.width * dataImg.height) loc = dataImg.width * dataImg.height - 1;
-                try {
-                    dataImg.pixels[loc] = color(int(hueValue), 100, 80);
-                } catch (Exception e) {
-                    println("Major drawing error Spectrogram Left image!");
-                }
-
-                //RIGHT SPECTROGRAM ON BOTTOM
-                hueValue = hueLimit - map((fftAvgs(spectChanSelectBot.getActiveChannels(), i)*32), 0, 256, 0, hueLimit);
-                if (logLin == FFTLogLin.LOG) {
-                    hueValue = map(log10(hueValue), 0, 2, 0, hueLimit);
-                }
-                // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
-                colorMode(HSB, 256, 100, 100);
-                // color for stroke is specified as hue, saturation, brightness.
-                stroke(int(hueValue), 100, 80);
-                int y_offset = -1;
-                // Pixel = X + ((Y + Height/2) * Width)
-                loc = xPos + ((i + dataImg.height/2 + y_offset) * dataImg.width);
-                if (loc >= dataImg.width * dataImg.height) loc = dataImg.width * dataImg.height - 1;
-                try {
-                    dataImg.pixels[loc] = color(int(hueValue), 100, 80);
-                } catch (Exception e) {
-                    println("Major drawing error Spectrogram Right image!");
-                }
-            }
-            dataImg.updatePixels();
-            popStyle();
+            updateSpectrogramData();
         }
         
-        pushMatrix();
-        translate(graphX, graphY);
-        scale(scaleW, scaleH);
-        image(dataImg, 0, 0);
-        popMatrix();
-
+        // Display the spectrogram image
+        displaySpectrogramImage(scaleW, scaleH);
+        
+        // Draw UI elements
         spectChanSelectTop.draw();
         spectChanSelectBot.draw();
         drawAxes(scaleW, scaleH);
         drawCenterLine();
     }
 
+    private void drawBackground() {
+        pushStyle();
+        fill(0);
+        rect(x, y, w, h);
+        popStyle();
+    }
+
+    private void displaySpectrogramImage(float scaleW, float scaleH) {
+        pushMatrix();
+        translate(graphX, graphY);
+        scale(scaleW, scaleH);
+        image(dataImg, 0, 0);
+        popMatrix();
+    }
+
+    private void updateSpectrogramData() {
+        pushStyle();
+        dataImg.loadPixels();
+        
+        // Shift pixels to the left if needed
+        shiftPixelsLeft();
+        
+        // Calculate and draw new data points
+        drawSpectrogramPoints();
+        
+        dataImg.updatePixels();
+        popStyle();
+    }
+
+    private void shiftPixelsLeft() {
+        if (millis() - lastShift > scrollSpeed) {
+            for (int r = 0; r < dataImg.height; r++) {
+                if (r != 0) {
+                    arrayCopy(dataImg.pixels, dataImg.width * r, dataImg.pixels, dataImg.width * r - 1, dataImg.width);
+                } else {
+                    arrayCopy(dataImg.pixels, dataImg.width * (r + 1), dataImg.pixels, r * dataImg.width, dataImg.width);
+                }
+            }
+            lastShift += scrollSpeed;
+        }
+    }
+
+    private void drawSpectrogramPoints() {
+        FFTLogLin logLin = widgetSettings.get(FFTLogLin.class);
+        
+        for (int i = 0; i <= dataImg.height/2; i++) {
+            // Draw top spectrogram (left channels)
+            drawSpectrogramPoint(spectChanSelectTop.getActiveChannels(), i, dataImg.height/2 - i, logLin);
+            
+            // Draw bottom spectrogram (right channels)
+            int y_offset = -1;
+            drawSpectrogramPoint(spectChanSelectBot.getActiveChannels(), i, i + dataImg.height/2 + y_offset, logLin);
+        }
+    }
+
+    private void drawSpectrogramPoint(List<Integer> channels, int freqBand, int yPosition, FFTLogLin logLin) {
+        float hueValue = hueLimit - map((fftAvgs(channels, freqBand)*32), 0, 256, 0, hueLimit);
+        
+        if (logLin == FFTLogLin.LOG) {
+            hueValue = map(log10(hueValue), 0, 2, 0, hueLimit);
+        }
+        
+        colorMode(HSB, 256, 100, 100);
+        stroke(int(hueValue), 100, 80);
+        
+        int loc = xPos + (yPosition * dataImg.width);
+        if (loc >= dataImg.width * dataImg.height) {
+            loc = dataImg.width * dataImg.height - 1;
+        }
+        
+        try {
+            dataImg.pixels[loc] = color(int(hueValue), 100, 80);
+        } catch (Exception e) {
+            println("Major drawing error in Spectrogram at position: " + yPosition);
+        }
+    }
+
+    @Override
     public void screenResized(){
         super.screenResized();
 
@@ -263,90 +244,112 @@ class W_Spectrogram extends WidgetWithSettings {
         graphH = h - paddingBottom - paddingTop;
     }
 
-    void mousePressed(){
+    @Override
+    public void mousePressed(){
         super.mousePressed();
 
         spectChanSelectTop.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
         spectChanSelectBot.mousePressed(this.dropdownIsActive);
     }
 
-    void mouseReleased(){
+    @Override
+    public void mouseReleased(){
         super.mouseReleased();
-
     }
 
-    void drawAxes(float scaledW, float scaledH) {
-        
-        pushStyle();
-            fill(255);
-            textSize(14);
-            //draw horizontal axis label
-            text("Time", x + w/2 - textWidth("Time")/3, y + h - 9);
-            noFill();
-            stroke(255);
-            strokeWeight(2);
-            //draw rectangle around the spectrogram
-            rect(graphX, graphY, scaledW * dataImageW, scaledH * dataImageH);
-        popStyle();
-
-        pushStyle();
-            //draw horizontal axis ticks from left to right
-            int tickMarkSize = 7; //in pixels
-            float horizontalAxisX = graphX;
-            float horizontalAxisY = graphY + scaledH * dataImageH;
-            stroke(255);
-            fill(255);
-            strokeWeight(2);
-            textSize(11);
-            SpectrogramWindowSize windowSize = widgetSettings.get(SpectrogramWindowSize.class);
-            int horizontalAxisDivCount = windowSize.getAxisLabels().length;
-            for (int i = 0; i < horizontalAxisDivCount; i++) {
-                float offset = scaledW * dataImageW * (float(i) / horizontalAxisDivCount);
-                line(horizontalAxisX + offset, horizontalAxisY, horizontalAxisX + offset, horizontalAxisY + tickMarkSize);
-                if (horizontalAxisLabelStrings.get(i) != null) {
-                    text(horizontalAxisLabelStrings.get(i), horizontalAxisX + offset - (int)textWidth(horizontalAxisLabelStrings.get(i))/2, horizontalAxisY + tickMarkSize * 3);
-                }
-            }
-        popStyle();
-        
-        pushStyle();
-            pushMatrix();
-                rotate(radians(-90));
-                textSize(14);
-                int yAxisLabelOffset = spectChanSelectTop.isVisible() ? (int)textWidth("Frequency (Hz)") / 4 : 0;
-                translate(-h/2 - textWidth("Frequency (Hz)")/4, 20);
-                fill(255);
-                // Draw y axis label only when channel select is not visible due to overlap
-                if (!spectChanSelectTop.isVisible()) {
-                    text("Frequency (Hz)", -y - yAxisLabelOffset, x);
-                }
-            popMatrix();
-        popStyle();
-
-        pushStyle();
-            //draw vertical axis ticks from top to bottom
-            float verticalAxisX = graphX;
-            float verticalAxisY = graphY;
-            stroke(255);
-            fill(255);
-            textSize(12);
-            strokeWeight(2);
-            SpectrogramMaxFrequency maxFrequency = widgetSettings.get(SpectrogramMaxFrequency.class);
-            int verticalAxisDivCount = maxFrequency.getAxisLabels().length - 1;
-            for (int i = 0; i < verticalAxisDivCount; i++) {
-                float offset = scaledH * dataImageH * (float(i) / verticalAxisDivCount);
-                //if (i <= verticalAxisDivCount/2) offset -= 2;
-                line(verticalAxisX, verticalAxisY + offset, verticalAxisX - tickMarkSize, verticalAxisY + offset);
-                if (maxFrequency.getAxisLabels()[i] == 0) midLineY = int(verticalAxisY + offset);
-                offset += paddingTop/2;
-                text(maxFrequency.getAxisLabels()[i], verticalAxisX - tickMarkSize*2 - textWidth(Integer.toString(maxFrequency.getAxisLabels()[i])), verticalAxisY + offset);
-            }
-        popStyle();
-
+    private void drawAxes(float scaledW, float scaledH) {
+        drawSpectrogramBorder(scaledW, scaledH);
+        drawHorizontalAxisAndLabels(scaledW, scaledH);
+        drawVerticalAxisAndLabels(scaledW, scaledH);
+        drawYAxisLabel();
         drawColorScaleReference();
     }
 
-    void drawCenterLine() {
+    private void drawSpectrogramBorder(float scaledW, float scaledH) {
+        pushStyle();
+        fill(255);
+        textSize(14);
+        text("Time", x + w/2 - textWidth("Time")/3, y + h - 9);
+        noFill();
+        stroke(255);
+        strokeWeight(2);
+        rect(graphX, graphY, scaledW * dataImageW, scaledH * dataImageH);
+        popStyle();
+    }
+
+    private void drawHorizontalAxisAndLabels(float scaledW, float scaledH) {
+        pushStyle();
+        int tickMarkSize = 7;
+        float horizontalAxisX = graphX;
+        float horizontalAxisY = graphY + scaledH * dataImageH;
+        stroke(255);
+        fill(255);
+        strokeWeight(2);
+        textSize(11);
+        
+        SpectrogramWindowSize windowSize = widgetSettings.get(SpectrogramWindowSize.class);
+        int horizontalAxisDivCount = windowSize.getAxisLabels().length;
+        
+        for (int i = 0; i < horizontalAxisDivCount; i++) {
+            float offset = scaledW * dataImageW * (float(i) / horizontalAxisDivCount);
+            line(horizontalAxisX + offset, horizontalAxisY, horizontalAxisX + offset, horizontalAxisY + tickMarkSize);
+            
+            if (horizontalAxisLabelStrings.get(i) != null) {
+                text(horizontalAxisLabelStrings.get(i), 
+                    horizontalAxisX + offset - (int)textWidth(horizontalAxisLabelStrings.get(i))/2, 
+                    horizontalAxisY + tickMarkSize * 3);
+            }
+        }
+        popStyle();
+    }
+
+    private void drawYAxisLabel() {
+        pushStyle();
+        pushMatrix();
+        rotate(radians(-90));
+        textSize(14);
+        int yAxisLabelOffset = spectChanSelectTop.isVisible() ? (int)textWidth("Frequency (Hz)") / 4 : 0;
+        translate(-h/2 - textWidth("Frequency (Hz)")/4, 20);
+        fill(255);
+        
+        if (!spectChanSelectTop.isVisible()) {
+            text("Frequency (Hz)", -y - yAxisLabelOffset, x);
+        }
+        
+        popMatrix();
+        popStyle();
+    }
+
+    private void drawVerticalAxisAndLabels(float scaledW, float scaledH) {
+        pushStyle();
+        float verticalAxisX = graphX;
+        float verticalAxisY = graphY;
+        int tickMarkSize = 7;
+        stroke(255);
+        fill(255);
+        textSize(12);
+        strokeWeight(2);
+        
+        SpectrogramMaxFrequency maxFrequency = widgetSettings.get(SpectrogramMaxFrequency.class);
+        int verticalAxisDivCount = maxFrequency.getAxisLabels().length - 1;
+        
+        for (int i = 0; i < verticalAxisDivCount; i++) {
+            float offset = scaledH * dataImageH * (float(i) / verticalAxisDivCount);
+            line(verticalAxisX, verticalAxisY + offset, verticalAxisX - tickMarkSize, verticalAxisY + offset);
+            
+            if (maxFrequency.getAxisLabels()[i] == 0) {
+                midLineY = int(verticalAxisY + offset);
+            }
+            
+            offset += paddingTop/2;
+            text(maxFrequency.getAxisLabels()[i], 
+                verticalAxisX - tickMarkSize*2 - textWidth(Integer.toString(maxFrequency.getAxisLabels()[i])), 
+                verticalAxisY + offset);
+        }
+        popStyle();
+    }
+
+    private void drawCenterLine() {
         //draw a thick line down the middle to separate the two plots
         pushStyle();
         stroke(255);
@@ -355,7 +358,7 @@ class W_Spectrogram extends WidgetWithSettings {
         popStyle();
     }
 
-    void drawColorScaleReference() {
+    private void drawColorScaleReference() {
         int colorScaleHeight = 128;
         //Dynamically scale the Log/Lin amplitude-to-color reference line. If it won't fit, don't draw it.
         if (graphH < colorScaleHeight) {
@@ -383,7 +386,7 @@ class W_Spectrogram extends WidgetWithSettings {
         popStyle();
     }
 
-    void activateDefaultChannels() {
+    private void activateDefaultChannels() {
         int[] topChansToActivate;
         int[] botChansToActivate; 
 
@@ -408,7 +411,7 @@ class W_Spectrogram extends WidgetWithSettings {
         }
     }
 
-    void flexSpectrogramSizeAndPosition() {
+    private void flexSpectrogramSizeAndPosition() {
         int flexHeight = spectChanSelectTop.getHeight() + spectChanSelectBot.getHeight();
         if (spectChanSelectTop.isVisible()) {
             graphY = y + paddingTop + flexHeight;
@@ -419,11 +422,11 @@ class W_Spectrogram extends WidgetWithSettings {
         }
     }
 
-    void setScrollSpeed(int i) {
+    public void setScrollSpeed(int i) {
         scrollSpeed = i;
     }
 
-    float fftAvgs(List<Integer> _activeChan, int freqBand) {
+    private float fftAvgs(List<Integer> _activeChan, int freqBand) {
         float sum = 0f;
         for (int i = 0; i < _activeChan.size(); i++) {
             sum += fftBuff[_activeChan.get(i)].getBand(freqBand);
@@ -498,6 +501,66 @@ class W_Spectrogram extends WidgetWithSettings {
         horizontalAxisLabelStrings.clear();
         horizontalAxisLabelStrings = fetchTimeStrings();
         dataImg = createImage(dataImageW, dataImageH, RGB);
+    }
+
+    private void resetSpectrogramImage() {
+        // Create a new image with the current settings
+        dataImg = createImage(dataImageW, dataImageH, RGB);
+    }
+
+    private void updateTimeAxisLabels() {
+        horizontalAxisLabelStrings.clear();
+        horizontalAxisLabelStrings = fetchTimeStrings();
+    }
+
+    private void checkBoardStreamingState() {
+        if (currentBoard.isStreaming()) {
+            // Update position for new data points
+            xPos = dataImg.width - 1;
+            // Update time axis labels
+            updateTimeAxisLabels();
+        }
+        
+        // State change detection
+        if (currentBoard.isStreaming() && !wasRunning) {
+            onStartRunning();
+        } else if (!currentBoard.isStreaming() && wasRunning) {
+            onStopRunning();
+        }
+    }
+
+    private void initializeUI() {
+        spectChanSelectTop = new DualExGChannelSelect(ourApplet, x, y, w, navH, true);
+        spectChanSelectBot = new DualExGChannelSelect(ourApplet, x, y + navH, w, navH, false);
+        activateDefaultChannels();
+        
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
+        cp5ElementsToCheck.addAll(spectChanSelectBot.getCp5ElementsForOverlapCheck());
+    }
+
+    private void updateUIState() {
+        spectChanSelectTop.update(x, y, w);
+        int chanSelectBotYOffset = navH;
+        spectChanSelectBot.update(x, y + chanSelectBotYOffset, w);
+        
+        // Synchronize visibility between top and bottom channel selectors
+        synchronizeChannelSelectors();
+        
+        // Update flexible layout based on channel selector visibility
+        flexSpectrogramSizeAndPosition();
+        
+        // Handle UI element overlap checking
+        if (spectChanSelectTop.isVisible()) {
+            lockElementsOnOverlapCheck(cp5ElementsToCheck);
+        }
+    }
+
+    private void synchronizeChannelSelectors() {
+        if (chanSelectWasOpen != spectChanSelectTop.isVisible()) {
+            spectChanSelectBot.setIsVisible(spectChanSelectTop.isVisible());
+            chanSelectWasOpen = spectChanSelectTop.isVisible();
+        }
     }
 };
 
