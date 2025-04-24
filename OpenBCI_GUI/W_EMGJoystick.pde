@@ -9,7 +9,7 @@
 //                                                                                                     //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class W_EmgJoystick extends Widget {
+class W_EmgJoystick extends WidgetWithSettings {
     private ControlP5 emgCp5;
     private Button emgSettingsButton;
     private List<controlP5.Controller> cp5ElementsToCheck;
@@ -45,8 +45,6 @@ class W_EmgJoystick extends Widget {
     private final int EMG_PLOT_OFFSET = 40;     //Used to arrange EMG displays outside of X/Y graph
 
     private String[] plotChannelLabels = new String[NUM_EMG_INPUTS];
-
-    public EmgJoystickSmoothing joystickSmoothing = EmgJoystickSmoothing.POINT_9;
 
     private int DROPDOWN_HEIGHT = navH - 4;
     private int DROPDOWN_WIDTH = 80;
@@ -96,11 +94,20 @@ class W_EmgJoystick extends Widget {
             plotChannelLabels[i] = Integer.toString(emgJoystickInputs.getInput(i).getIndex() + 1);
         }
 
-        List<String> joystickSmoothingList = EnumHelper.getEnumStrings(EmgJoystickSmoothing.class);
-
-        addDropdown("emgJoystickSmoothingDropdown", "Smoothing", joystickSmoothingList, joystickSmoothing.getIndex());
-
         createInputDropdowns();
+    }
+
+    @Override
+    protected void initWidgetSettings() {
+        super.initWidgetSettings();
+        widgetSettings.set(EmgJoystickSmoothing.class, EmgJoystickSmoothing.POINT_9);
+        initDropdown(EmgJoystickSmoothing.class, "emgJoystickSmoothingDropdown", "Smoothing");
+        widgetSettings.saveDefaults();
+    }
+
+    @Override
+    protected void applySettings() {
+        updateDropdownLabel(EmgJoystickSmoothing.class, "emgJoystickSmoothingDropdown");
     }
 
     public void update(){
@@ -234,7 +241,7 @@ class W_EmgJoystick extends Widget {
         joystickRawX = unitCircleXY[0];
         joystickRawY = unitCircleXY[1];
         //Lerp the joystick values to smooth them out
-        float amount = 1.0f - joystickSmoothing.getValue();
+        float amount = 1.0f - widgetSettings.get(EmgJoystickSmoothing.class).getValue();
         joystickRawX = lerp(previousJoystickRawX, joystickRawX, amount);
         joystickRawY = lerp(previousJoystickRawY, joystickRawY, amount);
     }
@@ -316,7 +323,7 @@ class W_EmgJoystick extends Widget {
     }
 
     public void setJoystickSmoothing(int n) {
-        joystickSmoothing = joystickSmoothing.values()[n];
+        widgetSettings.setByIndex(EmgJoystickSmoothing.class, n);
     }
 
     private void createEmgSettingsButton() {

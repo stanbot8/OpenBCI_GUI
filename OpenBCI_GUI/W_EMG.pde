@@ -13,25 +13,16 @@
 //  TODO: Add dynamic threshold functionality
 ////////////////////////////////////////////////////////////////////////////////
 
-class W_Emg extends Widget {
+class W_Emg extends WidgetWithSettings {
     private ControlP5 emgCp5;
     private Button emgSettingsButton;
     private final int EMG_SETTINGS_BUTTON_WIDTH = 125;
     private List<controlP5.Controller> cp5ElementsToCheck;
-
     public ExGChannelSelect emgChannelSelect;
 
     W_Emg () {
         super();
         widgetTitle = "EMG";
-
-        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
-
-        //Add channel select dropdown to this widget
-        emgChannelSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
-        emgChannelSelect.activateAllButtons();
-        
-        cp5ElementsToCheck.addAll(emgChannelSelect.getCp5ElementsForOverlapCheck());
 
         emgCp5 = new ControlP5(ourApplet);
         emgCp5.setGraphics(ourApplet, 0,0);
@@ -39,6 +30,29 @@ class W_Emg extends Widget {
 
         createEmgSettingsButton();
         cp5ElementsToCheck.add((controlP5.Controller) emgSettingsButton);
+    }
+
+    @Override
+    protected void initWidgetSettings() {
+        super.initWidgetSettings();
+        emgChannelSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
+        emgChannelSelect.activateAllButtons();
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.addAll(emgChannelSelect.getCp5ElementsForOverlapCheck());
+        saveActiveChannels(emgChannelSelect.getActiveChannels());
+        widgetSettings.saveDefaults();
+    }
+
+    @Override
+    protected void applySettings() {
+        applyActiveChannels(emgChannelSelect);
+    }
+
+    @Override
+    protected void updateChannelSettings() {
+        if (emgChannelSelect != null) {
+            saveActiveChannels(emgChannelSelect.getActiveChannels());
+        }
     }
 
     public void update() {
