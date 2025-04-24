@@ -3,8 +3,9 @@
 //========================================================================================
 /*
     Notes:
-    - The order in which they are added will effect the order in which they appear in the GUI and in the WidgetSelector dropdown menu of each widget
-    - Use the WidgetTemplate.pde file as a starting point for creating new widgets (also check out W_TimeSeries.pde, W_Fft.pde, and W_HeadPlot.pde)
+    - The order in which they are added will effect the order in which they appear in the GUI and in the WidgetSelector dropdown menu of each widget.
+    - Use the WidgetTemplate.pde file as a starting point for creating new widgets.
+    - Also, check out W_TimeSeries.pde, W_Fft.pde, and W_Accelerometer.pde for examples.
 */
 //========================================================================================
 //========================================================================================
@@ -63,8 +64,6 @@ class WidgetManager {
         widgets.add(new W_Focus());
 
         widgets.add(new W_BandPower());
-
-        widgets.add(new W_HeadPlot());
 
         widgets.add(new W_Emg());
     

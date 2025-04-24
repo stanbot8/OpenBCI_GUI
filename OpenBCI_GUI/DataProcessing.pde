@@ -298,24 +298,6 @@ class DataProcessing {
             headWidePower[i] = sum/globalChannelCount;   // averaging power over all channels
         }
 
-        // Calculate data used for Headplot
-        // Find strongest channel
-        int refChanInd = findMax(data_std_uV);
-        //println("EEG_Processing: strongest chan (one referenced) = " + (refChanInd+1));
-        float[] refData_uV = dataProcessingFilteredBuffer[refChanInd];  //use the filtered data
-        refData_uV = Arrays.copyOfRange(refData_uV, refData_uV.length-((int)fs_Hz), refData_uV.length);   //just grab the most recent second of data
-        // Compute polarity of each channel
-        for (int channel=0; channel < globalChannelCount; channel++) {
-            float[] fooData_filt = dataProcessingFilteredBuffer[channel];  //use the filtered data
-            fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
-            float dotProd = calcDotProduct(fooData_filt, refData_uV);
-            if (dotProd >= 0.0f) {
-                polarity[channel]=1.0;
-            } else {
-                polarity[channel]=-1.0;
-            }
-        }
-
         /////////////////////////////////////////////////////////////
         // Compute widget values independent of widgets being open //
         //                       -RW #1094                         //
