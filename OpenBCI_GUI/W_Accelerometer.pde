@@ -11,7 +11,7 @@
 //
 ////////////////////////////////////////////////////
 
-class W_Accelerometer extends Widget {
+class W_Accelerometer extends WidgetWithSettings {
     //To see all core variables/methods of the Widget class, refer to Widget.pde
     color graphStroke = color(210);
     color graphBG = color(245);
@@ -49,11 +49,7 @@ class W_Accelerometer extends Widget {
         widgetTitle = "Accelerometer";
         
         accelBoard = (AccelerometerCapableBoard)currentBoard;
-
-        //Make dropdowns
-        addDropdown("accelerometerVerticalScaleDropdown", "Vert Scale", EnumHelper.getEnumStrings(AccelerometerVerticalScale.class), verticalScale.getIndex());
-        addDropdown("accelerometerHorizontalScaleDropdown", "Window", EnumHelper.getEnumStrings(AccelerometerHorizontalScale.class), horizontalScale.getIndex());
-
+        
         setGraphDimensions();
         polarYMaxMin = adjustYMaxMinBasedOnSource();
 
@@ -66,6 +62,20 @@ class W_Accelerometer extends Widget {
         accelerometerBar.adjustVertScale(verticalScale.getValue());
 
         createAccelModeButton("accelModeButton", "Turn Accel. Off", (int)(x + 1), (int)(y0 + NAV_HEIGHT + 1), 120, NAV_HEIGHT - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+    }
+
+    @Override void initWidgetSettings() {
+        super.initWidgetSettings();
+        widgetSettings.set(AccelerometerVerticalScale.class, AccelerometerVerticalScale.AUTO)
+                .set(AccelerometerHorizontalScale.class, AccelerometerHorizontalScale.FIVE_SEC)
+                .saveDefaults();
+        initDropdown(AccelerometerVerticalScale.class, "accelerometerVerticalScaleDropdown", "Vert Scale");
+        initDropdown(AccelerometerHorizontalScale.class, "accelerometerHorizontalScaleDropdown", "Window");
+    }
+
+    @Override void applySettings() {
+        updateDropdownLabel(AccelerometerVerticalScale.class, "accelerometerVerticalScaleDropdown");
+        updateDropdownLabel(AccelerometerHorizontalScale.class, "accelerometerHorizontalScaleDropdown");
     }
 
     float adjustYMaxMinBasedOnSource() {
@@ -265,13 +275,15 @@ class W_Accelerometer extends Widget {
     }
 
     public void setVerticalScale(int n) {
-        verticalScale = AccelerometerVerticalScale.values()[n];
-        accelerometerBar.adjustVertScale(verticalScale.getValue());
+        widgetSettings.setByIndex(AccelerometerVerticalScale.class, n);
+        int verticalScaleValue = widgetSettings.get(AccelerometerVerticalScale.class).getValue();
+        accelerometerBar.adjustVertScale(verticalScaleValue);
     }
 
     public void setHorizontalScale(int n) {
-        horizontalScale = AccelerometerHorizontalScale.values()[n];
-        accelerometerBar.adjustTimeAxis(horizontalScale.getValue());
+        widgetSettings.setByIndex(AccelerometerHorizontalScale.class, n);
+        int horizontalScaleValue = widgetSettings.get(AccelerometerHorizontalScale.class).getValue();
+        accelerometerBar.adjustTimeAxis(horizontalScaleValue);
     }
 
 };

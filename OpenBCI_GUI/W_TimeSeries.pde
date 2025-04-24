@@ -52,9 +52,6 @@ class W_TimeSeries extends WidgetWithSettings {
         tscp5 = new ControlP5(ourApplet);
         tscp5.setGraphics(ourApplet, 0, 0);
         tscp5.setAutoDraw(false);
-        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
-        cp5ElementsToCheck.addAll(tsChanSelect.getCp5ElementsForOverlapCheck());
-
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -132,11 +129,18 @@ class W_TimeSeries extends WidgetWithSettings {
 
         // Initialize the channel select feature for this widget
         tsChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
-        //Activate all channels in channelSelect by default for this widget
+        
+        // Activate all channels in channelSelect by default for this widget
         tsChanSelect.activateAllButtons();
-
+        
+        // Check and lock channel select if a dropdown that overlaps it is open
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.addAll(tsChanSelect.getCp5ElementsForOverlapCheck());
+        
+        // Save the active channels to the widget settings
         saveActiveChannels(tsChanSelect.getActiveChannels());
         
+        // Save the current settings to the widget settings
         widgetSettings.saveDefaults();
     }
 

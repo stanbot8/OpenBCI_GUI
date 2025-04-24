@@ -8,7 +8,7 @@
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
-class W_AnalogRead extends Widget {
+class W_AnalogRead extends WidgetWithSettings {
     private float arPadding;
     // values for actual time series chart (rectangle encompassing all analogReadBars)
     private float ar_x, ar_y, ar_h, ar_w;
@@ -18,8 +18,6 @@ class W_AnalogRead extends Widget {
 
     private final int NUM_ANALOG_READ_BARS = 3;
     private AnalogReadBar[] analogReadBars;
-    private AnalogReadHorizontalScale horizontalScale = AnalogReadHorizontalScale.FIVE_SEC;
-    private AnalogReadVerticalScale verticalScale = AnalogReadVerticalScale.ONE_THOUSAND_FIFTY;
 
     private boolean allowSpillover = false;
 
@@ -32,9 +30,6 @@ class W_AnalogRead extends Widget {
         widgetTitle = "AnalogRead";
 
         analogBoard = (AnalogCapableBoard)currentBoard;
-
-        addDropdown("analogReadVerticalScaleDropdown", "Vert Scale", EnumHelper.getEnumStrings(AnalogReadVerticalScale.class), verticalScale.getIndex());
-        addDropdown("analogReadHorizontalScaleDropdown", "Window", EnumHelper.getEnumStrings(AnalogReadHorizontalScale.class), horizontalScale.getIndex());
 
         plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
         arPadding = 10.0;
@@ -52,11 +47,30 @@ class W_AnalogRead extends Widget {
             AnalogReadBar tempBar = new AnalogReadBar(ourApplet, i+5, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
             analogReadBars[i] = tempBar;
         }
-
-        setVerticalScale(verticalScale.getIndex());
-        setHorizontalScale(horizontalScale.getIndex());
+        
+        int verticalScaleValue = widgetSettings.get(AnalogReadVerticalScale.class).getValue();
+        int horizontalScaleValue = widgetSettings.get(AnalogReadHorizontalScale.class).getValue();
+        applyVerticalScale(verticalScaleValue);
+        applyHorizontalScale(horizontalScaleValue);
 
         createAnalogModeButton("analogModeButton", "Turn Analog Read On", (int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1), 128, NAV_HEIGHT - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+    }
+
+    @Override
+    protected void initWidgetSettings() {
+        super.initWidgetSettings();
+        widgetSettings.set(AnalogReadVerticalScale.class, AnalogReadVerticalScale.ONE_THOUSAND_FIFTY)
+                    .set(AnalogReadHorizontalScale.class, AnalogReadHorizontalScale.FIVE_SEC)
+                    .saveDefaults();
+
+        initDropdown(AnalogReadVerticalScale.class, "analogReadVerticalScaleDropdown", "Vert Scale");
+        initDropdown(AnalogReadHorizontalScale.class, "analogReadHorizontalScaleDropdown", "Window");
+    }
+
+    @Override
+    protected void applySettings() {
+        updateDropdownLabel(AnalogReadVerticalScale.class, "analogReadVerticalScaleDropdown");
+        updateDropdownLabel(AnalogReadHorizontalScale.class, "analogReadHorizontalScaleDropdown");
     }
 
     public void update() {
@@ -159,16 +173,26 @@ class W_AnalogRead extends Widget {
     }
 
     public void setVerticalScale(int n) {
-        verticalScale = verticalScale.values()[n];
-        for(int i = 0; i < analogReadBars.length; i++) {
-            analogReadBars[i].adjustVertScale(verticalScale.getValue());
-        }
+        widgetSettings.setByIndex(AnalogReadVerticalScale.class, n);
+        int verticalScaleValue = widgetSettings.get(AnalogReadVerticalScale.class).getValue();
+        applyVerticalScale(verticalScaleValue);
     }
 
     public void setHorizontalScale(int n) {
-        horizontalScale = horizontalScale.values()[n];
+        widgetSettings.setByIndex(AnalogReadHorizontalScale.class, n);
+        int horizontalScaleValue = widgetSettings.get(AnalogReadHorizontalScale.class).getValue();
+        applyHorizontalScale(horizontalScaleValue);
+    }
+
+    private void applyVerticalScale(int value) {
+         for(int i = 0; i < analogReadBars.length; i++) {
+            analogReadBars[i].adjustVertScale(value);
+        }
+    }
+
+    private void applyHorizontalScale(int value) {
         for(int i = 0; i < analogReadBars.length; i++) {
-            analogReadBars[i].adjustTimeAxis(horizontalScale.getValue());
+            analogReadBars[i].adjustTimeAxis(value);
         }
     }
 };
