@@ -124,6 +124,41 @@ class WidgetSettings {
                !channelSettings.get(KEY_ACTIVE_CHANNELS).isEmpty();
     }
 
+    /**
+     * Store active channels with a specific name identifier
+     * @param name Identifier for this channel selection (e.g., "top", "bottom")
+     * @param channels List of selected channel indices
+     * @return this WidgetSettings instance for method chaining
+     */
+    public WidgetSettings setNamedChannels(String name, List<Integer> channels) {
+        // Create a copy to prevent external modification
+        channelSettings.put(name, new ArrayList<Integer>(channels));
+        return this;
+    }
+
+    /**
+     * Get active channels for a specific named selection
+     * @param name Identifier for the channel selection
+     * @return List of selected channel indices or empty list if not found
+     */
+    public List<Integer> getNamedChannels(String name) {
+        if (channelSettings.containsKey(name)) {
+            // Return a copy to prevent external modification
+            return new ArrayList<Integer>(channelSettings.get(name));
+        }
+        return new ArrayList<Integer>(); // Empty list if not found
+    }
+
+    /**
+     * Check if a named channel selection exists
+     * @param name Identifier for the channel selection
+     * @return true if the named selection exists, false otherwise
+     */
+    public boolean hasNamedChannels(String name) {
+        return channelSettings.containsKey(name) && 
+               !channelSettings.get(name).isEmpty();
+    }
+
     //
     // OTHER SETTINGS
     //

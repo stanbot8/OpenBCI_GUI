@@ -437,6 +437,49 @@ abstract class WidgetWithSettings extends Widget {
         // Default implementation does nothing
         // Override in widgets that have channel selectors
     }
+
+    /**
+     * Save active channel selection to widget settings with a specific name
+     * @param name Identifier for this channel selection (e.g., "top", "bottom")
+     * @param channels List of selected channel indices
+     */
+    protected void saveNamedChannels(String name, List<Integer> channels) {
+        widgetSettings.setNamedChannels(name, channels);
+        println(widgetTitle + ": Saved " + channels.size() + " channels for " + name);
+    }
+
+    /**
+     * Apply saved named channel selection to a channel select component
+     * @param name Identifier for the channel selection
+     * @param channelSelect The channel select component to update
+     * @return true if channels were loaded and applied, false otherwise
+     */
+    protected boolean applyNamedChannels(String name, ExGChannelSelect channelSelect) {
+        List<Integer> savedChannels = widgetSettings.getNamedChannels(name);
+        if (!savedChannels.isEmpty()) {
+            channelSelect.updateChannelSelection(savedChannels);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the list of active channels for a named selection from settings
+     * @param name Identifier for the channel selection
+     * @return List of active channel indices, or empty list if none are saved
+     */
+    protected List<Integer> getNamedChannels(String name) {
+        return widgetSettings.getNamedChannels(name);
+    }
+
+    /**
+     * Check if a named channel selection is defined in settings
+     * @param name Identifier for the channel selection
+     * @return true if the named channel selection is defined, false otherwise
+     */
+    protected boolean hasNamedChannels(String name) {
+        return widgetSettings.hasNamedChannels(name);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

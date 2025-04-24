@@ -3,16 +3,16 @@
 //                  W_Spectrogram.pde               //
 //                                                  //
 //                                                  //
-//    Created by: Richard Waltman, September 2019   //
+//   Created by: Richard Waltman, September 2019    //
+//   Refactored by: Richard Waltman, April 2025     //
 //                                                  //
 //////////////////////////////////////////////////////
 
-class W_Spectrogram extends Widget {
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
+class W_Spectrogram extends WidgetWithSettings {
     public ExGChannelSelect spectChanSelectTop;
     public ExGChannelSelect spectChanSelectBot;
     private boolean chanSelectWasOpen = false;
-    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+    List<controlP5.Controller> cp5ElementsToCheck;
 
     int xPos = 0;
     int hueLimit = 160;
@@ -43,21 +43,9 @@ class W_Spectrogram extends Widget {
     float[] topFFTAvg;
     float[] botFFTAvg;
 
-    private SpectrogramMaxFrequency maxFrequency = SpectrogramMaxFrequency.MAX_60;
-    private SpectrogramWindowSize windowSize = SpectrogramWindowSize.ONE_MINUTE;
-    private FFTLogLin logLin = FFTLogLin.LIN;
-
     W_Spectrogram() {
         super();
         widgetTitle = "Spectrogram";
-
-        //Add channel select dropdown to this widget
-        spectChanSelectTop = new DualExGChannelSelect(ourApplet, x, y, w, navH, true);
-        spectChanSelectBot = new DualExGChannelSelect(ourApplet, x, y + navH, w, navH, false);
-        activateDefaultChannels();
-
-        cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
-        cp5ElementsToCheck.addAll(spectChanSelectBot.getCp5ElementsForOverlapCheck());
 
         xPos = w - 1; //draw on the right, and shift pixels to the left
         prevW = w;
@@ -70,18 +58,60 @@ class W_Spectrogram extends Widget {
         //Fetch/calculate the time strings for the horizontal axis ticks
         horizontalAxisLabelStrings = fetchTimeStrings();
 
-        List<String> maxFrequencyList = EnumHelper.getEnumStrings(SpectrogramMaxFrequency.class);
-        List<String> windowSizeList = EnumHelper.getEnumStrings(SpectrogramWindowSize.class);
-        List<String> logLinList = EnumHelper.getEnumStrings(FFTLogLin.class);
-
-        addDropdown("spectrogramMaxFrequencyDropdown", "Max Hz", maxFrequencyList, maxFrequency.getIndex());
-        addDropdown("spectrogramWindowDropdown", "Window", windowSizeList, windowSize.getIndex());
-        addDropdown("spectrogramLogLinDropdown", "Log/Lin", logLinList, logLin.getIndex());
-
         //Resize the height of the data image using default 
+        SpectrogramMaxFrequency maxFrequency = widgetSettings.get(SpectrogramMaxFrequency.class);
         dataImageH = maxFrequency.getAxisLabels()[0] * 2;
         //Create image using correct dimensions! Fixes bug where image size and labels do not align on session start.
         dataImg = createImage(dataImageW, dataImageH, RGB);
+    }
+
+    @Override
+    protected void initWidgetSettings() {
+        super.initWidgetSettings();
+        widgetSettings.set(SpectrogramMaxFrequency.class, SpectrogramMaxFrequency.MAX_60)
+                    .set(SpectrogramWindowSize.class, SpectrogramWindowSize.ONE_MINUTE)
+                    .set(FFTLogLin.class, FFTLogLin.LIN);
+
+        initDropdown(SpectrogramMaxFrequency.class, "spectrogramMaxFrequencyDropdown", "Max Hz");
+        initDropdown(SpectrogramWindowSize.class, "spectrogramWindowDropdown", "Window");
+        initDropdown(FFTLogLin.class, "spectrogramLogLinDropdown", "Log/Lin");
+
+        spectChanSelectTop = new DualExGChannelSelect(ourApplet, x, y, w, navH, true);
+        spectChanSelectBot = new DualExGChannelSelect(ourApplet, x, y + navH, w, navH, false);
+        activateDefaultChannels();
+        
+        // Save both channel selections with unique identifiers
+        saveNamedChannels("top", spectChanSelectTop.getActiveChannels());
+        saveNamedChannels("bottom", spectChanSelectBot.getActiveChannels());
+
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
+        cp5ElementsToCheck.addAll(spectChanSelectBot.getCp5ElementsForOverlapCheck());
+    }
+
+    @Override
+    protected void applySettings() {
+        updateDropdownLabel(SpectrogramMaxFrequency.class, "spectrogramMaxFrequencyDropdown");
+        updateDropdownLabel(SpectrogramWindowSize.class, "spectrogramWindowDropdown");
+        updateDropdownLabel(FFTLogLin.class, "spectrogramLogLinDropdown");
+        applyMaxFrequency();
+        applyWindowSize();
+        
+        // Apply saved channel selections if available
+        if (hasNamedChannels("top")) {
+            applyNamedChannels("top", spectChanSelectTop);
+        }
+        
+        if (hasNamedChannels("bottom")) {
+            applyNamedChannels("bottom", spectChanSelectBot);
+        }
+    }
+
+    @Override
+    protected void updateChannelSettings() {
+        // Save current channel selections before saving settings
+        saveNamedChannels("top", spectChanSelectTop.getActiveChannels());
+        saveNamedChannels("bottom", spectChanSelectBot.getActiveChannels());
     }
 
     void update(){
@@ -148,7 +178,10 @@ class W_Spectrogram extends Widget {
         //draw the spectrogram if the widget is open, and update pixels if board is streaming data
         if (currentBoard.isStreaming()) {
             pushStyle();
+
             dataImg.loadPixels();
+
+            FFTLogLin logLin = widgetSettings.get(FFTLogLin.class);
 
             //Shift all pixels to the left! (every scrollspeed ms)
             if(millis() - lastShift > scrollSpeed) {
@@ -265,6 +298,7 @@ class W_Spectrogram extends Widget {
             fill(255);
             strokeWeight(2);
             textSize(11);
+            SpectrogramWindowSize windowSize = widgetSettings.get(SpectrogramWindowSize.class);
             int horizontalAxisDivCount = windowSize.getAxisLabels().length;
             for (int i = 0; i < horizontalAxisDivCount; i++) {
                 float offset = scaledW * dataImageW * (float(i) / horizontalAxisDivCount);
@@ -297,6 +331,7 @@ class W_Spectrogram extends Widget {
             fill(255);
             textSize(12);
             strokeWeight(2);
+            SpectrogramMaxFrequency maxFrequency = widgetSettings.get(SpectrogramMaxFrequency.class);
             int verticalAxisDivCount = maxFrequency.getAxisLabels().length - 1;
             for (int i = 0; i < verticalAxisDivCount; i++) {
                 float offset = scaledH * dataImageH * (float(i) / verticalAxisDivCount);
@@ -329,6 +364,7 @@ class W_Spectrogram extends Widget {
                 return;
             }
         }
+        FFTLogLin logLin = widgetSettings.get(FFTLogLin.class);
         pushStyle();
             //draw color scale reference to the right of the spectrogram
             for (int i = 0; i < colorScaleHeight; i++) {
@@ -405,6 +441,7 @@ class W_Spectrogram extends Widget {
             time = LocalDateTime.ofInstant(Instant.ofEpochMilli(getCurrentTimeStamp()), 
                                             TimeZone.getDefault().toZoneId()); 
         }
+        SpectrogramWindowSize windowSize = widgetSettings.get(SpectrogramWindowSize.class);
         for (int i = 0; i < windowSize.getAxisLabels().length; i++) {
             long l = (long)(windowSize.getAxisLabels()[i] * 60f);
             LocalDateTime t = time.minus(l, ChronoUnit.SECONDS);
@@ -434,24 +471,33 @@ class W_Spectrogram extends Widget {
     }
 
     public void setLogLin(int n) {
-        logLin = logLin.values()[n];
+        widgetSettings.setByIndex(FFTLogLin.class, n);
     }
 
     public void setMaxFrequency(int n) {
-        maxFrequency = maxFrequency.values()[n];
+        widgetSettings.setByIndex(SpectrogramMaxFrequency.class, n);
+        applyMaxFrequency();
+    }
+
+    public void setWindowSize(int n) {
+        widgetSettings.setByIndex(SpectrogramWindowSize.class, n);
+        applyWindowSize();
+    }
+
+    private void applyMaxFrequency() {
+        SpectrogramMaxFrequency maxFrequency = widgetSettings.get(SpectrogramMaxFrequency.class);
         // Resize the height of the data image
         dataImageH = maxFrequency.getAxisLabels()[0] * 2;
         // Overwrite the existing image
         dataImg = createImage(dataImageW, dataImageH, RGB);
     }
 
-    public void setWindowSize(int n) {
-        windowSize = windowSize.values()[n];
+    private void applyWindowSize() {
+        SpectrogramWindowSize windowSize = widgetSettings.get(SpectrogramWindowSize.class);
         setScrollSpeed(windowSize.getScrollSpeed());
         horizontalAxisLabelStrings.clear();
         horizontalAxisLabelStrings = fetchTimeStrings();
         dataImg = createImage(dataImageW, dataImageH, RGB);
-
     }
 };
 
@@ -466,69 +512,3 @@ public void spectrogramWindowDropdown(int n) {
 public void spectrogramLogLinDropdown(int n) {
     ((W_Spectrogram) widgetManager.getWidget("W_Spectrogram")).setLogLin(n);
 }
-
-
-//Save data from the Active channel checkBoxes - Top
-//JSONArray saveActiveChanSpectTop = new JSONArray();
-/*
-//FIX ME
-int numActiveSpectChanTop = w_spectrogram.spectChanSelectTop.getActiveChannels().size();
-for (int i = 0; i < numActiveSpectChanTop; i++) {
-    int activeChannel = w_spectrogram.spectChanSelectTop.getActiveChannels().get(i);
-    saveActiveChanSpectTop.setInt(i, activeChannel);
-}
-saveSpectrogramSettings.setJSONArray("activeChannelsTop", saveActiveChanSpectTop);
-//Save data from the Active channel checkBoxes - Bottom
-JSONArray saveActiveChanSpectBot = new JSONArray();
-int numActiveSpectChanBot = w_spectrogram.spectChanSelectBot.getActiveChannels().size();
-for (int i = 0; i < numActiveSpectChanBot; i++) {
-    int activeChannel = w_spectrogram.spectChanSelectBot.getActiveChannels().get(i);
-    saveActiveChanSpectBot.setInt(i, activeChannel);
-}
-*/
-//saveSpectrogramSettings.setJSONArray("activeChannelsBot", saveActiveChanSpectBot);
-//Save Spectrogram_Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the spectrogram widget
-//FIX ME
-/*
-saveSpectrogramSettings.setInt("Spectrogram_Max Freq", spectMaxFrqSave);
-saveSpectrogramSettings.setInt("Spectrogram_Sample Rate", spectSampleRateSave);
-saveSpectrogramSettings.setInt("Spectrogram_LogLin", spectLogLinSave);
-*/
-
-//Get Band Power widget settings
-        //FIX ME
-        /*
-        loadBPActiveChans.clear();
-        JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
-        JSONArray loadBPChan = loadBPSettings.getJSONArray("activeChannels");
-        for (int i = 0; i < loadBPChan.size(); i++) {
-            loadBPActiveChans.add(loadBPChan.getInt(i));
-        }
-        loadBPAutoClean = loadBPSettings.getInt("bpAutoClean");
-        loadBPAutoCleanThreshold = loadBPSettings.getInt("bpAutoCleanThreshold");
-        loadBPAutoCleanTimer = loadBPSettings.getInt("bpAutoCleanTimer");
-        //println("Settings: band power active chans loaded = " + loadBPActiveChans );
-        */
-
-        /*
-        try {
-            //Get Spectrogram widget settings
-            loadSpectActiveChanTop.clear();
-            loadSpectActiveChanBot.clear();
-            JSONObject loadSpectSettings = loadSettingsJSONData.getJSONObject(kJSONKeySpectrogram);
-            JSONArray loadSpectChanTop = loadSpectSettings.getJSONArray("activeChannelsTop");
-            for (int i = 0; i < loadSpectChanTop.size(); i++) {
-                loadSpectActiveChanTop.add(loadSpectChanTop.getInt(i));
-            }
-            JSONArray loadSpectChanBot = loadSpectSettings.getJSONArray("activeChannelsBot");
-            for (int i = 0; i < loadSpectChanBot.size(); i++) {
-                loadSpectActiveChanBot.add(loadSpectChanBot.getInt(i));
-            }
-            spectMaxFrqLoad = loadSpectSettings.getInt("Spectrogram_Max Freq");
-            spectSampleRateLoad = loadSpectSettings.getInt("Spectrogram_Sample Rate");
-            spectLogLinLoad = loadSpectSettings.getInt("Spectrogram_LogLin");
-            //println(loadSpectActiveChanTop, loadSpectActiveChanBot);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-*/
