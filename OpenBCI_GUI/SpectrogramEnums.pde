@@ -38,7 +38,7 @@ public enum SpectrogramMaxFrequency implements IndexingInterface {
 }
 
 public enum SpectrogramWindowSize implements IndexingInterface {
-    ONE_MINUTE (0, 1f, "1 Min.", new float[]{1, .5, 0}, 1000),
+    ONE_MINUTE (0, 1f, "1 Min.", new float[]{1, .5, 0}, 25),
     ONE_MINUTE_THIRTY (1, 1.5f, "1.5 Min.", new float[]{1.5, 1, .5, 0}, 50),
     THREE_MINUTES (2, 3f, "3 Min.", new float[]{3, 2, 1, 0}, 100),
     SIX_MINUTES (3, 6f, "6 Min.", new float[]{6, 5, 4, 3, 2, 1, 0}, 200),
