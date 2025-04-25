@@ -298,8 +298,8 @@ SessionSettings sessionSettings;
 GuiSettings guiSettings;
 DataProcessing dataProcessing;
 FilterSettings filterSettings;
-NetworkingUI networkUI;
 FilterUIPopup filterUI;
+NetworkingUI networkUI;
 DeveloperCommandPopup developerCommandPopup;
 
 final int navBarHeight = 32;

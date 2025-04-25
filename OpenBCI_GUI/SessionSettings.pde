@@ -43,7 +43,8 @@ class SessionSettings {
         KEY_LAYOUT = "widgetLayout",
         KEY_NETWORKING = "networking",
         KEY_CONTAINERS = "widgetContainerSettings",
-        KEY_WIDGET_SETTINGS = "widgetSettings";
+        KEY_WIDGET_SETTINGS = "widgetSettings",
+        KEY_FILTER_SETTINGS = "filterSettings";
     
     // File paths configuration
     private final String[][] SETTING_FILES = {
@@ -99,6 +100,8 @@ class SessionSettings {
         saveSettingsJSONData.setJSONObject(KEY_CONTAINERS, saveWidgetContainerPositions());
         saveSettingsJSONData.setJSONObject(KEY_WIDGET_SETTINGS, 
             parseJSONObject(widgetManager.getWidgetSettingsAsJson()));
+        saveSettingsJSONData.setJSONObject(KEY_FILTER_SETTINGS,
+            parseJSONObject(filterSettings.getJson()));
         
         // Save to file
         saveJSONObject(saveSettingsJSONData, saveFilePath);
@@ -141,6 +144,7 @@ class SessionSettings {
         applyNetworkingSettings();
         applyWidgetLayout();
         applyWidgetSettings();
+        applyFilterSettings();
     }
     
     /**
@@ -220,6 +224,10 @@ class SessionSettings {
     private void applyWidgetSettings() {
         widgetManager.loadWidgetSettingsFromJson(
             loadSettingsJSONData.getJSONObject(KEY_WIDGET_SETTINGS).toString());
+    }
+
+    private void applyFilterSettings() {
+        filterSettings.loadSettingsFromJson(loadSettingsJSONData.getJSONObject(KEY_FILTER_SETTINGS).toString());
     }
 
     /**
