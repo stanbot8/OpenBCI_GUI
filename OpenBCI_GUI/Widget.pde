@@ -346,8 +346,8 @@ abstract class WidgetWithSettings extends Widget {
      * @return JSON representation of settings
      */
     public String settingsToJSON() {
-        // If the widget has a channel selector, save its current state
-        updateChannelSettings();
+        // Call saveSettings to ensure all widget settings are up-to-date before serializing
+        saveSettings();
         return widgetSettings.toJSON();
     }
     
@@ -479,6 +479,15 @@ abstract class WidgetWithSettings extends Widget {
      */
     protected boolean hasNamedChannels(String name) {
         return widgetSettings.hasNamedChannels(name);
+    }
+
+    /**
+     * Save settings before serializing to JSON
+     * Default implementation - for channels only
+     * Child classes can override this to save additional settings
+     */
+    protected void saveSettings() {
+        updateChannelSettings();
     }
 }
 
