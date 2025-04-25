@@ -76,7 +76,14 @@ class W_Spectrogram extends WidgetWithSettings {
         initDropdown(SpectrogramWindowSize.class, "spectrogramWindowDropdown", "Window");
         initDropdown(FFTLogLin.class, "spectrogramLogLinDropdown", "Log/Lin");
 
-        initializeUI();
+        spectChanSelectTop = new DualExGChannelSelect(ourApplet, x, y, w, navH, true);
+        spectChanSelectBot = new DualExGChannelSelect(ourApplet, x, y + navH, w, navH, false);
+        activateDefaultChannels();
+        updateChannelSettings();
+        
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
+        cp5ElementsToCheck.addAll(spectChanSelectBot.getCp5ElementsForOverlapCheck());
     }
 
     @Override
@@ -527,16 +534,6 @@ class W_Spectrogram extends WidgetWithSettings {
         } else if (!currentBoard.isStreaming() && wasRunning) {
             onStopRunning();
         }
-    }
-
-    private void initializeUI() {
-        spectChanSelectTop = new DualExGChannelSelect(ourApplet, x, y, w, navH, true);
-        spectChanSelectBot = new DualExGChannelSelect(ourApplet, x, y + navH, w, navH, false);
-        activateDefaultChannels();
-        
-        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
-        cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
-        cp5ElementsToCheck.addAll(spectChanSelectBot.getCp5ElementsForOverlapCheck());
     }
 
     private void updateUIState() {

@@ -332,8 +332,10 @@ class WidgetSettings {
                 othersJson.setFloat(key, (Float)value);
             } else if (value instanceof Boolean) {
                 othersJson.setBoolean(key, (Boolean)value);
+            } else {
+                println("WARNING: Couldn't save setting '" + key + "' with value type " + 
+                       (value != null ? value.getClass().getName() : "null"));
             }
-            // Skip complex types that can't be directly serialized
         }
         
         if (othersJson.size() > 0) {
