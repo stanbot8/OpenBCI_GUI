@@ -44,7 +44,8 @@ class SessionSettings {
         KEY_NETWORKING = "networking",
         KEY_CONTAINERS = "widgetContainerSettings",
         KEY_WIDGET_SETTINGS = "widgetSettings",
-        KEY_FILTER_SETTINGS = "filterSettings";
+        KEY_FILTER_SETTINGS = "filterSettings",
+        KEY_EMG_SETTINGS = "emgSettings";
     
     // File paths configuration
     private final String[][] SETTING_FILES = {
@@ -102,6 +103,8 @@ class SessionSettings {
             parseJSONObject(widgetManager.getWidgetSettingsAsJson()));
         saveSettingsJSONData.setJSONObject(KEY_FILTER_SETTINGS,
             parseJSONObject(filterSettings.getJson()));
+        saveSettingsJSONData.setJSONObject(KEY_EMG_SETTINGS,
+            parseJSONObject(dataProcessing.emgSettings.getJson()));
         
         // Save to file
         saveJSONObject(saveSettingsJSONData, saveFilePath);
@@ -145,6 +148,7 @@ class SessionSettings {
         applyWidgetLayout();
         applyWidgetSettings();
         applyFilterSettings();
+        applyEmgSettings();
     }
     
     /**
@@ -227,7 +231,15 @@ class SessionSettings {
     }
 
     private void applyFilterSettings() {
-        filterSettings.loadSettingsFromJson(loadSettingsJSONData.getJSONObject(KEY_FILTER_SETTINGS).toString());
+        JSONObject filterSettingsJSON = loadSettingsJSONData.getJSONObject(KEY_FILTER_SETTINGS);
+        String filterSettingsString = filterSettingsJSON.toString();
+        filterSettings.loadSettingsFromJson(filterSettingsString);
+    }
+
+    private void applyEmgSettings() {
+        JSONObject emgSettingsJSON = loadSettingsJSONData.getJSONObject(KEY_EMG_SETTINGS);
+        String emgSettingsString = emgSettingsJSON.toString();
+        dataProcessing.emgSettings.loadSettingsFromJson(emgSettingsString);
     }
 
     /**
