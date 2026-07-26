@@ -5,6 +5,8 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.RunWith;
 import org.hamcrest.SelfDescribing;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 static GuiUnitTests currentApplet;
 final String failFileName = "UNITTEST_FAILURE";
@@ -13,6 +15,7 @@ final String failFileName = "UNITTEST_FAILURE";
 // add test classes here
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        BrainFlowStreamerLifecycle_UnitTests.class,
         PacketLossTracker_UnitTests.class,
         PacketLossTrackerCytonSerialDaisy_UnitTests.class, 
         PacketLossTrackerGanglionBLE_UnitTests.class,  
