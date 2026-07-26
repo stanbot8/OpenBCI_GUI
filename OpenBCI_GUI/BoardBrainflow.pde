@@ -16,7 +16,7 @@ abstract class BoardBrainFlow extends Board {
     protected int[] exgChannelsCache = null;
     protected int[] otherChannelsCache = null;
 
-    protected boolean streaming = false;
+    private BrainFlowStreamerLifecycle streamLifecycle = null;
     protected double time_last_datapoint = -1.0;
     protected boolean data_popup_displayed = false;
 
@@ -40,12 +40,7 @@ abstract class BoardBrainFlow extends Board {
                 e.printStackTrace();
             }
             boardShim.prepare_session();
-            /*
-            //This does not seem to work with Windows and Processing.
-            //For now, we will add a streamer using argument for start_stream(). -RW 9/18/2023
-            if (brainflowStreamer != "")
-                boardShim.add_streamer(brainflowStreamer);
-            */
+            streamLifecycle = new BrainFlowStreamerLifecycle(new BoardShimBrainFlowStream(boardShim));
             return true; 
 
         } catch (Exception e) {
@@ -79,19 +74,17 @@ abstract class BoardBrainFlow extends Board {
         super.startStreaming();
 
         println("Brainflow start streaming");
-        if(streaming) {
+        if(isStreaming()) {
             println("Already streaming, do nothing");
             return;
         }
 
         try {
-            boardShim.start_stream (450000, brainflowStreamer);
-            streaming = true;
+            streamLifecycle.start(brainflowStreamer);
         }
-        catch (BrainFlowError e) {
+        catch (Exception e) {
             println("ERROR: Exception when starting stream");
             e.printStackTrace();
-            streaming = false;
         }
     }
 
@@ -100,23 +93,17 @@ abstract class BoardBrainFlow extends Board {
         super.stopStreaming();
         
         println("Brainflow stop streaming");
-        if(!streaming) {
+        if(!isStreaming()) {
             println("Already stopped streaming, do nothing");
             return;
         }
         try {
-            boardShim.stop_stream();
-            streaming = false;
+            streamLifecycle.stop();
             time_last_datapoint = -1.0;
         }
-        catch (BrainFlowError e) {
-            outputError("ERROR: Exception when stopping stream. Please restart the Board and Session.");
+        catch (Exception e) {
+            outputError("ERROR: BrainFlow could not stop the stream or remove its output. Restart the Board and Session.");
             e.printStackTrace();
-            //If no data was received in X seconds, there is a serious problem with communications. Go ahead and stop trying to collect data.
-            //Prevents feedback loop of errors.
-            if (data_popup_displayed) {
-                streaming = false;
-            }
         }
 
         if (eegDataSource != DATASOURCE_PLAYBACKFILE && eegDataSource != DATASOURCE_STREAMING) {
@@ -139,7 +126,7 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public boolean isStreaming() {
-        return streaming;
+        return streamLifecycle != null && streamLifecycle.isStreaming();
     }
 
     @Override
@@ -257,7 +244,7 @@ abstract class BoardBrainFlow extends Board {
     
     @Override
     protected double[][] getNewDataInternal() {
-        if(streaming) {
+        if(isStreaming()) {
             try {
                 double[][] data = boardShim.get_board_data();
                 if ((data[0].length == 0) && (time_last_datapoint > 0)) {
@@ -328,7 +315,7 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public void insertMarker(double value) {
-        if (isConnected() && streaming) {
+        if (isConnected() && isStreaming()) {
             try {
                 boardShim.insert_marker(value);
                 String currentTimeString = dateFormat.format(new Date());
