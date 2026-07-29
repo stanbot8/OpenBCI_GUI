@@ -219,7 +219,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
                 println("Already checking impedance.");
                 return;
             }
-            if (streaming) {
+            if (isStreaming()) {
                 stopRunning();
             }
             sendCommand("z");
@@ -231,7 +231,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
                 println ("Impedance is not running.");
                 return;
             }
-            if (streaming) {
+            if (isStreaming()) {
                 stopStreaming();
             }
             sendCommand("Z");
