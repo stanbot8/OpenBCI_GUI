@@ -61,6 +61,7 @@ abstract class BoardBrainFlow extends Board {
         if(isConnected()) {
             try {
                 boardShim.release_session();
+                println("BoardBrainFlow: Board has been uninitialized and the session has been released.");
             } catch (BrainFlowError e) {
                 println("WARNING: could not release brainflow board.");
                 e.printStackTrace();
@@ -105,6 +106,9 @@ abstract class BoardBrainFlow extends Board {
         }
         try {
             boardShim.stop_stream();
+            if (!brainflowStreamer.isEmpty()) {
+                boardShim.delete_streamer(brainflowStreamer);
+            }
             streaming = false;
             time_last_datapoint = -1.0;
         }
@@ -311,7 +315,7 @@ abstract class BoardBrainFlow extends Board {
 
         return otherChannelsCache;
     }
-
+    
     @Override
     public int getMarkerChannel() {
         if (markerChannelCache < 0) {
