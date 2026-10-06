@@ -1,64 +1,18 @@
-name: Build GUI for Windows - Processing 3
-
+name: CI input consumer
 on:
-  workflow_dispatch:
-  pull_request:
-    branches:
-    - development
-
+  workflow_call:
+    inputs:
+      probe:
+        type: string
+        required: true
+      slot:
+        type: string
+        required: true
 jobs:
-  build:
-    name: Build for Windows - Processing 3
-    runs-on: windows-latest
-
+  check:
+    runs-on: ubuntu-latest
     steps:
-    - name: Clone Repository
-      uses: actions/checkout@v3
-
-      with:
-        ref: ${{ (github.event_name == 'schedule' || github.event_name == 
-          'workflow_run') && 'e23869e7b5cc621e733d8fa0d81f05d477264306' || 
-          github.sha }}
-    - name: Install Python 3.9
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-        architecture: 'x64'
-        cache: 'pip'
-
-    - name: Set Path
-      run: |-
-        echo %GITHUB_WORKSPACE%\processing\processing-3.5.3>>%GITHUB_PATH%
-      shell: cmd
-
-    - name: Print Path
-      run: |-
-        echo %PATH%
-      shell: cmd
-
-    - name: Install Processing
-      run: |
-        mkdir processing
-        cd %GITHUB_WORKSPACE%\processing
-        curl -O -L --insecure https://download.processing.org/processing-3.5.3-windows64.zip
-        ls -l %GITHUB_WORKSPACE%\processing
-        unzip processing-3.5.3-windows64.zip
-        ls -l %GITHUB_WORKSPACE%\processing\processing-3.5.3
-        mkdir %userprofile%\documents\processing\libraries
-        xcopy %GITHUB_WORKSPACE%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
-        ls -l %userprofile%\documents\processing\libraries
-      shell: cmd
-
-    - name: Check processing-java
-      run: |-
-        processing-java --help
-      shell: cmd
-
-    - name: Build
-      run: |
-        python %GITHUB_WORKSPACE%\GuiUnitTests\run-unittests.py
-        python %GITHUB_WORKSPACE%\release\build.py
-      shell: cmd
+    - run: echo 'Changed inputs reached consumer ${{ inputs.slot }}'
     needs:
     - alpha_bridge_inputs
     if: |-
@@ -70,7 +24,7 @@ jobs:
       actions: read
       contents: read
     concurrency:
-      group: alpha-bridge-inputs-13b927cbb190e5a3-${{ github.workflow }}-${{ 
+      group: alpha-bridge-inputs-04fbff4179fd2373-${{ github.workflow }}-${{ 
         github.sha }}-${{ github.event.schedule || github.event_name }}
       cancel-in-progress: false
       queue: max
@@ -83,13 +37,10 @@ jobs:
         GH_TOKEN: ${{ github.token }}
         AB_REPOSITORY: ${{ github.repository }}
         AB_RUN_ID: ${{ github.run_id }}
-        AB_HEAD_SHA: ${{ (github.event_name == 'schedule' || github.event_name 
-          == 'workflow_run') && 'e23869e7b5cc621e733d8fa0d81f05d477264306' || 
-          github.sha }}
-        AB_REF: ${{ (github.event_name == 'schedule' || github.event_name == 
-          'workflow_run') && 'refs/heads/master' || github.ref }}
+        AB_HEAD_SHA: ${{ github.sha }}
+        AB_REF: ${{ github.ref }}
         AB_WORKFLOW_DIGEST: 
-          10081418aa25a7b9d49bd8fbeda43b1882f811b497b60d4e92ef6abc406dab1d
+          204202fd1f1fa08793779bf1cda80736b14fcfc47bf1262b68cdcee1a843ad8c
         AB_EVENT: ${{ github.event_name }}
         AB_SCHEDULE: ${{ github.event.schedule || '' }}
         AB_VARIABLES: ${{ toJSON(vars) }}
