@@ -136,11 +136,12 @@ jobs:
         AB_REF: ${{ (github.event_name == 'schedule' || github.event_name == 
           'workflow_run') && 'refs/heads/master' || github.ref }}
         AB_WORKFLOW_DIGEST: 
-          1af12b98250f73967768406e48338b712cecc68f6de3b805d6a7f9859208b1fd
+          f2ca2f8c979842cac83b63c85010529ec74e1d26b5d4d10db177654574f6cfad
         AB_EVENT: ${{ github.event_name }}
         AB_SCHEDULE: ${{ github.event.schedule || '' }}
         AB_VARIABLES: ${{ toJSON(vars) }}
         AB_INPUTS: ${{ toJSON(inputs) }}
+        AB_DEFAULT_PERMISSIONS: read
         AB_WORKFLOW_RUN: ${{ toJSON(github.event.workflow_run) }}
       shell: bash
       run: "python3 - <<'ALPHA_BRIDGE_CI_PY'\n\"\"\"Native automatic-CI input check,
@@ -213,10 +214,11 @@ jobs:
         AB_WORKFLOW_DIGEST\"],\n        \"event\": event,\n        \"event_payload\"\
         : event_payload,\n        \"schedule\": os.environ[\"AB_SCHEDULE\"],\n   \
         \     \"variables\": json.loads(os.environ[\"AB_VARIABLES\"]),\n        \"\
-        inputs\": json.loads(os.environ[\"AB_INPUTS\"]),\n        \"runner_image\"\
-        : [os.environ.get(\"ImageOS\", \"\"), os.environ.get(\"ImageVersion\", \"\"\
-        )],\n        \"producer\": json.loads(os.environ.get(\"AB_WORKFLOW_RUN\",
-        \"null\")),\n    }\n    identity = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()\n\
+        inputs\": json.loads(os.environ[\"AB_INPUTS\"]),\n        \"default_workflow_permissions\"\
+        : os.environ[\"AB_DEFAULT_PERMISSIONS\"],\n        \"runner_image\": [os.environ.get(\"\
+        ImageOS\", \"\"), os.environ.get(\"ImageVersion\", \"\")],\n        \"producer\"\
+        : json.loads(os.environ.get(\"AB_WORKFLOW_RUN\", \"null\")),\n    }\n    identity
+        = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()\n\
         \n    def get(path):\n        request = urllib.request.Request(\n        \
         \    \"https://api.github.com\" + path,\n            headers={\n         \
         \       \"Authorization\": \"Bearer \" + os.environ[\"GH_TOKEN\"],\n     \
