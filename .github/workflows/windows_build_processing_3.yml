@@ -23,8 +23,8 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-        architecture: x64
-        cache: pip
+        architecture: 'x64'
+        cache: 'pip'
 
     - name: Set Path
       run: |-
@@ -61,8 +61,8 @@ jobs:
       shell: cmd
     needs:
     - alpha_bridge_inputs
-    if: ${{ (success()) && needs.alpha_bridge_inputs.outputs.changed == 'true' 
-      }}
+    if: |-
+      ${{ (success()) && needs.alpha_bridge_inputs.outputs.changed == 'true' }}
   alpha_bridge_inputs:
     name: CI input check
     runs-on: ubuntu-latest
@@ -88,7 +88,7 @@ jobs:
         AB_REF: ${{ (github.event_name == 'schedule' || github.event_name == 
           'workflow_run') && 'refs/heads/master' || github.ref }}
         AB_WORKFLOW_DIGEST: 
-          c986419e70f90d8c201bb52bd3c710d8101e879bf27363e7ef04d367906cf287
+          033acf55478b1714417e589b339f81944eac6eb7786f30965735ca4620d6927d
         AB_EVENT: ${{ github.event_name }}
         AB_SCHEDULE: ${{ github.event.schedule || '' }}
         AB_VARIABLES: ${{ toJSON(vars) }}

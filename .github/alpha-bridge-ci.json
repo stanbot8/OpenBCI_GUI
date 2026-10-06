@@ -1,19 +1,19 @@
 {
   "definition_blob_sha1": {
-    ".github/workflows/alpha-bridge-ci-verify.yml": "d19efeb3bd029beb4c50fd874010d2b930d20715",
-    ".github/workflows/linux_build_deploy.yml": "9cd1702d0532952b085a7138751023393e465b31",
-    ".github/workflows/mac_build_deploy.yml": "e1470eb64265628dcd784a7e0bfe99c861578a60",
-    ".github/workflows/windows_build_deploy.yml": "2dd45ceaffaa1afb7d3a57297b95246f9d1d5e5a",
-    ".github/workflows/windows_build_processing_3.yml": "bb7ed3ea77ae3b20739024f20ae03a509d8b41f9"
+    ".github/workflows/alpha-bridge-ci-verify.yml": "e967624600c97e9308ad7039f50e4e5b3480a77f",
+    ".github/workflows/linux_build_deploy.yml": "aabe6232034213d95e364e885744c1411a9b4fdf",
+    ".github/workflows/mac_build_deploy.yml": "d7af8cdd7a938c07f1fcb29183cf7605b3503804",
+    ".github/workflows/windows_build_deploy.yml": "c212fb0e237235f23d0ed023230a9bab13dd0e4e",
+    ".github/workflows/windows_build_processing_3.yml": "65e92fabfa42739ac923f6a466bcbcdae8799bd4"
   },
   "definition_sha256": {
-    ".github/workflows/alpha-bridge-ci-verify.yml": "8fde9e2f5e1b37bbbb22794427ac6d217d8b18bc857606edd0b072e89c58b436",
-    ".github/workflows/linux_build_deploy.yml": "6482372fa32a80fa873f07d3ddc5021c7af9c84444545b7eac767f52ff81c71b",
-    ".github/workflows/mac_build_deploy.yml": "43387ea75a52e1bb42c3194ec60ff9737f2c728356ff53951749e1f42df9c4b0",
-    ".github/workflows/windows_build_deploy.yml": "f001f56aba6e06c9e27b7dca70a1fdf1a6be444bfe820c7a1358c9de96c1a284",
-    ".github/workflows/windows_build_processing_3.yml": "608465298ad16dd37cecd703c23b335e7ee70c7a67d9722f9e68cf947a3410a9"
+    ".github/workflows/alpha-bridge-ci-verify.yml": "148b49359afdc3ab3ecde8d2957b2c4f4fc171da278ede186b799ac544b662f0",
+    ".github/workflows/linux_build_deploy.yml": "eb9efe8ce5077eb0e2feb4a5a50108fedf572e06f30232385a6bda0936e139b5",
+    ".github/workflows/mac_build_deploy.yml": "aeaf27b2e9b28c88e1c2b6ffd66da64f1c3661d35bee47830cda41ab83d43912",
+    ".github/workflows/windows_build_deploy.yml": "39a43f4ed4787c64bd4bdd81c75d017df78a4cb989ef4502da678a22af34bde4",
+    ".github/workflows/windows_build_processing_3.yml": "523c3883d035bbc58d175578a9f2faf7e3551f51080eaef9ae5c8681fba6cf05"
   },
-  "generator_sha256": "f9d11fba5b604bac754f7ab7e40ccde549adf8e029da2ca91ed14e9ab94c0775",
+  "generator_sha256": "7b3db61baf202e3e7dd48fa25de24a19021fd832011e4b2a2f8fe59420da19d8",
   "schema": "alpha-bridge/fork-ci",
   "source_branch": "master",
   "source_commit": "e23869e7b5cc621e733d8fa0d81f05d477264306",
